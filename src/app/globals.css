@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+:root {
+  /* Light + glass: fundo claro com atmosfera sutil, superfícies translúcidas, azul como accent. */
+  --background: #f6f6fb;
+  --surface: rgba(255, 255, 255, 0.68);
+  --surface-hover: rgba(255, 255, 255, 0.86);
+  --border-subtle: rgba(37, 99, 235, 0.14);
+  --border-glass-highlight: rgba(255, 255, 255, 0.9);
+  --foreground: #15151f;
+  --foreground-secondary: #46465a;
+  --muted: #74748a;
+  /* #6EA9F7 (pedido) tem só ~2.4:1 de contraste em fundo claro — não passa em texto/ícone.
+     Uso ele como tom claro decorativo (washes, glow) e derivo um azul mais escuro da mesma
+     família pros usos que precisam de contraste real (botão sólido, ícone, borda). */
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-tint: #6ea9f7;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-tint: var(--accent-tint);
+  --font-sans: var(--font-roboto);
+  --font-mono: var(--font-roboto-mono);
+  --font-display: var(--font-roboto);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 900px 600px at 8% -10%, rgba(110, 169, 247, 0.14), transparent 60%),
+    radial-gradient(ellipse 800px 700px at 100% 15%, rgba(37, 99, 235, 0.08), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground-secondary);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vidro: fundo translúcido + blur + realce de borda superior/interna simulando refração. */
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    inset 0 1px 0 0 var(--border-glass-highlight),
+    0 12px 32px -16px rgba(37, 99, 235, 0.18);
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-slide-in {
+  animation: fade-slide-in 420ms var(--ease-out) both;
+}
+
+/* Único sinal de "isso foi recalculado": o RiskBadge remonta (key muda) quando a
+   negociação altera o cenário, disparando este pulso curto. Nada mais na página reanima. */
+@keyframes value-pulse {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-value-pulse {
+  animation: value-pulse 360ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
