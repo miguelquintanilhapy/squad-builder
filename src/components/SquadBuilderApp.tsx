@@ -1,11 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertCircle, Blocks } from 'lucide-react'
+import { AlertCircle, ArrowRight } from 'lucide-react'
 import { NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
-import { InputPanel } from '@/components/InputPanel'
+import { BrandMark } from '@/components/BrandMark'
+import { ScopeField, MIN_SCOPE_CHARS } from '@/components/ScopeField'
+import { ConstraintFields } from '@/components/ConstraintFields'
 import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
+import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 
 const INITIAL_INPUT: ProjectInput = {
   productTypes: [],
@@ -32,14 +35,17 @@ export function SquadBuilderApp() {
   const [negotiateLoading, setNegotiateLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleAnalyze() {
+  async function handleAnalyze(descriptionOverride?: string) {
+    const nextInput = descriptionOverride !== undefined ? { ...input, description: descriptionOverride } : input
+    if (descriptionOverride !== undefined) setInput(nextInput)
+
     setAnalyzeLoading(true)
     setError(null)
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify(nextInput),
       })
       const data = await parseJsonOrThrow(response)
       setScopeAnalysis(data.scopeAnalysis)
@@ -101,38 +107,95 @@ export function SquadBuilderApp() {
     }
   }
 
+  const charCount = input.description.trim().length
+  const missingChars = MIN_SCOPE_CHARS - charCount
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b border-border-subtle bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between px-8 py-4">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-7 items-center justify-center rounded-md bg-accent text-white">
-              <Blocks className="size-4" strokeWidth={2.25} />
+    <div className="flex min-h-screen flex-col bg-paper text-ink-2">
+      <header className="app-header border-b border-rule">
+        <div className="wrap flex items-center justify-between gap-3.5 py-3.5">
+          <div className="flex items-baseline gap-[11px]">
+            <BrandMark />
+            <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
+              SquadBuilder
             </span>
-            <span className="font-display text-sm font-bold tracking-tight text-foreground">SquadBuilder</span>
+            <span className="text-[13px] text-ink-3">escopo → squad</span>
           </div>
-          <span className="text-xs text-muted">Copiloto de IA para dimensionar squads de engenharia</span>
+          <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1800px] flex-1 px-8 py-12">
-        {error && (
-          <div className="animate-fade-slide-in mb-8 flex items-center gap-2.5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <AlertCircle className="size-4 shrink-0" strokeWidth={2} />
-            {error}
-          </div>
-        )}
+      <main className="flex-1">
+        <section className="wrap py-8">
+          <div className="max-w-[760px]">
+            <Eyebrow index="01">Escopo</Eyebrow>
+            <h1 className="max-w-[20ch] font-display text-[clamp(30px,4.6vw,46px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
+              Descreva o produto. O resto a gente <span className="text-petrol">deduz</span>.
+            </h1>
+            <p className="mt-2.5 max-w-[56ch] text-base text-ink-2">
+              Escreva como você explicaria pra um tech lead novo no time — em texto corrido, sem
+              formulário. A partir daí montamos o squad, o custo mensal, o prazo e os riscos.
+            </p>
 
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
-          <div className="flex flex-col gap-10 lg:border-r lg:border-border-subtle lg:pr-16">
-            <InputPanel value={input} onChange={setInput} onSubmit={handleAnalyze} loading={analyzeLoading} />
-            {scenario && (
-              <NegotiationChat history={history} onSend={handleNegotiate} loading={negotiateLoading} />
+            {error && (
+              <div className="mt-5 flex items-center gap-2.5 rounded-[3px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
+                <AlertCircle className="size-4 shrink-0" strokeWidth={2} />
+                {error}
+              </div>
             )}
-          </div>
 
-          <DashboardPanel scenario={scenario} loading={analyzeLoading} />
-        </div>
+            <div className="mt-5">
+              <ScopeField
+                value={input.description}
+                onChange={(description) => setInput((prev) => ({ ...prev, description }))}
+                onUseSeed={(text) => void handleAnalyze(text)}
+                disabled={analyzeLoading}
+              />
+            </div>
+
+            <div className="mt-5">
+              <ConstraintFields
+                targetTimelineMonths={input.targetTimelineMonths}
+                monthlyBudget={input.monthlyBudget}
+                onChange={(patch) => setInput((prev) => ({ ...prev, ...patch }))}
+                disabled={analyzeLoading}
+              />
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3.5">
+              <PrimaryButton
+                onClick={() => void handleAnalyze()}
+                disabled={analyzeLoading || charCount < MIN_SCOPE_CHARS}
+                loading={analyzeLoading}
+              >
+                {analyzeLoading ? (
+                  'Lendo escopo…'
+                ) : (
+                  <>
+                    {scenario ? 'Reler escopo' : 'Ler escopo e montar squad'}
+                    <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" />
+                  </>
+                )}
+              </PrimaryButton>
+              <span className={`text-[13px] ${charCount < MIN_SCOPE_CHARS ? 'text-ochre' : 'text-ink-3'}`}>
+                {charCount < MIN_SCOPE_CHARS
+                  ? `Faltam ${missingChars} caracteres pra liberar`
+                  : 'Leitura em texto livre, sem formulário'}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {(analyzeLoading || scenario) && (
+          <section className="wrap border-t border-rule py-8">
+            <DashboardPanel scenario={scenario} loading={analyzeLoading} />
+            {scenario && (
+              <div className="mt-6 max-w-[760px]">
+                <NegotiationChat history={history} onSend={handleNegotiate} loading={negotiateLoading} />
+              </div>
+            )}
+          </section>
+        )}
       </main>
     </div>
   )

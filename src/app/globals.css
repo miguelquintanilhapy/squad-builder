@@ -73,17 +73,41 @@ html {
   color-scheme: light;
 }
 
-body {
-  background:
-    radial-gradient(ellipse 900px 600px at 8% -10%, rgba(110, 169, 247, 0.14), transparent 60%),
-    radial-gradient(ellipse 800px 700px at 100% 15%, rgba(37, 99, 235, 0.08), transparent 55%),
-    var(--background);
-  background-attachment: fixed;
-  color: var(--foreground-secondary);
-}
-
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Container padrão de seção (POC): largura máxima 1300px, padding lateral 22px
+   (15px abaixo de 640px). Reaproveitado em todas as seções da interface nova. */
+.wrap {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 22px;
+}
+@media (max-width: 640px) {
+  .wrap {
+    padding: 0 15px;
+  }
+}
+
+.app-header {
+  background: linear-gradient(var(--paper-2), var(--paper));
+}
+
+/* Campo de escopo: papel milimetrado ao fundo, alinhado ao line-height do textarea. */
+.scope-shell {
+  position: relative;
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  background: var(--paper-3);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px);
+  background-size: 100% 26px;
+  background-position: 0 15px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.scope-shell:focus-within {
+  border-color: var(--petrol);
+  box-shadow: 0 0 0 3px rgba(20, 85, 78, 0.13);
 }
 
 /* Vidro: fundo translúcido + blur + realce de borda superior/interna simulando refração. */

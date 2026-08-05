@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { LayoutDashboard } from 'lucide-react'
 import { Scenario } from '@/types'
 import { MetricsCards } from '@/components/MetricsCards'
 import { AnalysisSummary } from '@/components/AnalysisSummary'
@@ -60,18 +59,7 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
   }
 
   if (!scenario) {
-    return (
-      <div className="glass flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl py-24 text-center">
-        <span className="flex size-11 items-center justify-center rounded-full bg-accent/10 text-accent">
-          <LayoutDashboard className="size-5" strokeWidth={1.75} />
-        </span>
-        <p className="font-display font-medium text-foreground">Nenhuma análise ainda</p>
-        <p className="max-w-sm text-sm text-muted">
-          Preencha o escopo do projeto ao lado e clique em &ldquo;Analisar Projeto com IA&rdquo; para ver o squad
-          recomendado, custo, prazo e risk score.
-        </p>
-      </div>
-    )
+    return null
   }
 
   return (

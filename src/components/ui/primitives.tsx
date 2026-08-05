@@ -18,6 +18,17 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-xs font-medium tracking-[0.08em] text-muted uppercase">{children}</h2>
 }
 
+/** Cabeçalho numerado de seção (POC): número em petrol + rótulo + linha de preenchimento. */
+export function Eyebrow({ index, children }: { index: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-3.5 flex items-center gap-2.5 text-[13.5px] font-medium text-ink-2">
+      <span className="font-display text-[13px] font-bold tracking-[-0.01em] text-petrol">{index}</span>
+      {children}
+      <span className="h-px flex-1 bg-rule" />
+    </div>
+  )
+}
+
 export function Chip({
   label,
   active,
@@ -88,12 +99,18 @@ export function PrimaryButton({
   type?: 'button' | 'submit'
   fullWidth?: boolean
 }) {
+  // Desabilitado é outline neutro, nunca a cor primária com opacidade baixa — quem explica o
+  // que falta é o texto ao lado do botão, não o próprio botão.
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${fullWidth ? 'w-full' : ''} group inline-flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_0_rgba(255,255,255,0.16)_inset,0_8px_20px_-8px_rgba(37,99,235,0.55)] transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-strong hover:shadow-[0_1px_0_0_rgba(255,255,255,0.16)_inset,0_10px_24px_-6px_rgba(37,99,235,0.65)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 disabled:shadow-none`}
+      className={`${fullWidth ? 'w-full' : ''} group inline-flex items-center justify-center gap-2.5 rounded-[3px] border px-[22px] py-[11px] text-[15px] font-semibold transition-[transform,background-color,box-shadow] duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 ${
+        disabled
+          ? 'cursor-not-allowed border-rule bg-transparent text-ink-3'
+          : 'border-ink bg-ink text-paper-2 hover:-translate-y-px hover:shadow-[0_3px_0_0_var(--petrol)]'
+      }`}
     >
       {loading && <Loader2 className="size-4 animate-spin" />}
       {children}
