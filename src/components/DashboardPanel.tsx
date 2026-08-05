@@ -6,39 +6,30 @@ import { MetricsCards } from '@/components/MetricsCards'
 import { AnalysisSummary } from '@/components/AnalysisSummary'
 import { SquadGrid } from '@/components/SquadGrid'
 import { AlertsPanel } from '@/components/AlertsPanel'
-import { Card } from '@/components/ui/primitives'
 
 function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-accent/10 ${className}`} />
+  return <div className={`animate-pulse rounded-[3px] bg-rule-2 ${className}`} />
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col gap-6">
-      <Card className="flex flex-col gap-5 p-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-6 w-32 rounded-full" />
-        </div>
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-      </Card>
-      <div className="grid grid-cols-3 gap-4">
-        <Skeleton className="h-24 rounded-2xl" />
-        <Skeleton className="h-24 rounded-2xl" />
-        <Skeleton className="h-24 rounded-2xl" />
-      </div>
-      <Card className="flex flex-col divide-y divide-border-subtle">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center gap-4 px-5 py-4">
-            <Skeleton className="size-8 shrink-0 rounded-lg" />
-            <div className="flex-1">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="mt-2 h-3 w-3/4" />
-            </div>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-rule-2 bg-rule-2 sm:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex flex-col gap-2 bg-paper-3 p-4">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-7 w-16" />
           </div>
         ))}
-      </Card>
+      </div>
+      <div className="rounded-[3px] border border-rule-2 bg-paper-3 p-4">
+        <Skeleton className="h-4 w-1/3" />
+        <div className="mt-4 flex flex-col gap-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-4 w-full" />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

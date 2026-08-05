@@ -80,10 +80,10 @@ async function callGemini<T>(fn: () => Promise<T>): Promise<T> {
   throw new Error('Erro inesperado ao chamar a IA.')
 }
 
-const PRODUCT_TYPES = ['web-app', 'mobile-app', 'desktop', 'api-backend', 'saas-b2b', 'marketplace']
-const PLATFORMS = ['ios', 'android', 'web', 'multi-platform']
-const STAGES = ['idea', 'prototype', 'mvp-running', 'legacy-product']
-const COMPLEXITIES = ['low', 'medium', 'enterprise']
+const PRODUCT_TYPES = ['web-app', 'mobile-app', 'desktop', 'api-backend', 'saas-b2b', 'marketplace'] as const
+const PLATFORMS = ['ios', 'android', 'web', 'multi-platform'] as const
+const STAGES = ['idea', 'prototype', 'mvp-running', 'legacy-product'] as const
+const COMPLEXITIES = ['low', 'medium', 'enterprise'] as const
 const CAPABILITIES = [
   'payments',
   'realtime-tracking',
@@ -95,7 +95,7 @@ const CAPABILITIES = [
   'high-scale',
   'compliance',
   'ai-ml',
-]
+] as const
 const ROLES = [
   'dev-frontend',
   'dev-backend',
@@ -136,17 +136,78 @@ const SCOPE_ANALYSIS_SCHEMA = {
   ],
 }
 
+/** Faz o parse do JSON da resposta e transforma falhas de formato num erro claro pra UI. */
+function parseJsonResponse(text: string | undefined, context: string): unknown {
+  if (!text?.trim()) {
+    throw new Error(`A IA devolveu uma resposta vazia ao ${context}. Tenta de novo.`)
+  }
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error(`A IA devolveu uma resposta em formato inválido ao ${context}. Tenta de novo.`)
+  }
+}
+
+function isOneOf<T extends string>(value: unknown, allowed: readonly T[]): value is T {
+  return typeof value === 'string' && (allowed as readonly string[]).includes(value)
+}
+
+/** Dimensão fora do enum esperado cai no default e loga — nunca propaga pro motor de cálculo. */
+function sanitizeEnum<T extends string>(value: unknown, allowed: readonly T[], fallback: T, field: string): T {
+  if (isOneOf(value, allowed)) return value
+  console.error(`[analyzeScope] "${field}" fora do enum esperado (${JSON.stringify(value)}) — usando "${fallback}".`)
+  return fallback
+}
+
+function sanitizeEnumArray<T extends string>(value: unknown, allowed: readonly T[], field: string): T[] {
+  if (!Array.isArray(value)) return []
+  const valid = value.filter((item): item is T => isOneOf(item, allowed))
+  if (valid.length !== value.length) {
+    console.error(`[analyzeScope] valores fora do enum removidos de "${field}": ${JSON.stringify(value)}`)
+  }
+  return valid
+}
+
+function sanitizeScopeAnalysis(raw: unknown): ScopeAnalysis {
+  const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+
+  const estimatedEffortPersonMonths =
+    typeof r.estimatedEffortPersonMonths === 'number' && r.estimatedEffortPersonMonths > 0
+      ? r.estimatedEffortPersonMonths
+      : 3
+  if (estimatedEffortPersonMonths === 3 && r.estimatedEffortPersonMonths !== 3) {
+    console.error(
+      `[analyzeScope] "estimatedEffortPersonMonths" inválido (${JSON.stringify(r.estimatedEffortPersonMonths)}) — usando fallback de 3 pessoa-mês.`
+    )
+  }
+
+  return {
+    productTypes: sanitizeEnumArray(r.productTypes, PRODUCT_TYPES, 'productTypes'),
+    platforms: sanitizeEnumArray(r.platforms, PLATFORMS, 'platforms'),
+    stage: sanitizeEnum(r.stage, STAGES, 'idea', 'stage'),
+    complexity: sanitizeEnum(r.complexity, COMPLEXITIES, 'medium', 'complexity'),
+    estimatedEffortPersonMonths,
+    requiredCapabilities: sanitizeEnumArray(r.requiredCapabilities, CAPABILITIES, 'requiredCapabilities'),
+    keyRisksNoted: Array.isArray(r.keyRisksNoted) ? r.keyRisksNoted.filter((v): v is string => typeof v === 'string') : [],
+    summary:
+      typeof r.summary === 'string' && r.summary.trim()
+        ? r.summary
+        : 'Não foi possível gerar uma síntese detalhada para este escopo.',
+  }
+}
+
 export async function analyzeScope(input: ProjectInput): Promise<ScopeAnalysis> {
   const prompt = `Você é um arquiteto de software sênior que traduz descrições de projetos em uma leitura estruturada de escopo, para alimentar um motor de cálculo de squad/custo/prazo.
 
-Dados informados pelo fundador:
-- Tipo(s) de produto (chips selecionados): ${input.productTypes.join(', ') || 'não informado'}
-- Plataforma(s) alvo (chips selecionados): ${input.platforms.join(', ') || 'não informado'}
-- Estágio do projeto (chip selecionado): ${input.stage}
-- Complexidade esperada (chip selecionado): ${input.complexity}
+O fundador descreveu o projeto em texto livre — essa descrição é a fonte principal, leia com atenção. Os campos abaixo são pistas adicionais opcionais, informadas antes da leitura do texto, e podem estar vazias:
+- Tipo(s) de produto: ${input.productTypes.join(', ') || 'não informado, infira do texto'}
+- Plataforma(s) alvo: ${input.platforms.join(', ') || 'não informado, infira do texto'}
+- Estágio do projeto: ${input.stage}
+- Complexidade esperada: ${input.complexity}
 - Prazo alvo: ${input.targetTimelineMonths ? `${input.targetTimelineMonths} meses` : 'não informado'}
 - Orçamento mensal: ${input.monthlyBudget ? `R$ ${input.monthlyBudget}` : 'não informado'}
-- Descrição livre do escopo: """${input.description}"""
+
+Descrição livre do escopo: """${input.description}"""
 
 Analise o texto livre com atenção para identificar funcionalidades e integrações (pagamentos, geolocalização/GPS em tempo real, chat, notificações, painel admin, integrações de terceiros, IA/ML, necessidade de alta escala, exigências de compliance).
 
@@ -165,7 +226,7 @@ Responda respeitando estritamente o schema JSON fornecido.`
     })
   )
 
-  return JSON.parse(response.text ?? '{}') as ScopeAnalysis
+  return sanitizeScopeAnalysis(parseJsonResponse(response.text, 'ler o escopo'))
 }
 
 const PROPOSED_SQUAD_SCHEMA = {
@@ -230,7 +291,7 @@ Responda respeitando estritamente o schema JSON fornecido.`
     })
   )
 
-  return JSON.parse(response.text ?? '{}') as ProposedSquadChange
+  return parseJsonResponse(response.text, 'reinterpretar o squad') as ProposedSquadChange
 }
 
 const NARRATION_SCHEMA = {
@@ -283,5 +344,5 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
     })
   )
 
-  return JSON.parse(response.text ?? '{}') as { summary: string; midGroundSuggestion?: string }
+  return parseJsonResponse(response.text, 'narrar o cenário') as { summary: string; midGroundSuggestion?: string }
 }

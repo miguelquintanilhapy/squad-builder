@@ -34,11 +34,15 @@ export function SquadBuilderApp() {
   const [analyzeLoading, setAnalyzeLoading] = useState(false)
   const [negotiateLoading, setNegotiateLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Mensagem da negociação que falhou, se o erro atual veio do chat — "tentar de novo" precisa
+  // saber se deve reanalisar o escopo ou reenviar essa mensagem específica.
+  const [failedNegotiationMessage, setFailedNegotiationMessage] = useState<string | null>(null)
 
   async function handleAnalyze(descriptionOverride?: string) {
     const nextInput = descriptionOverride !== undefined ? { ...input, description: descriptionOverride } : input
     if (descriptionOverride !== undefined) setInput(nextInput)
 
+    setFailedNegotiationMessage(null)
     setAnalyzeLoading(true)
     setError(null)
     try {
@@ -100,10 +104,20 @@ export function SquadBuilderApp() {
           timestamp: Date.now(),
         },
       ])
+      setFailedNegotiationMessage(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao renegociar o squad.')
+      setFailedNegotiationMessage(message)
     } finally {
       setNegotiateLoading(false)
+    }
+  }
+
+  function handleRetry() {
+    if (failedNegotiationMessage) {
+      void handleNegotiate(failedNegotiationMessage)
+    } else {
+      void handleAnalyze()
     }
   }
 
@@ -138,9 +152,18 @@ export function SquadBuilderApp() {
             </p>
 
             {error && (
-              <div className="mt-5 flex items-center gap-2.5 rounded-[3px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
-                <AlertCircle className="size-4 shrink-0" strokeWidth={2} />
-                {error}
+              <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[3px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
+                <span className="flex items-center gap-2.5">
+                  <AlertCircle className="size-4 shrink-0" strokeWidth={2} />
+                  {error}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="shrink-0 font-medium underline underline-offset-[3px] hover:text-ink"
+                >
+                  Tentar de novo
+                </button>
               </div>
             )}
 
