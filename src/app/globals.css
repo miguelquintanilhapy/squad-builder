@@ -19,6 +19,22 @@
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Paleta nova (POC aprovado). Convive com a paleta "glass" acima até a limpeza final
+     (etapa 7), quando os tokens antigos e a classe .glass são removidos. */
+  --paper: #e9ebe7;
+  --paper-2: #f5f6f3;
+  --paper-3: #fdfdfc;
+  --ink: #14201d;
+  --ink-2: #4e5a56;
+  --ink-3: #818b87;
+  --rule: #cbd0c9;
+  --rule-2: #dde0da;
+  --petrol: #14554e;
+  --ochre: #a9690b;
+  --rust: #9c3a21;
+  --moss: #2c7458;
+  --grid: rgba(20, 32, 29, 0.055);
 }
 
 @theme inline {
@@ -32,9 +48,25 @@
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-tint: var(--accent-tint);
-  --font-sans: var(--font-roboto);
+
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-petrol: var(--petrol);
+  --color-ochre: var(--ochre);
+  --color-rust: var(--rust);
+  --color-moss: var(--moss);
+
+  /* Bricolage Grotesque pra display (h1/h2, KPIs, risk score, wordmark), IBM Plex Sans
+     pra tudo mais — as duas únicas famílias permitidas nesta interface. */
+  --font-sans: var(--font-ibm-plex-sans);
   --font-mono: var(--font-roboto-mono);
-  --font-display: var(--font-roboto);
+  --font-display: var(--font-bricolage);
 }
 
 html {

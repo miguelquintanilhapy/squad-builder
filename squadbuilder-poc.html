@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SquadBuilder — POC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EBE7;
+  --paper-2:#F5F6F3;
+  --paper-3:#FDFDFC;
+  --ink:#14201D;
+  --ink-2:#4E5A56;
+  --ink-3:#818B87;
+  --rule:#CBD0C9;
+  --rule-2:#DDE0DA;
+  --petrol:#14554E;
+  --ochre:#A9690B;
+  --rust:#9C3A21;
+  --moss:#2C7458;
+  --grid:rgba(20,32,29,.055);
+
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --display:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--ink);color:var(--paper-2)}
+
+/* rótulo pequeno: sentence case, sem tracking, sem mono */
+.lbl-s{font-size:12.5px;font-weight:500;color:var(--ink-3);letter-spacing:0}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* ---------- estrutura ---------- */
+.wrap{max-width:1300px;margin:0 auto;padding:0 22px}
+.form-col{max-width:760px}
+
+header.top{border-bottom:1px solid var(--rule);background:linear-gradient(var(--paper-2),var(--paper))}
+.top-in{max-width:1300px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:14px;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:11px}
+.mark{display:block}
+.brand-name{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.03em}
+.brand-meta{font-size:13px;color:var(--ink-3)}
+.top-note{font-size:12.5px;color:var(--ink-3)}
+
+/* ---------- seções ---------- */
+section{padding:32px 0}
+section+section{border-top:1px solid var(--rule)}
+.eyebrow{display:flex;align-items:center;gap:11px;margin-bottom:14px;font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.eyebrow .num{font-family:var(--display);font-weight:700;font-size:13px;color:var(--petrol);letter-spacing:-.01em}
+.eyebrow .fill{flex:1;height:1px;background:var(--rule)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.02;letter-spacing:-.035em;margin:0 0 10px;max-width:20ch}
+h1 em{font-style:normal;color:var(--petrol)}
+.lede{color:var(--ink-2);max-width:56ch;margin:0 0 20px;font-size:16px}
+h2{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.025em;margin:0 0 6px}
+.sub{color:var(--ink-2);font-size:14.5px;margin:0 0 18px;max-width:60ch}
+
+/* ---------- campo de escopo ---------- */
+.scope-shell{position:relative;border:1px solid var(--rule-2);border-radius:3px;background:var(--paper-3);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px);background-size:100% 26px;background-position:0 15px;
+  transition:border-color .15s,box-shadow .15s}
+.scope-shell:focus-within{border-color:var(--petrol);box-shadow:0 0 0 3px rgba(20,85,78,.13)}
+textarea#scope{width:100%;min-height:186px;resize:vertical;display:block;border:0;background:transparent;outline:0;
+  padding:14px 16px;font-family:var(--sans);font-size:16px;line-height:26px;color:var(--ink)}
+textarea#scope::placeholder{color:var(--ink-3)}
+.scope-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px dashed var(--rule-2);
+  padding:8px 15px;font-size:12.5px;color:var(--ink-3)}
+.seeds{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.seeds .lbl{font-size:13px;color:var(--ink-3)}
+button.seed{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--petrol);background:transparent;
+  border:1px solid var(--rule);border-radius:999px;padding:4px 12px;cursor:pointer;transition:.14s}
+button.seed:hover{background:var(--paper-2);border-color:var(--petrol);transform:translateY(-1px)}
+
+/* ---------- restrições ---------- */
+.constraints{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13.5px;color:var(--ink-2)}
+.inp{display:flex;align-items:center;border:1px solid var(--rule-2);border-radius:3px;background:var(--paper-3);
+  height:39px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.inp:focus-within{border-color:var(--petrol);box-shadow:0 0 0 3px rgba(20,85,78,.13)}
+.inp .affix{font-size:13.5px;color:var(--ink-3);padding:0 10px;background:var(--paper-2);height:100%;display:flex;align-items:center}
+.inp .affix.pre{border-right:1px solid var(--rule-2)}
+.inp .affix.post{border-left:1px solid var(--rule-2)}
+.inp input{border:0;outline:0;background:transparent;width:96px;padding:0 11px;font-family:var(--sans);
+  font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---------- ação ---------- */
+.action{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px}
+button.go{font-family:var(--sans);font-weight:600;font-size:15px;background:var(--ink);color:var(--paper-2);
+  border:1px solid var(--ink);padding:11px 22px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;
+  transition:transform .14s,background .14s,box-shadow .14s}
+button.go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 3px 0 0 var(--petrol)}
+button.go:disabled{background:transparent;color:var(--ink-3);border-color:var(--rule);cursor:not-allowed}
+button.go .arrow{transition:transform .16s}
+button.go:hover:not(:disabled) .arrow{transform:translateX(3px)}
+.hint{font-size:13px;color:var(--ink-3)}
+.hint.warn{color:var(--ochre)}
+button.ghost{font-family:var(--sans);font-size:13px;background:transparent;border:0;color:var(--ink-3);cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;padding:4px}
+button.ghost:hover{color:var(--ink)}
+:focus-visible{outline:2px solid var(--petrol);outline-offset:2px}
+
+/* ---------- leitura / tags ---------- */
+.reading{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule-2);
+  border:1px solid var(--rule-2);border-radius:3px;overflow:hidden}
+.dim{background:var(--paper-3);padding:13px 15px 14px}
+.dim .k{font-size:12.5px;font-weight:500;color:var(--ink-3);margin-bottom:9px}
+.opts{display:flex;flex-wrap:wrap;gap:5px}
+.opt{font-family:var(--sans);font-size:13px;font-weight:500;padding:3px 10px;border-radius:2px;cursor:pointer;
+  border:1px solid var(--rule-2);background:transparent;color:var(--ink-2);transition:.12s}
+.opt:hover{border-color:var(--ink-3)}
+.opt[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}
+.detected{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;align-items:center}
+.sig{font-size:12.5px;padding:3px 9px;border-radius:2px;background:rgba(20,85,78,.09);color:var(--petrol);
+  border:1px solid rgba(20,85,78,.18)}
+.sig.off{background:transparent;color:var(--ink-3);border-color:var(--rule-2);text-decoration:line-through}
+
+/* ---------- números ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:1px;background:var(--rule-2);
+  border:1px solid var(--rule-2);border-radius:3px;overflow:hidden;margin-bottom:24px}
+.kpi{background:var(--paper-3);padding:14px 17px 13px}
+.kpi .k{font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.kpi .v{font-family:var(--display);font-weight:700;font-size:32px;letter-spacing:-.032em;line-height:1.14;margin-top:6px;
+  font-variant-numeric:tabular-nums}
+.kpi .v small{font-family:var(--sans);font-size:14px;font-weight:400;color:var(--ink-3);letter-spacing:0}
+.kpi .n{font-size:12.5px;color:var(--ink-3);margin-top:4px;font-variant-numeric:tabular-nums}
+
+/* ---------- painéis ---------- */
+.panel{border:1px solid var(--rule-2);border-radius:3px;background:var(--paper-3);overflow:hidden}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 15px;
+  border-bottom:1px solid var(--rule-2);background:var(--paper-2)}
+.panel-head h3{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.02em;margin:0}
+.panel-head .note{font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.scroller{overflow-x:auto}
+.scroller svg{display:block;min-width:660px;width:100%;height:auto}
+.blk{margin-bottom:18px}
+
+/* ---------- tabela ---------- */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{font-size:12.5px;color:var(--ink-3);font-weight:500;text-align:left;padding:9px 15px;
+  border-bottom:1px solid var(--rule-2);background:var(--paper-2)}
+td{padding:8px 15px;border-bottom:1px solid var(--rule-2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;width:128px}
+@media (max-width:760px){td.num,th.num{width:auto}}
+td.num{font-size:14px}
+tbody tr:hover{background:var(--paper-2)}
+.sen{font-size:12.5px;color:var(--ink-3)}
+tfoot td{background:var(--paper-2);font-weight:600;border-top:1px solid var(--rule)}
+
+/* ---------- risco ---------- */
+.risk-grid{display:grid;grid-template-columns:210px 1fr;gap:0;background:var(--rule-2)}
+.risk-score{background:var(--paper-3);padding:16px}
+.risk-body{background:var(--paper-3);padding:16px;border-left:1px solid var(--rule-2)}
+.rnum{font-family:var(--display);font-weight:800;font-size:54px;line-height:1;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.rlabel{font-size:13.5px;font-weight:500;margin-top:6px}
+.rbar{height:6px;background:var(--rule-2);border-radius:99px;margin-top:13px;overflow:hidden}
+.rbar i{display:block;height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.drivers{list-style:none;margin:0;padding:0}
+.drivers li{display:flex;gap:12px;padding:7px 0;border-bottom:1px dashed var(--rule-2);font-size:14.5px}
+.drivers li:last-child{border-bottom:0}
+.drivers .w{font-size:12.5px;color:var(--ink-3);flex:0 0 30px;padding-top:3px;text-align:right;font-variant-numeric:tabular-nums}
+.assump{font-size:12.5px;color:var(--ink-3);line-height:1.7;margin-top:15px}
+.assump b{color:var(--ink-2);font-weight:500}
+
+/* ---------- reveal ---------- */
+#out[hidden]{display:none}
+.rv{opacity:0;transform:translateY(8px);animation:rv .5s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes rv{to{opacity:1;transform:none}}
+.d1{animation-delay:.02s}.d2{animation-delay:.10s}.d3{animation-delay:.18s}.d4{animation-delay:.26s}
+@media (prefers-reduced-motion:reduce){.rv{animation:none;opacity:1;transform:none}*{transition:none!important}}
+footer{border-top:1px solid var(--rule);padding:18px 0 34px}
+footer p{font-size:12.5px;color:var(--ink-3);margin:0;max-width:80ch;line-height:1.7}
+@media (max-width:640px){
+  .wrap,.top-in{padding-left:15px;padding-right:15px}
+  section{padding:26px 0}
+  .risk-grid{grid-template-columns:1fr}
+  .risk-body{border-left:0;border-top:1px solid var(--rule-2)}
+  .constraints{flex-direction:column;align-items:stretch}
+  .inp input{width:100%}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg class="mark" width="20" height="22" viewBox="0 0 20 22" aria-hidden="true">
+        <rect x="0"  y="13" width="4" height="9"  fill="#818B87"/>
+        <rect x="6"  y="7"  width="4" height="15" fill="#14554E"/>
+        <rect x="12" y="1"  width="4" height="21" fill="#14201D"/>
+      </svg>
+      <span class="brand-name">SquadBuilder</span>
+      <span class="brand-meta">escopo → squad</span>
+    </div>
+    <span class="top-note">poc · rev 02</span>
+  </div>
+</header>
+
+<main>
+
+<section class="wrap">
+  <div class="form-col">
+    <div class="eyebrow"><span class="num">01</span> Escopo <span class="fill"></span></div>
+    <h1>Descreva o produto. O resto a gente <em>deduz</em>.</h1>
+    <p class="lede">Escreva como você explicaria pra um tech lead novo no time — em texto corrido, sem formulário. A partir daí montamos o squad, o custo mensal, o prazo e os riscos.</p>
+
+    <div class="scope-shell">
+      <textarea id="scope" spellcheck="false" placeholder="Um app de entregas locais com motos. O cliente pede pelo celular, paga no app e acompanha o motoboy no mapa em tempo real. Precisa de um painel pro lojista e repasse automático pros entregadores."></textarea>
+      <div class="scope-foot">
+        <span id="counter">0 caracteres</span>
+        <span>Quanto mais concreto, menos chute</span>
+      </div>
+    </div>
+
+    <div class="seeds">
+      <span class="lbl">Ou parta de</span>
+      <button class="seed" data-seed="delivery">entregas com motos</button>
+      <button class="seed" data-seed="marketplace">marketplace B2B</button>
+      <button class="seed" data-seed="fintech">fintech de crédito</button>
+      <button class="seed" data-seed="legacy">migração de legado</button>
+    </div>
+
+    <div class="constraints">
+      <div class="field">
+        <label for="prazo">Prazo alvo</label>
+        <div class="inp"><input id="prazo" type="number" min="1" max="36" placeholder="—"><span class="affix post">meses</span></div>
+      </div>
+      <div class="field">
+        <label for="budget">Teto mensal</label>
+        <div class="inp"><span class="affix pre">R$</span><input id="budget" type="number" min="0" step="5000" placeholder="—"></div>
+      </div>
+      <span class="hint" style="padding-bottom:10px">Opcionais: servem pra calcular o risco de não caber</span>
+    </div>
+
+    <div class="action">
+      <button class="go" id="run" disabled>Ler escopo e montar squad <span class="arrow">→</span></button>
+      <span class="hint" id="hint">Escreva pelo menos umas duas frases pra liberar</span>
+    </div>
+  </div>
+</section>
+
+<div id="out" hidden>
+
+<section class="wrap">
+  <div class="rv d1">
+    <div class="eyebrow"><span class="num">02</span> O que entendemos <span class="fill"></span></div>
+    <h2>Leitura do escopo</h2>
+    <p class="sub">Inferido do seu texto. Clique pra corrigir — o squad recalcula na hora.</p>
+    <div class="reading" id="reading"></div>
+    <div class="detected" id="detected"></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="rv d2">
+    <div class="eyebrow"><span class="num">03</span> Squad recomendado <span class="fill"></span></div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+
+  <div class="blk panel rv d3">
+    <div class="panel-head">
+      <h3>Curva de alocação</h3>
+      <span class="note" id="tl-note"></span>
+    </div>
+    <div class="scroller" id="timeline"></div>
+  </div>
+
+  <div class="blk panel rv d3">
+    <div class="panel-head">
+      <h3>Composição</h3>
+      <span class="note">Custo de alocação cheia, valores de referência</span>
+    </div>
+    <div class="scroller"><table id="roles"></table></div>
+  </div>
+
+  <div class="blk panel rv d4">
+    <div class="panel-head">
+      <h3>Risk score</h3>
+      <span class="note">O que mais empurra o projeto pra fora do plano</span>
+    </div>
+    <div class="risk-grid">
+      <div class="risk-score">
+        <div class="rnum" id="rnum">—</div>
+        <div class="rlabel" id="rlabel"></div>
+        <div class="rbar"><i id="rbar" style="width:0"></i></div>
+      </div>
+      <div class="risk-body">
+        <ul class="drivers" id="drivers"></ul>
+        <div class="assump" id="assump"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<footer class="wrap">
+  <p>POC de interface. A inferência aqui roda por heurística local só pra demonstrar o fluxo — em produção é uma chamada de modelo com o mesmo contrato de saída. Valores de custo são referência de mercado, não cotação.</p>
+</footer>
+
+<script>
+"use strict";
+const BRL = n => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0}).format(n);
+const K   = n => "R$ " + new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(Math.round(n/1000)) + "k";
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const $ = s => document.querySelector(s);
+
+const SEEDS = {
+  delivery:"Um app de entregas locais com motos. O cliente pede pelo celular, paga no app com pix ou cartao e acompanha o motoboy no mapa em tempo real. Precisa de um painel web pro lojista acompanhar pedidos e de repasse automatico pros entregadores.",
+  marketplace:"Um marketplace B2B onde industrias cadastram catalogo e distribuidores compram por atacado. Cada empresa tem varios usuarios com permissoes diferentes, tabela de preco negociada e integracao com o ERP do cliente pra emitir nota fiscal.",
+  fintech:"Uma plataforma de credito para pequenos lojistas. A gente puxa dados de vendas, roda um modelo de score proprio, aprova o limite e faz o desembolso. Precisa de KYC, trilha de auditoria e relatorios pro regulador.",
+  legacy:"Temos um sistema de gestao escolar legado em PHP, monolito de 12 anos, que precisa virar web moderno sem parar de operar. Migracao por partes, mantendo as integracoes atuais de boleto e o banco de dados antigo durante a transicao."
+};
+
+const SIGNALS = [
+  {id:"mobile",   label:"app nativo",        w:1.0, re:/(\bapp\b|aplicativo|mobile|ios|android|celular)/},
+  {id:"realtime", label:"tempo real / geo",  w:1.5, re:/(tempo real|realtime|rastrea|geoloc|no mapa|\bmapa\b|localizacao|motoboy|entregador)/},
+  {id:"payments", label:"pagamentos",        w:1.5, re:/(pagamento|\bpix\b|cartao|cobranca|split|checkout|repasse|desembolso|boleto|assinatura)/},
+  {id:"market",   label:"dois lados",        w:1.0, re:/(marketplace|lojista|vendedor|prestador|distribuidor|atacado|dois lados)/},
+  {id:"b2b",      label:"multi-tenant",      w:1.0, re:/(\bb2b\b|saas|multi-?tenant|permissoes|varios usuarios|empresas|contrato|tabela de preco)/},
+  {id:"data",     label:"dados / modelo",    w:1.0, re:/(\bia\b|inteligencia artificial|machine learning|\bml\b|recomenda|dashboard|relatorio|analytics|score|previs)/},
+  {id:"legacy",   label:"legado",            w:1.5, re:/(legado|migra|monolito|refator|reescrit|sistema antigo|php)/},
+  {id:"reg",      label:"regulado",          w:2.0, re:/(banco|credito|financeira|fintech|saude|clinica|\blgpd\b|\bkyc\b|regulad|auditoria|seguro)/},
+  {id:"integr",   label:"integrações",       w:1.0, re:/(integra|erp|whatsapp|correios|nota fiscal|gateway|api externa|banco de dados antigo)/}
+];
+
+const RATE = {
+  "Tech Lead":30000,"Product Manager":21000,"Product Designer":17000,
+  "Eng. Backend Sênior":24000,"Eng. Backend Pleno":16000,
+  "Eng. Mobile Sênior":24000,"Eng. Mobile Pleno":16000,
+  "Eng. Frontend Sênior":22000,"Eng. Frontend Pleno":15000,
+  "QA / Automação":14000,"DevOps / Plataforma":22000,"Eng. de Dados":20000
+};
+
+const DIMS = {
+  tipo:{k:"Tipo de produto", opts:["Web app","App mobile","Marketplace","SaaS B2B","API / Backend"]},
+  plat:{k:"Plataforma",      opts:["Web","iOS + Android","Web + mobile","Multiplataforma"]},
+  fase:{k:"Estágio",         opts:["Ideia no papel","Protótipo","MVP rodando","Produto legado"]},
+  comp:{k:"Complexidade",    opts:["Baixa","Média","Alta","Enterprise"]}
+};
+
+let state = {sigs:{}, dims:{}, txt:""};
+
+/* ---------- inferência ---------- */
+function infer(txt){
+  const t = norm(txt), sigs = {};
+  SIGNALS.forEach(s => sigs[s.id] = s.re.test(t));
+  let score = 1 + SIGNALS.reduce((a,s)=> a + (sigs[s.id] ? s.w : 0), 0);
+  const dims = {
+    tipo: sigs.market ? "Marketplace" : sigs.b2b ? "SaaS B2B" : sigs.mobile ? "App mobile" : "Web app",
+    plat: sigs.mobile ? (sigs.b2b||sigs.market ? "Web + mobile" : "iOS + Android") : "Web",
+    fase: sigs.legacy ? "Produto legado" : /mvp|em producao|rodando|usuarios atuais/.test(t) ? "MVP rodando"
+        : /prototipo|figma|mockup/.test(t) ? "Protótipo" : "Ideia no papel",
+    comp: score<=2.5 ? "Baixa" : score<=4.5 ? "Média" : score<=6.5 ? "Alta" : "Enterprise"
+  };
+  return {sigs, dims};
+}
+
+/* ---------- plano ---------- */
+function plan(sigs, dims){
+  const lvl = DIMS.comp.opts.indexOf(dims.comp);            // 0..3
+  const heavy = lvl >= 2;
+  const mob = dims.plat !== "Web";
+  const months = [4,6,8,11][lvl] + (sigs.legacy?1:0) + (sigs.reg?1:0);
+  const R = [], add = (name,alloc,start,end)=>R.push({name,alloc,rate:RATE[name],start,end:Math.min(end,months)});
+
+  add("Tech Lead", lvl>=1?1:0.5, 0, months);
+  if (lvl>=2) add("Product Manager", 1, 0, months);
+  add("Product Designer", lvl>=1?1:0.6, 0, Math.ceil(months*0.65));
+
+  add("Eng. Backend Sênior", 1, 0, months);
+  if (heavy || sigs.payments) add("Eng. Backend Pleno", 1, 1, months);
+  if (lvl===3) add("Eng. Backend Pleno", 1, 2, months);
+
+  if (mob){
+    add("Eng. Mobile Sênior", 1, 0, months);
+    if (heavy) add("Eng. Mobile Pleno", 1, 2, months);
+  }
+  if (!mob || sigs.b2b || sigs.market){
+    add("Eng. Frontend Sênior", 1, mob?1:0, months);
+    if (lvl===3) add("Eng. Frontend Pleno", 1, 2, months);
+  }
+  if (sigs.data) add("Eng. de Dados", heavy?1:0.5, Math.ceil(months*0.25), months);
+  if (lvl>=1 || sigs.reg) add("QA / Automação", 1, Math.max(1,Math.ceil(months*0.3)), months);
+  if (sigs.realtime || sigs.payments || sigs.b2b || heavy) add("DevOps / Plataforma", 0.5, 0, months);
+
+  const tally = {};
+  R.forEach(r => tally[r.name] = (tally[r.name]||0) + 1);
+  const seen = {};
+  R.forEach(r => { if (tally[r.name] > 1){ seen[r.name]=(seen[r.name]||0)+1; r.name += ` #${seen[r.name]}`; } });
+  R.forEach(r => r.cost = r.rate * r.alloc * (r.end - r.start));
+  const total = R.reduce((a,r)=>a+r.cost,0);
+
+  const load = Array.from({length:months},(_,m)=>
+    R.reduce((a,r)=> a + (m>=r.start && m<r.end ? r.alloc : 0), 0));
+  const spend = Array.from({length:months},(_,m)=>
+    R.reduce((a,r)=> a + (m>=r.start && m<r.end ? r.rate*r.alloc : 0), 0));
+
+  return {roles:R, months, total, load, spend,
+          peakFte:Math.max(...load), peakSpend:Math.max(...spend), fte:total/ (months*1) };
+}
+
+/* ---------- risco ---------- */
+function risk(sigs, dims, p, alvo, teto){
+  const D = [];
+  const push=(w,t)=>D.push({w,t});
+  if (sigs.reg)      push(18,"Domínio regulado: KYC, trilha de auditoria e homologação costumam consumir uma sprint inteira que ninguém orça.");
+  if (sigs.legacy)   push(15,"Legado em operação: a migração acontece com o sistema no ar, então cada entrega carrega um plano de rollback.");
+  if (sigs.realtime) push(11,"Tempo real e geolocalização: o custo não está em construir, está em manter estável com carga e bateria de celular.");
+  if (sigs.payments) push(9, "Dinheiro em trânsito: conciliação, estorno e split viram requisito de auditoria, não de feature.");
+  if (sigs.integr)   push(8, "Integrações com terceiros: o cronograma passa a depender de sandbox e prazo de gente de fora.");
+  if (sigs.market)   push(7, "Produto de dois lados: você precisa de oferta e demanda ao mesmo tempo pro MVP provar algo.");
+  if (sigs.data)     push(7, "Modelo/score próprio: sem dado histórico limpo, a primeira versão é regra de negócio disfarçada.");
+  if (dims.fase === "Ideia no papel") push(9,"Escopo ainda no papel: sem protótipo validado, a chance de refação no meio do caminho é alta.");
+  if (alvo && alvo < p.months) push(16,`Prazo alvo de ${alvo} ${alvo>1?"meses":"mês"} contra ${p.months} estimados: cortar ${p.months-alvo} exige tirar escopo, não adicionar gente.`);
+  if (teto && teto < p.peakSpend) push(16,`Teto de ${K(teto)}/mês contra pico de ${K(p.peakSpend)}: o squad cabe, mas com o ramp-up esticado e prazo maior.`);
+  if (!D.length) push(6,"Escopo contido e sem dependência externa relevante — o risco principal passa a ser disponibilidade de gente.");
+
+  D.sort((a,b)=>b.w-a.w);
+  const s = Math.min(94, 16 + D.reduce((a,d)=>a+d.w,0));
+  const band = s<35 ? ["Baixo","var(--moss)"] : s<58 ? ["Moderado","var(--ochre)"] : s<76 ? ["Alto","var(--rust)"] : ["Crítico","var(--rust)"];
+  return {score:Math.round(s), band, drivers:D.slice(0,3)};
+}
+
+/* ---------- render ---------- */
+function renderReading(){
+  $("#reading").innerHTML = Object.entries(DIMS).map(([id,d])=>`
+    <div class="dim"><div class="k">${d.k}</div><div class="opts">
+      ${d.opts.map(o=>`<button class="opt" data-dim="${id}" data-val="${o}" aria-pressed="${state.dims[id]===o}">${o}</button>`).join("")}
+    </div></div>`).join("");
+  $("#reading").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    state.dims[b.dataset.dim]=b.dataset.val; renderReading(); renderPlan();
+  });
+  $("#detected").innerHTML = `<span class="hint" style="margin-right:4px">Sinais no texto</span>` +
+    SIGNALS.map(s=>`<span class="sig ${state.sigs[s.id]?"":"off"}">${s.label}</span>`).join("");
+}
+
+function timelineSVG(p){
+  const F="'IBM Plex Sans', sans-serif";
+  const C={ink:"#14201D",ink2:"#4E5A56",ink3:"#818B87",rule:"#DDE0DA",pet:"#14554E",petL:"rgba(20,85,78,.40)"};
+  const L=170, W=1000, TW=W-L-22, rowH=22, top=34, H=top+p.roles.length*rowH+94;
+  const x = m => L + (m/p.months)*TW;
+  const step = TW/p.months;
+  let g="";
+  for(let m=0;m<=p.months;m++){
+    g+=`<line x1="${x(m).toFixed(1)}" y1="20" x2="${x(m).toFixed(1)}" y2="${top+p.roles.length*rowH+6}" stroke="${C.rule}" stroke-width="1"/>`;
+    if(m<p.months) g+=`<text x="${(x(m)+step/2).toFixed(1)}" y="14" font-family="${F}" font-size="10.5" fill="${C.ink3}" text-anchor="middle">M${m+1}</text>`;
+  }
+  p.roles.forEach((r,i)=>{
+    const y = top + i*rowH, w = x(r.end)-x(r.start), full = r.alloc>=1;
+    g+=`<text x="0" y="${y+11}" font-family="${F}" font-size="11.5" fill="${C.ink2}">${r.name}</text>`;
+    g+=`<rect x="${x(r.start).toFixed(1)}" y="${y+(full?2:4)}" width="${Math.max(w,3).toFixed(1)}" height="${full?13:9}" rx="1.5" fill="${full?C.pet:C.petL}"/>`;
+    if(!full) g+=`<text x="${(x(r.end)+6).toFixed(1)}" y="${y+11}" font-family="${F}" font-size="10" fill="${C.ink3}">${r.alloc*100|0}%</text>`;
+  });
+  // histograma de FTE alocado por mês
+  const cy = top + p.roles.length*rowH + 26, ch = 44, mx = Math.max(...p.load);
+  const base = cy + ch;
+  p.load.forEach((v,m)=>{
+    const h = Math.max((v/mx)*ch, 2), peak = v === mx;
+    g+=`<rect x="${(x(m)+3).toFixed(1)}" y="${(base-h).toFixed(1)}" width="${(step-6).toFixed(1)}" height="${h.toFixed(1)}"
+         fill="${peak?"rgba(20,32,29,.20)":"rgba(20,32,29,.10)"}"/>
+        <text x="${(x(m)+step/2).toFixed(1)}" y="${(base-h-4).toFixed(1)}" font-family="${F}" font-size="10"
+         fill="${peak?C.ink:C.ink3}" text-anchor="middle">${v}</text>`;
+  });
+  g+=`<line x1="${L}" y1="${base}" x2="${x(p.months).toFixed(1)}" y2="${base}" stroke="${C.ink3}" stroke-width="1"/>
+      <text x="0" y="${base}" font-family="${F}" font-size="11" fill="${C.ink3}">FTE alocado</text>
+      <text x="0" y="${base+13}" font-family="${F}" font-size="10.5" fill="${C.ink3}">pico ${mx} no M${p.load.indexOf(mx)+1}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Alocação por papel ao longo dos meses">${g}</svg>`;
+}
+
+function renderPlan(){
+  const p = plan(state.sigs, state.dims);
+  const alvo = parseInt($("#prazo").value)||0, teto = parseInt($("#budget").value)||0;
+  const rk = risk(state.sigs, state.dims, p, alvo, teto);
+
+  $("#kpis").innerHTML = [
+    ["Squad no pico", `${p.peakFte}<small> FTE</small>`, `${p.roles.length} papéis, ramp-up em ${Math.min(3,p.months)} meses`],
+    ["Custo mensal no pico", K(p.peakSpend), `média de ${K(p.total/p.months)}/mês`],
+    ["Prazo estimado", `${p.months}<small> meses</small>`, alvo? (alvo<p.months?`alvo de ${alvo} não cabe`:`dentro do alvo de ${alvo}`):"até a primeira versão em produção"],
+    ["Investimento total", K(p.total), `${BRL(p.total/ (p.peakFte*p.months))} por FTE-mês`]
+  ].map(([k,v,n])=>`<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`).join("");
+
+  $("#tl-note").textContent = `${p.roles.length} papéis · ${p.months} meses · pico de ${p.peakFte} FTE`;
+  $("#timeline").innerHTML = timelineSVG(p);
+
+  $("#roles").innerHTML = `
+    <thead><tr><th>Papel</th><th class="num">Alocação</th><th class="num">Janela</th><th class="num">Custo/mês</th><th class="num">Total</th></tr></thead>
+    <tbody>${p.roles.map(r=>`<tr>
+      <td>${r.name.replace(/(Sênior|Pleno)/,'<span class="sen">$1</span>').replace(/(#\d)/,'<span class="sen">$1</span>')}</td>
+      <td class="num">${r.alloc*100|0}%</td>
+      <td class="num">M${r.start+1}–M${r.end}</td>
+      <td class="num">${K(r.rate*r.alloc)}</td>
+      <td class="num">${K(r.cost)}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td>${p.peakFte} FTE no pico</td><td class="num"></td><td class="num">${p.months} meses</td>
+      <td class="num">${K(p.peakSpend)}</td><td class="num">${K(p.total)}</td></tr></tfoot>`;
+
+  $("#rnum").textContent = rk.score;
+  $("#rnum").style.color = rk.band[1];
+  $("#rlabel").textContent = "Risco " + rk.band[0].toLowerCase();
+  $("#rlabel").style.color = rk.band[1];
+  $("#rbar").style.width = rk.score + "%";
+  $("#rbar").style.background = rk.band[1];
+  $("#drivers").innerHTML = rk.drivers.map(d=>`<li><span class="w">+${d.w}</span><span>${d.t}</span></li>`).join("");
+  $("#assump").innerHTML = `<b>Assumimos:</b> time interno em regime CLT/PJ com custo cheio · ${state.dims.plat} · sem verba de infra ou licença · designer sai no M${Math.ceil(p.months*0.65)} · QA entra depois do primeiro fluxo fechado. Ajuste a leitura acima se algo aqui não vale.`;
+}
+
+/* ---------- eventos ---------- */
+const scope = $("#scope"), run = $("#run"), hint = $("#hint");
+function gate(){
+  const n = scope.value.trim().length;
+  $("#counter").textContent = n + " caracteres";
+  run.disabled = n < 40;
+  hint.textContent = n < 40 ? `Faltam ${40-n} caracteres pra liberar` : "Leitura em texto livre, sem formulário";
+  hint.className = "hint" + (n<40 ? " warn":"");
+}
+scope.addEventListener("input", gate);
+document.querySelectorAll(".seed").forEach(b=>b.onclick=()=>{
+  scope.value = SEEDS[b.dataset.seed]; gate(); scope.focus(); run.click();
+});
+run.onclick = ()=>{
+  const i = infer(scope.value);
+  state = {sigs:i.sigs, dims:i.dims, txt:scope.value};
+  renderReading(); renderPlan();
+  const out = $("#out");
+  out.hidden = false;
+  out.querySelectorAll(".rv").forEach(el=>{ el.style.animation="none"; void el.offsetWidth; el.style.animation=""; });
+  out.scrollIntoView({behavior:"smooth",block:"start"});
+  run.innerHTML = 'Reler escopo <span class="arrow">→</span>';
+};
+["#prazo","#budget"].forEach(s=>$(s).addEventListener("input",()=>{ if(!$("#out").hidden) renderPlan(); }));
+gate();
+</script>
+</body>
+</html>
