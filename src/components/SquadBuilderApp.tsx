@@ -6,6 +6,7 @@ import { NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
+import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
@@ -33,16 +34,16 @@ export function SquadBuilderApp() {
   const [history, setHistory] = useState<NegotiationTurn[]>([])
   const [analyzeLoading, setAnalyzeLoading] = useState(false)
   const [negotiateLoading, setNegotiateLoading] = useState(false)
+  const [recomputeLoading, setRecomputeLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // Mensagem da negociação que falhou, se o erro atual veio do chat — "tentar de novo" precisa
-  // saber se deve reanalisar o escopo ou reenviar essa mensagem específica.
-  const [failedNegotiationMessage, setFailedNegotiationMessage] = useState<string | null>(null)
+  // A ação que falhou por último — "tentar de novo" reexecuta exatamente ela, em vez de sempre
+  // reanalisar do zero (o erro pode ter vindo do chat de negociação ou de um recálculo de chip).
+  const [lastFailedAction, setLastFailedAction] = useState<(() => void) | null>(null)
 
   async function handleAnalyze(descriptionOverride?: string) {
     const nextInput = descriptionOverride !== undefined ? { ...input, description: descriptionOverride } : input
     if (descriptionOverride !== undefined) setInput(nextInput)
 
-    setFailedNegotiationMessage(null)
     setAnalyzeLoading(true)
     setError(null)
     try {
@@ -63,10 +64,33 @@ export function SquadBuilderApp() {
           timestamp: Date.now(),
         },
       ])
+      setLastFailedAction(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao analisar o projeto.')
+      setLastFailedAction(() => () => handleAnalyze())
     } finally {
       setAnalyzeLoading(false)
+    }
+  }
+
+  async function handleRecompute(nextScope: ScopeAnalysis) {
+    setScopeAnalysis(nextScope)
+    setRecomputeLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/recompute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scopeAnalysis: nextScope, input }),
+      })
+      const data = await parseJsonOrThrow(response)
+      setScenario(data.scenario)
+      setLastFailedAction(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao recalcular o squad.')
+      setLastFailedAction(() => () => handleRecompute(nextScope))
+    } finally {
+      setRecomputeLoading(false)
     }
   }
 
@@ -104,21 +128,17 @@ export function SquadBuilderApp() {
           timestamp: Date.now(),
         },
       ])
-      setFailedNegotiationMessage(null)
+      setLastFailedAction(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao renegociar o squad.')
-      setFailedNegotiationMessage(message)
+      setLastFailedAction(() => () => handleNegotiate(message))
     } finally {
       setNegotiateLoading(false)
     }
   }
 
   function handleRetry() {
-    if (failedNegotiationMessage) {
-      void handleNegotiate(failedNegotiationMessage)
-    } else {
-      void handleAnalyze()
-    }
+    lastFailedAction?.()
   }
 
   const charCount = input.description.trim().length
@@ -209,8 +229,22 @@ export function SquadBuilderApp() {
           </div>
         </section>
 
+        {scopeAnalysis && (
+          <section className="wrap border-t border-rule py-8">
+            <Eyebrow index="02">O que entendemos</Eyebrow>
+            <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
+              Leitura do escopo
+            </h2>
+            <p className="mt-1.5 mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">
+              Inferido do seu texto. Clique pra corrigir — o squad recalcula na hora.
+            </p>
+            <ReadingGrid scope={scopeAnalysis} onChange={handleRecompute} disabled={recomputeLoading} />
+          </section>
+        )}
+
         {(analyzeLoading || scenario) && (
           <section className="wrap border-t border-rule py-8">
+            <Eyebrow index="03">Squad recomendado</Eyebrow>
             <DashboardPanel scenario={scenario} loading={analyzeLoading} />
             {scenario && (
               <div className="mt-6 max-w-[760px]">
