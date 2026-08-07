@@ -105,6 +105,8 @@ export interface RiskAlert {
   severity: RiskSeverity
   title: string
   description: string
+  /** Quantos pontos esse alerta somou ao risk score — usado pra ordenar os drivers de maior peso. */
+  weight: number
 }
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
@@ -117,6 +119,10 @@ export interface Scenario {
   riskScore: number // 0-100
   riskLevel: RiskLevel
   alerts: RiskAlert[]
+  /** Os 3 alertas de maior peso no risk score, pra exibição no painel de risco. */
+  drivers: RiskAlert[]
+  /** Premissas assumidas no cálculo (ex: contratação PJ, sem verba de infra) — o usuário corrige a leitura acima se algo não valer. */
+  assumptions: string[]
   summary: string
   midGroundSuggestion?: string
 }

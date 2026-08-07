@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Sans, Roboto_Mono } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
 // Bricolage Grotesque: títulos, valores numéricos grandes, wordmark. IBM Plex Sans: todo o resto.
@@ -19,18 +19,10 @@ const ibmPlexSans = IBM_Plex_Sans({
   fallback: ["system-ui", "sans-serif"],
 });
 
-// Mantido só pelas 2 telas antigas (SquadGrid/MetricsCards) que ainda usam font-mono
-// até serem substituídas por CompositionTable/KpiStrip — remover junto com elas.
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
-
 export const metadata: Metadata = {
-  title: "SquadBuilder — Dimensione seu squad de engenharia com IA",
+  title: "SquadBuilder — escopo → squad",
   description:
-    "Copiloto de IA para fundadores e CTOs dimensionarem squads de engenharia, calculando custo, prazo e risco em tempo real.",
+    "Descreva o escopo do projeto e veja o squad, custo mensal, prazo e risco de engenharia recomendados.",
 };
 
 export default function RootLayout({
@@ -39,10 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${bricolageGrotesque.variable} ${ibmPlexSans.variable} ${robotoMono.variable} h-full antialiased`}
-    >
+    <html lang="pt-BR" className={`${bricolageGrotesque.variable} ${ibmPlexSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground-secondary">{children}</body>
     </html>
   );

@@ -245,6 +245,9 @@ export function SquadBuilderApp() {
         {(analyzeLoading || scenario) && (
           <section className="wrap border-t border-rule py-8">
             <Eyebrow index="03">Squad recomendado</Eyebrow>
+            {scenario && (
+              <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
+            )}
             <DashboardPanel scenario={scenario} loading={analyzeLoading} />
             {scenario && (
               <div className="mt-6 max-w-[760px]">

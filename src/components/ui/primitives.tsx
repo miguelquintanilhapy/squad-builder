@@ -1,6 +1,4 @@
-import { Check, Loader2, ShieldAlert, ShieldCheck, ShieldQuestion, ShieldX } from 'lucide-react'
-import { RiskLevel } from '@/types'
-import { RISK_LEVEL_LABELS } from '@/lib/labels'
+import { Loader2 } from 'lucide-react'
 
 export function Card({
   className = '',
@@ -9,13 +7,32 @@ export function Card({
   className?: string
   children: React.ReactNode
 }) {
-  // .glass declara elevação uma única vez: fundo translúcido + blur + realce de aresta +
-  // sombra tingida de accent, como um efeito material coeso (não borda + drop-shadow soltos).
-  return <div className={`glass rounded-2xl ${className}`}>{children}</div>
+  return <div className={`rounded-[3px] border border-rule-2 bg-paper-3 ${className}`}>{children}</div>
 }
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-xs font-medium tracking-[0.08em] text-muted uppercase">{children}</h2>
+  return <h2 className="text-[12.5px] font-medium text-ink-3">{children}</h2>
+}
+
+/** Painel com cabeçalho (título + nota opcional) — cromo compartilhado por composição, risco e alocação. */
+export function Panel({
+  title,
+  note,
+  children,
+}: {
+  title: string
+  note?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="overflow-hidden rounded-[3px] border border-rule-2 bg-paper-3">
+      <div className="flex items-baseline justify-between gap-3.5 border-b border-rule-2 bg-paper-2 px-[15px] py-[11px]">
+        <h3 className="font-display text-[17px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
+        {note && <span className="text-[12.5px] text-ink-3 [font-variant-numeric:tabular-nums]">{note}</span>}
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  )
 }
 
 /** Cabeçalho numerado de seção (POC): número em petrol + rótulo + linha de preenchimento. */
@@ -26,61 +43,6 @@ export function Eyebrow({ index, children }: { index: string; children: React.Re
       {children}
       <span className="h-px flex-1 bg-rule" />
     </div>
-  )
-}
-
-export function Chip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[13px] leading-5 transition-[transform,background-color,border-color,color] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
-        active
-          ? 'border-accent/40 bg-accent/15 text-foreground shadow-[0_0_0_1px_rgba(37,99,235,0.18)]'
-          : 'border-border-subtle bg-white/40 text-muted hover:border-accent/30 hover:text-foreground-secondary'
-      }`}
-    >
-      {active && <Check className="size-3" strokeWidth={2.5} />}
-      {label}
-    </button>
-  )
-}
-
-const RISK_BADGE_STYLES: Record<RiskLevel, string> = {
-  low: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  medium: 'border-amber-200 bg-amber-50 text-amber-700',
-  high: 'border-orange-200 bg-orange-50 text-orange-700',
-  critical: 'border-red-200 bg-red-50 text-red-700',
-}
-
-const RISK_ICONS: Record<RiskLevel, typeof ShieldCheck> = {
-  low: ShieldCheck,
-  medium: ShieldQuestion,
-  high: ShieldAlert,
-  critical: ShieldX,
-}
-
-export function RiskBadge({ score, level }: { score: number; level: RiskLevel }) {
-  const Icon = RISK_ICONS[level]
-  return (
-    // key força remount quando o score muda (nova negociação), disparando o pulso de
-    // "isso foi recalculado" — o único momento de motion autoral ligado a mudança de estado.
-    <span
-      key={`${level}-${score}`}
-      className={`animate-value-pulse inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium tabular-nums ${RISK_BADGE_STYLES[level]}`}
-    >
-      <Icon className="size-3.5" strokeWidth={2} />
-      Risk Score {score}/100 · {RISK_LEVEL_LABELS[level]}
-    </span>
   )
 }
 

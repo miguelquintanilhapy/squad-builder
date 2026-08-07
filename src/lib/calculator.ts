@@ -27,7 +27,13 @@ export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, inpu
   const realisticTimelineMonths = capacity > 0 ? scope.estimatedEffortPersonMonths / capacity : 999
 
   const cost = totalCost(squad)
-  const { riskScore, riskLevel, alerts } = assessRisk(squad, scope, input, realisticTimelineMonths, cost)
+  const { riskScore, riskLevel, alerts, drivers, assumptions } = assessRisk(
+    squad,
+    scope,
+    input,
+    realisticTimelineMonths,
+    cost
+  )
 
   return {
     squad: withCosts(squad),
@@ -36,6 +42,8 @@ export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, inpu
     riskScore,
     riskLevel,
     alerts,
+    drivers,
+    assumptions,
     summary: '',
   }
 }

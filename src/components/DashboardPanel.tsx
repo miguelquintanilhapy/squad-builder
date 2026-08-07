@@ -2,10 +2,10 @@
 
 import { motion } from 'motion/react'
 import { Scenario } from '@/types'
-import { MetricsCards } from '@/components/MetricsCards'
-import { AnalysisSummary } from '@/components/AnalysisSummary'
-import { SquadGrid } from '@/components/SquadGrid'
-import { AlertsPanel } from '@/components/AlertsPanel'
+import { KpiStrip } from '@/components/KpiStrip'
+import { CompositionTable } from '@/components/CompositionTable'
+import { RiskPanel } from '@/components/RiskPanel'
+import { Panel } from '@/components/ui/primitives'
 
 function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-[3px] bg-rule-2 ${className}`} />
@@ -56,19 +56,20 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
   return (
     // Entrada orquestrada uma única vez, na primeira revelação (scenario passa de null a
     // populado): stagger real via Motion, não CSS solto. Atualizações de negociação seguintes
-    // reusam esta mesma árvore — o único sinal de "isso mudou" fica no RiskBadge.
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-6">
+    // reusam esta mesma árvore.
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-4.5">
       <motion.div variants={groupVariants}>
-        <AnalysisSummary scenario={scenario} />
+        <KpiStrip scenario={scenario} />
       </motion.div>
       <motion.div variants={groupVariants}>
-        <MetricsCards scenario={scenario} />
+        <Panel title="Composição" note="Custo de alocação cheia, valores de referência">
+          <CompositionTable scenario={scenario} />
+        </Panel>
       </motion.div>
       <motion.div variants={groupVariants}>
-        <SquadGrid scenario={scenario} />
-      </motion.div>
-      <motion.div variants={groupVariants}>
-        <AlertsPanel alerts={scenario.alerts} midGroundSuggestion={scenario.midGroundSuggestion} />
+        <Panel title="Risk score" note="O que mais empurra o projeto pra fora do plano">
+          <RiskPanel scenario={scenario} />
+        </Panel>
       </motion.div>
     </motion.div>
   )
