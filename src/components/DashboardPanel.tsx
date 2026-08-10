@@ -73,12 +73,12 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
         </Panel>
       </motion.div>
       <motion.div variants={groupVariants}>
-        <Panel title="Composição" note="Custo de alocação cheia, valores de referência">
+        <Panel title="Composição">
           <CompositionTable scenario={scenario} />
         </Panel>
       </motion.div>
       <motion.div variants={groupVariants}>
-        <Panel title="Risk score" note="O que mais empurra o projeto pra fora do plano">
+        <Panel title="Risk score">
           <RiskPanel scenario={scenario} />
         </Panel>
       </motion.div>

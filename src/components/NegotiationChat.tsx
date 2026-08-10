@@ -21,7 +21,7 @@ export function NegotiationChat({
   }
 
   return (
-    <Panel title="Negociação" note="Impacto recalculado em tempo real">
+    <Panel title="Negociação">
       <div className="mx-auto flex max-w-[640px] flex-col gap-4 p-4">
         {history.length > 0 && (
           <div className="flex max-h-80 flex-col gap-3.5 overflow-y-auto">

@@ -10,6 +10,9 @@ import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
+import { buildPreviewScenario } from '@/lib/previewFixtures'
+
+const SHOW_PREVIEW_BUTTON = process.env.NODE_ENV !== 'production'
 
 const INITIAL_INPUT: ProjectInput = {
   productTypes: [],
@@ -141,6 +144,21 @@ export function SquadBuilderApp() {
     lastFailedAction?.()
   }
 
+  function handlePreview() {
+    const { scopeAnalysis: previewScope, scenario: previewScenario } = buildPreviewScenario()
+    setScopeAnalysis(previewScope)
+    setScenario(previewScenario)
+    setHistory([
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        message: previewScenario.summary,
+        scenarioSnapshot: previewScenario,
+        timestamp: Date.now(),
+      },
+    ])
+  }
+
   const charCount = input.description.trim().length
   const missingChars = MIN_SCOPE_CHARS - charCount
 
@@ -226,6 +244,16 @@ export function SquadBuilderApp() {
                   : 'Leitura em texto livre, sem formulário'}
               </span>
             </div>
+
+            {SHOW_PREVIEW_BUTTON && (
+              <button
+                type="button"
+                onClick={handlePreview}
+                className="mt-3.5 text-[12.5px] text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+              >
+                Dev: ver com dados de exemplo (sem chamar a API)
+              </button>
+            )}
           </div>
         </section>
 

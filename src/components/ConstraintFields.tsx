@@ -59,8 +59,6 @@ export function ConstraintFields({
           />
         </div>
       </div>
-
-      <span className="pb-2.5 text-[13px] text-ink-3">Opcionais: servem pra calcular o risco de não caber</span>
     </div>
   )
 }
