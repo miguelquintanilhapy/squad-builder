@@ -22,9 +22,9 @@ export function NegotiationChat({
 
   return (
     <Panel title="Negociação" note="Impacto recalculado em tempo real">
-      <div className="flex flex-col gap-4 p-4">
+      <div className="mx-auto flex max-w-[640px] flex-col gap-4 p-4">
         {history.length > 0 && (
-          <div className="flex max-h-80 max-w-[60ch] flex-col gap-3.5 overflow-y-auto">
+          <div className="flex max-h-80 flex-col gap-3.5 overflow-y-auto">
             {history.map((turn) => (
               <div key={turn.id} className={turn.role === 'user' ? 'ml-10' : 'mr-2'}>
                 <p className="mb-1 text-[12.5px] font-medium text-ink-3">
@@ -42,7 +42,7 @@ export function NegotiationChat({
           </div>
         )}
 
-        <div className="flex max-w-[560px] flex-col gap-2.5 border-t border-rule-2 pt-4">
+        <div className="flex flex-col gap-2.5 border-t border-rule-2 pt-4">
           <SectionLabel>Enviar ajuste</SectionLabel>
           <textarea
             value={message}
