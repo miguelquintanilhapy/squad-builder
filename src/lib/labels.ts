@@ -1,13 +1,4 @@
-import {
-  ComplexityLevel,
-  Platform,
-  ProductType,
-  ProjectStage,
-  RequiredCapability,
-  RiskLevel,
-  RoleType,
-  SeniorityLevel,
-} from '@/types'
+import { ComplexityLevel, Platform, ProductType, ProjectStage, RiskLevel, RoleType, SeniorityLevel } from '@/types'
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   'web-app': 'Web App',
@@ -56,20 +47,6 @@ export const SENIORITY_LABELS: Record<SeniorityLevel, string> = {
   junior: 'Júnior',
   pleno: 'Pleno',
   senior: 'Sênior',
-}
-
-/** Rótulos curtos pros sinais detectados na leitura do escopo — evita expor o enum bruto. */
-export const CAPABILITY_LABELS: Record<RequiredCapability, string> = {
-  payments: 'pagamentos',
-  'realtime-tracking': 'tempo real',
-  geolocation: 'geolocalização',
-  chat: 'chat',
-  notifications: 'notificações',
-  'admin-panel': 'painel admin',
-  'third-party-integrations': 'integrações',
-  'high-scale': 'alta escala',
-  compliance: 'compliance',
-  'ai-ml': 'dados / modelo',
 }
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {

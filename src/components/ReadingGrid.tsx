@@ -1,19 +1,12 @@
 'use client'
 
-import { ComplexityLevel, Platform, ProductType, ProjectStage, RequiredCapability, ScopeAnalysis } from '@/types'
-import {
-  CAPABILITY_LABELS,
-  COMPLEXITY_LABELS,
-  PLATFORM_LABELS,
-  PRODUCT_TYPE_LABELS,
-  STAGE_LABELS,
-} from '@/lib/labels'
+import { ComplexityLevel, Platform, ProductType, ProjectStage, ScopeAnalysis } from '@/types'
+import { COMPLEXITY_LABELS, PLATFORM_LABELS, PRODUCT_TYPE_LABELS, STAGE_LABELS } from '@/lib/labels'
 
 const PRODUCT_TYPES = Object.keys(PRODUCT_TYPE_LABELS) as ProductType[]
 const PLATFORMS = Object.keys(PLATFORM_LABELS) as Platform[]
 const STAGES = Object.keys(STAGE_LABELS) as ProjectStage[]
 const COMPLEXITIES = Object.keys(COMPLEXITY_LABELS) as ComplexityLevel[]
-const CAPABILITIES = Object.keys(CAPABILITY_LABELS) as RequiredCapability[]
 
 function toggleItem<T>(list: T[], item: T): T[] {
   return list.includes(item) ? list.filter((i) => i !== item) : [...list, item]
@@ -116,25 +109,6 @@ export function ReadingGrid({
             />
           ))}
         </DimensionBlock>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-[13px] text-ink-3">Sinais no texto</span>
-        {CAPABILITIES.map((capability) => {
-          const detected = scope.requiredCapabilities.includes(capability)
-          return (
-            <span
-              key={capability}
-              className={
-                detected
-                  ? 'rounded-[2px] border border-petrol/[18%] bg-petrol/[9%] px-2.5 py-[3px] text-[12.5px] text-petrol'
-                  : 'rounded-[2px] border border-rule-2 px-2.5 py-[3px] text-[12.5px] text-ink-3 line-through'
-              }
-            >
-              {CAPABILITY_LABELS[capability]}
-            </span>
-          )
-        })}
       </div>
     </div>
   )
