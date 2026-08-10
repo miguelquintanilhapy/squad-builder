@@ -42,8 +42,8 @@ export function Panel({
 /** Cabeçalho numerado de seção (POC): número em petrol + rótulo + linha de preenchimento. */
 export function Eyebrow({ index, children }: { index: string; children: React.ReactNode }) {
   return (
-    <div className="mb-3.5 flex items-center gap-2.5 text-[13.5px] font-medium text-ink-2">
-      <span className="font-display text-[13px] font-bold tracking-[-0.01em] text-petrol">{index}</span>
+    <div className="mb-5 flex items-center gap-2.5 text-[14px] font-medium text-ink-2">
+      <span className="font-display text-[14px] font-bold tracking-[-0.01em] text-petrol">{index}</span>
       {children}
       <span className="h-px flex-1 bg-rule" />
     </div>

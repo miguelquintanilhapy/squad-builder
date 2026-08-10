@@ -14,7 +14,7 @@ function Skeleton({ className = '' }: { className?: string }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-rule-2 bg-rule-2 sm:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex flex-col gap-2 bg-paper-3 p-4">
@@ -60,7 +60,7 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
     // Entrada orquestrada uma única vez, na primeira revelação (scenario passa de null a
     // populado): stagger real via Motion, não CSS solto. Atualizações de negociação seguintes
     // reusam esta mesma árvore.
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-4.5">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-6">
       <motion.div variants={groupVariants}>
         <KpiStrip scenario={scenario} />
       </motion.div>

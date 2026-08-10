@@ -160,7 +160,7 @@ export function SquadBuilderApp() {
       </header>
 
       <main className="flex-1">
-        <section className="wrap py-8">
+        <section className="wrap py-10 sm:py-14">
           <div className="max-w-[760px]">
             <Eyebrow index="01">Escopo</Eyebrow>
             <h1 className="max-w-[20ch] font-display text-[clamp(30px,4.6vw,46px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
@@ -230,7 +230,7 @@ export function SquadBuilderApp() {
         </section>
 
         {scopeAnalysis && (
-          <section className="wrap border-t border-rule py-8">
+          <section className="wrap border-t border-rule py-10 sm:py-14">
             <Eyebrow index="02">O que entendemos</Eyebrow>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Leitura do escopo
@@ -243,14 +243,14 @@ export function SquadBuilderApp() {
         )}
 
         {(analyzeLoading || scenario) && (
-          <section className="wrap border-t border-rule py-8">
+          <section className="wrap border-t border-rule py-10 sm:py-14">
             <Eyebrow index="03">Squad recomendado</Eyebrow>
             {scenario && (
               <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
             )}
             <DashboardPanel scenario={scenario} loading={analyzeLoading} />
             {scenario && (
-              <div className="mt-6">
+              <div className="mt-8">
                 <NegotiationChat history={history} onSend={handleNegotiate} loading={negotiateLoading} />
               </div>
             )}
