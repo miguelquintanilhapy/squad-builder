@@ -39,13 +39,16 @@ export function Panel({
   )
 }
 
-/** Cabeçalho numerado de seção (POC): número em petrol + rótulo + linha de preenchimento. */
+/**
+ * Cabeçalho numerado de seção. Sem traço decorativo — a diferenciação é só tipografia/cor/peso
+ * (número em display+petrol vs. rótulo em ink-2), como orientado no PROMPT.md: um traço ali não
+ * carregaria nenhuma informação, só ornamentaria.
+ */
 export function Eyebrow({ index, children }: { index: string; children: React.ReactNode }) {
   return (
     <div className="mb-5 flex items-center gap-2.5 text-[14px] font-medium text-ink-2">
       <span className="font-display text-[14px] font-bold tracking-[-0.01em] text-petrol">{index}</span>
       {children}
-      <span className="h-px flex-1 bg-rule" />
     </div>
   )
 }

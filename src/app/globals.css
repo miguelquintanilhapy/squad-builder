@@ -42,46 +42,59 @@ html {
   color-scheme: light;
 }
 
-/* Números em tabela e KPI: alinha as casas decimais sem precisar de fonte monoespaçada. */
-.tnum {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1;
-}
-
-/* Container padrão de seção: largura máxima 1680px (o POC pedia 1300px, mas em monitor largo
-   sobrava vazio demais dos 2 lados — aumentado a pedido), padding lateral 22px (15px abaixo de
-   640px). Reaproveitado em todas as seções da interface nova. Colunas de texto corrido continuam
-   travadas em ~56-60ch mesmo com o container mais largo — só o conteúdo tabular/numérico ganha
-   mais respiro horizontal. */
-.wrap {
-  max-width: 1680px;
-  margin: 0 auto;
-  padding: 0 22px;
-}
-@media (max-width: 640px) {
-  .wrap {
-    padding: 0 15px;
+/*
+ * @layer components garante que as utilities do Tailwind (py-*, pt-*, px-* etc.) sempre
+ * vençam essas classes, independente da ordem no arquivo — sem isso, um shorthand como
+ * "padding: 0 22px" aqui zera qualquer padding vertical vindo de uma utility no mesmo
+ * elemento (foi exatamente esse bug: .wrap "padding: 0 22px" cancelava py-8/pt-12 do header
+ * e das seções, porque shorthand-vs-utility com a mesma especificidade decide por ordem no
+ * arquivo, e essa classe vinha depois das utilities importadas no topo).
+ */
+@layer components {
+  /* Números em tabela e KPI: alinha as casas decimais sem precisar de fonte monoespaçada. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
   }
-}
 
-.app-header {
-  background: linear-gradient(var(--paper-2), var(--paper));
-}
+  /* Container padrão de seção: largura máxima 1680px (o POC pedia 1300px, mas em monitor largo
+     sobrava vazio demais dos 2 lados — aumentado a pedido), padding lateral 22px (15px abaixo de
+     640px). Só padding horizontal — o vertical é decidido por utility (py-*) em cada uso, nunca
+     aqui. Colunas de texto corrido continuam travadas em ~56-60ch mesmo com o container mais
+     largo — só o conteúdo tabular/numérico ganha mais respiro horizontal. */
+  .wrap {
+    max-width: 1680px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+  @media (max-width: 640px) {
+    .wrap {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
 
-/* Campo de escopo: papel milimetrado ao fundo, alinhado ao line-height do textarea. */
-.scope-shell {
-  position: relative;
-  border: 1px solid var(--rule-2);
-  border-radius: 3px;
-  background: var(--paper-3);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px);
-  background-size: 100% 26px;
-  background-position: 0 15px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.scope-shell:focus-within {
-  border-color: var(--petrol);
-  box-shadow: 0 0 0 3px rgba(20, 85, 78, 0.13);
+  .app-header {
+    background: linear-gradient(var(--paper-2), var(--paper));
+  }
+
+  /* Campo de escopo: papel milimetrado ao fundo, alinhado ao line-height do textarea. */
+  .scope-shell {
+    position: relative;
+    border: 1px solid var(--rule-2);
+    border-radius: 3px;
+    background: var(--paper-3);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px);
+    background-size: 100% 26px;
+    background-position: 0 15px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .scope-shell:focus-within {
+    border-color: var(--petrol);
+    box-shadow: 0 0 0 3px rgba(20, 85, 78, 0.13);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
