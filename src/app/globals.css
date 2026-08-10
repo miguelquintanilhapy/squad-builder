@@ -48,10 +48,13 @@ html {
   font-feature-settings: 'tnum' 1;
 }
 
-/* Container padrão de seção (POC): largura máxima 1300px, padding lateral 22px
-   (15px abaixo de 640px). Reaproveitado em todas as seções da interface nova. */
+/* Container padrão de seção: largura máxima 1680px (o POC pedia 1300px, mas em monitor largo
+   sobrava vazio demais dos 2 lados — aumentado a pedido), padding lateral 22px (15px abaixo de
+   640px). Reaproveitado em todas as seções da interface nova. Colunas de texto corrido continuam
+   travadas em ~56-60ch mesmo com o container mais largo — só o conteúdo tabular/numérico ganha
+   mais respiro horizontal. */
 .wrap {
-  max-width: 1300px;
+  max-width: 1680px;
   margin: 0 auto;
   padding: 0 22px;
 }

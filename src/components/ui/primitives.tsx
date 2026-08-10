@@ -14,7 +14,11 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[12.5px] font-medium text-ink-3">{children}</h2>
 }
 
-/** Painel com cabeçalho (título + nota opcional) — cromo compartilhado por composição, risco e alocação. */
+/**
+ * Painel com cabeçalho (título + nota opcional) — cromo compartilhado por composição, risco e
+ * alocação. Sem padding no corpo (como o .scroller do POC): tabela, SVG e o grid do RiskPanel já
+ * levam o próprio espaçamento interno; quem precisar de respiro (ex: NegotiationChat) adiciona.
+ */
 export function Panel({
   title,
   note,
@@ -30,7 +34,7 @@ export function Panel({
         <h3 className="font-display text-[17px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
         {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
       </div>
-      <div className="p-4">{children}</div>
+      {children}
     </div>
   )
 }

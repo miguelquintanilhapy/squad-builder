@@ -250,7 +250,7 @@ export function SquadBuilderApp() {
             )}
             <DashboardPanel scenario={scenario} loading={analyzeLoading} />
             {scenario && (
-              <div className="mt-6 max-w-[760px]">
+              <div className="mt-6">
                 <NegotiationChat history={history} onSend={handleNegotiate} loading={negotiateLoading} />
               </div>
             )}
