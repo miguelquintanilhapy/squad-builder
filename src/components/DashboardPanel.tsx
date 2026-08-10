@@ -3,6 +3,7 @@
 import { motion } from 'motion/react'
 import { Scenario } from '@/types'
 import { KpiStrip } from '@/components/KpiStrip'
+import { AllocationChart } from '@/components/AllocationChart'
 import { CompositionTable } from '@/components/CompositionTable'
 import { RiskPanel } from '@/components/RiskPanel'
 import { Panel } from '@/components/ui/primitives'
@@ -22,14 +23,16 @@ function DashboardSkeleton() {
           </div>
         ))}
       </div>
-      <div className="rounded-[3px] border border-rule-2 bg-paper-3 p-4">
-        <Skeleton className="h-4 w-1/3" />
-        <div className="mt-4 flex flex-col gap-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-4 w-full" />
-          ))}
+      {[1, 2, 3].map((panel) => (
+        <div key={panel} className="rounded-[3px] border border-rule-2 bg-paper-3 p-4">
+          <Skeleton className="h-4 w-1/3" />
+          <div className="mt-4 flex flex-col gap-3">
+            {[1, 2, 3].map((row) => (
+              <Skeleton key={row} className="h-4 w-full" />
+            ))}
+          </div>
         </div>
-      </div>
+      ))}
     </div>
   )
 }
@@ -60,6 +63,14 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-4.5">
       <motion.div variants={groupVariants}>
         <KpiStrip scenario={scenario} />
+      </motion.div>
+      <motion.div variants={groupVariants}>
+        <Panel
+          title="Curva de alocação"
+          note={`${scenario.squad.length} papéis · ${scenario.estimatedTimelineMonths} meses`}
+        >
+          <AllocationChart scenario={scenario} />
+        </Panel>
       </motion.div>
       <motion.div variants={groupVariants}>
         <Panel title="Composição" note="Custo de alocação cheia, valores de referência">
