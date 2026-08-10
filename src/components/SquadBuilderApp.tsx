@@ -180,7 +180,7 @@ export function SquadBuilderApp() {
                 <button
                   type="button"
                   onClick={handleRetry}
-                  className="shrink-0 font-medium underline underline-offset-[3px] hover:text-ink"
+                  className="shrink-0 font-medium underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
                 >
                   Tentar de novo
                 </button>

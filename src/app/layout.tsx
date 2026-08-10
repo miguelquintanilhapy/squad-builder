@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${bricolageGrotesque.variable} ${ibmPlexSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground-secondary">{children}</body>
+      <body className="min-h-full flex flex-col bg-paper text-ink-2">{children}</body>
     </html>
   );
 }

@@ -34,7 +34,7 @@ export function ConstraintFields({
             }
             disabled={disabled}
             placeholder="—"
-            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none [font-variant-numeric:tabular-nums]"
+            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none tnum"
           />
           <span className={`${affixClasses} border-l border-rule-2`}>meses</span>
         </div>
@@ -55,7 +55,7 @@ export function ConstraintFields({
             onChange={(e) => onChange({ monthlyBudget: e.target.value ? Number(e.target.value) : undefined })}
             disabled={disabled}
             placeholder="—"
-            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none [font-variant-numeric:tabular-nums]"
+            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none tnum"
           />
         </div>
       </div>

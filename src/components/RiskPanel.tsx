@@ -11,7 +11,7 @@ const RISK_COLOR: Record<RiskLevel, string> = {
 function DriverRow({ driver }: { driver: RiskAlert }) {
   return (
     <li className="flex gap-3 border-b border-dashed border-rule-2 py-[7px] text-[14.5px] last:border-b-0">
-      <span className="w-[30px] shrink-0 pt-[3px] text-right text-[12.5px] text-ink-3 [font-variant-numeric:tabular-nums]">
+      <span className="tnum w-[30px] shrink-0 pt-[3px] text-right text-[12.5px] text-ink-3">
         +{Math.round(driver.weight)}
       </span>
       <span className="text-ink-2">{driver.description}</span>
@@ -26,7 +26,7 @@ export function RiskPanel({ scenario }: { scenario: Scenario }) {
     <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[3px] bg-rule-2 sm:grid-cols-[210px_1fr]">
       <div className="bg-paper-3 p-4">
         <div
-          className="font-display text-[54px] font-extrabold leading-none tracking-[-0.045em] [font-variant-numeric:tabular-nums]"
+          className="tnum font-display text-[54px] font-extrabold leading-none tracking-[-0.045em]"
           style={{ color }}
         >
           {scenario.riskScore}

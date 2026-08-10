@@ -2,7 +2,7 @@ import { Scenario } from '@/types'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
 import { ALLOCATION_CAPACITY_MULTIPLIER } from '@/lib/rates'
 
-const numCellClasses = 'min-[760px]:w-32 px-[15px] py-2 text-right [font-variant-numeric:tabular-nums]'
+const numCellClasses = 'min-[760px]:w-32 px-[15px] py-2 text-right tnum'
 const numHeadClasses = 'min-[760px]:w-32 px-[15px] py-[9px] text-right text-[12.5px] font-medium text-ink-3'
 
 export function CompositionTable({ scenario }: { scenario: Scenario }) {

@@ -28,7 +28,7 @@ export function Panel({
     <div className="overflow-hidden rounded-[3px] border border-rule-2 bg-paper-3">
       <div className="flex items-baseline justify-between gap-3.5 border-b border-rule-2 bg-paper-2 px-[15px] py-[11px]">
         <h3 className="font-display text-[17px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
-        {note && <span className="text-[12.5px] text-ink-3 [font-variant-numeric:tabular-nums]">{note}</span>}
+        {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
       </div>
       <div className="p-4">{children}</div>
     </div>

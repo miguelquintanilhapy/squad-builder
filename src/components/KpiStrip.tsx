@@ -5,10 +5,10 @@ function Kpi({ label, value, note }: { label: string; value: React.ReactNode; no
   return (
     <div className="bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
       <div className="text-[12.5px] font-medium text-ink-3">{label}</div>
-      <div className="mt-1.5 font-display text-[32px] font-bold leading-[1.14] tracking-[-0.032em] text-ink [font-variant-numeric:tabular-nums]">
+      <div className="tnum mt-1.5 font-display text-[32px] font-bold leading-[1.14] tracking-[-0.032em] text-ink">
         {value}
       </div>
-      {note && <div className="mt-1 text-[12.5px] text-ink-3 [font-variant-numeric:tabular-nums]">{note}</div>}
+      {note && <div className="tnum mt-1 text-[12.5px] text-ink-3">{note}</div>}
     </div>
   )
 }
