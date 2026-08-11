@@ -20,7 +20,7 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "SquadBuilder — escopo → squad",
+  title: "SquadBuilder",
   description:
     "Descreva o escopo do projeto e veja o squad, custo mensal, prazo e risco de engenharia recomendados.",
 };

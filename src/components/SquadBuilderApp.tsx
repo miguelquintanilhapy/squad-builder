@@ -196,6 +196,9 @@ export function SquadBuilderApp() {
                 value={input.description}
                 onChange={(description) => setInput((prev) => ({ ...prev, description }))}
                 onUseSeed={(text) => void handleAnalyze(text)}
+                onSubmit={() => {
+                  if (!analyzeLoading && charCount >= MIN_SCOPE_CHARS) void handleAnalyze()
+                }}
                 disabled={analyzeLoading}
               />
             </div>

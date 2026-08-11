@@ -48,12 +48,12 @@ export function NegotiationChat({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                 e.preventDefault()
                 handleSend()
               }
             }}
-            placeholder='Ex: "Achei caro. Quero tirar o QA e colocar só 1 Dev Fullstack em 3 meses."'
+            placeholder='Ex: "Achei caro. Quero tirar o QA e colocar só 1 Dev Fullstack em 3 meses." (Ctrl/Cmd+Enter envia)'
             rows={3}
             disabled={loading}
             className="w-full resize-y rounded-[3px] border border-rule-2 bg-paper-3 px-3 py-2 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 focus:border-petrol focus:shadow-[0_0_0_3px_rgba(20,85,78,0.13)] disabled:opacity-50"

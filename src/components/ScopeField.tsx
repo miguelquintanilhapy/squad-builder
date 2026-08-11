@@ -8,11 +8,14 @@ export function ScopeField({
   value,
   onChange,
   onUseSeed,
+  onSubmit,
   disabled,
 }: {
   value: string
   onChange: (value: string) => void
   onUseSeed: (text: string) => void
+  /** Atalho Ctrl/Cmd+Enter — fluxo texto → resultado espera isso, sem precisar soltar o teclado. */
+  onSubmit: () => void
   disabled?: boolean
 }) {
   const count = value.trim().length
@@ -23,6 +26,12 @@ export function ScopeField({
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault()
+              onSubmit()
+            }
+          }}
           disabled={disabled}
           spellCheck={false}
           placeholder="Um app de entregas locais com motos. O cliente pede pelo celular, paga no app e acompanha o motoboy no mapa em tempo real. Precisa de um painel pro lojista e repasse automático pros entregadores."
