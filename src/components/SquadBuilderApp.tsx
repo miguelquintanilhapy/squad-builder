@@ -165,10 +165,14 @@ export function SquadBuilderApp() {
 
       <main className="flex-1">
         <section className="wrap py-8 sm:py-10">
-          <div className="max-w-[760px]">
+          {/* Mais largo que os 760px originais (fechava demais frente ao container de 1680px das
+              outras seções — ver revisão externa 1.14), mas sem ir pra largura total: textarea e
+              inputs não têm a mesma justificativa de tabela/gráfico pra ocupar a tela inteira. */}
+          <div className="max-w-[960px]">
             <Eyebrow index="01">Escopo</Eyebrow>
-            <h1 className="max-w-[20ch] font-display text-[clamp(30px,4.6vw,46px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
-              Descreva o produto. O resto a gente <span className="text-petrol">deduz</span>.
+            <h1 className="font-display text-[clamp(30px,4.6vw,46px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
+              Descreva o produto.
+              <br />O resto a gente <span className="text-petrol">deduz</span>.
             </h1>
             <p className="mt-2.5 max-w-[56ch] text-base text-ink-2">
               Escreva como você explicaria pra um tech lead novo no time — em texto corrido, sem
