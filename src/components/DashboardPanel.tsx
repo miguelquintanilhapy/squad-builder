@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react'
 import { Scenario } from '@/types'
+import { formatNumberPtBR } from '@/lib/labels'
 import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
 import { CompositionTable } from '@/components/CompositionTable'
@@ -67,7 +68,7 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
       <motion.div variants={groupVariants}>
         <Panel
           title="Curva de alocação"
-          note={`${scenario.squad.length} papéis · ${scenario.estimatedTimelineMonths} meses`}
+          note={`${scenario.squad.length} papéis · ${formatNumberPtBR(scenario.estimatedTimelineMonths)} meses`}
         >
           <AllocationChart scenario={scenario} />
         </Panel>

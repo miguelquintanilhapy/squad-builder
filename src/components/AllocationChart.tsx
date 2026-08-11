@@ -26,7 +26,7 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
   const height = TOP_MARGIN + squad.length * ROW_HEIGHT + BOTTOM_MARGIN
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto px-[15px] py-[15px]">
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${height}`}
         role="img"

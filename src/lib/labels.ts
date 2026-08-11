@@ -59,3 +59,8 @@ export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
 export function formatCurrencyBRL(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 }
+
+/** pt-BR usa vírgula como separador decimal (2,3, não 2.3) — nunca interpola número direto no JSX. */
+export function formatNumberPtBR(value: number): string {
+  return value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+}
