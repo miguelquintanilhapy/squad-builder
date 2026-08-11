@@ -1,6 +1,6 @@
-# 🚀 CLAUDE.md - SquadBuilder Project & Discovery Guide
+# CLAUDE.md - SquadBuilder Project & Discovery Guide
 
-## ⚠️ O Problema Real do Mercado (A Dor que Resolvemos)
+##O Problema Real do Mercado (A Dor que Resolvemos)
 
 Na hora de criar um produto digital, quase todo fundador cai em um destes dois extremos perigosos:
 
@@ -12,11 +12,11 @@ Na hora de criar um produto digital, quase todo fundador cai em um destes dois e
    * Por medo ou falta de conhecimento técnico, o fundador contrata um squad enorme com seniors, especialistas e papéis desnecessários para a fase atual.
    * **Consequência:** O custo mensal fica gigante, a empresa queima o orçamento (runway) antes do MVP validar no mercado e o projeto quebra por falta de dinheiro.
 
-🎯 **A Missão do SquadBuilder:** Servir como uma "camada de equilíbrio e realidade". A IA analisa a fundo o escopo digitado e encontra o **ponto ótimo** entre time, custo, prazo e risco, permitindo que o fundador negocie e veja as consequências reais antes de gastar um único centavo em contratações.
+**A Missão do SquadBuilder:** Servir como uma "camada de equilíbrio e realidade". A IA analisa a fundo o escopo digitado e encontra o **ponto ótimo** entre time, custo, prazo e risco, permitindo que o fundador negocie e veja as consequências reais antes de gastar um único centavo em contratações.
 
 ---
 
-## 💡 A Ideia (O que é o SquadBuilder?)
+## A Ideia (O que é o SquadBuilder?)
 O **SquadBuilder** é um copiloto de inteligência artificial interativo para fundadores, CTOs e gestores de produto dimensionarem equipes de engenharia de software e analisarem riscos de desenvolvimento.
 
 A experiência funciona em um fluxo dinâmico de entrada e negociação:
@@ -27,7 +27,7 @@ A experiência funciona em um fluxo dinâmico de entrada e negociação:
 
 ---
 
-## 🎯 Seu Papel como Claude
+## Seu Papel 
 Você atuará como um **Co-fundador Técnico e Arquiteto de Software Sênior**. 
 1. **Discussão de Stack:** Vamos definir as tecnologias (Front-end, Back-end, Banco de Dados, APIs de IA) passo a passo juntos. Não assuma ferramentas fixas antes de discutirmos.
 2. **Refinamento da Arquitetura de Conversa:** Me ajude a desenhar a API e o gerenciamento de estado para suportar o fluxo híbrido e a negociação de escopo vs. consequência.
@@ -39,7 +39,7 @@ Quero que você assuma seu papel de Co-fundador Técnico e me faça uma **entrev
 
 Faça perguntas inteligentes,para irmos afunilando a ideia até termos um plano de ação imbatível.
 
-## 🎨 Diretrizes Globais de Interface & UI (Design System)
+## Diretrizes Globais de Interface & UI (Design System)
 
 * **Estilo Visual:** SaaS B2B moderno, limpo e profissional (Inspirado em interfaces executivas como Linear.app, Vercel e Stripe).
 * **Tema Visual:** **Dark Mode exclusivo** (Fundo escuro profundo em tons de Zinc/Slate `#09090b` e `#18181b`, com containers e cards usando bordas finas e sutis em `#27272a`).
@@ -66,7 +66,7 @@ Faça perguntas inteligentes,para irmos afunilando a ideia até termos um plano 
 
 ---
 
-## 🔄 Exemplo Prático do Fluxo de Negociação (User vs. SquadBuilder)
+##  Exemplo Prático do Fluxo de Negociação (User vs. SquadBuilder)
 
 * **Usuário (Entrada Inicial Híbrida):** * *Campos:* Mobile App + Web | Estágio: Ideia | Complexidade: Média.
   * *Texto Livre:* *"Quero criar um aplicativo estilo Uber de entregas locais com motos."*
@@ -76,16 +76,16 @@ Faça perguntas inteligentes,para irmos afunilando a ideia até termos um plano 
 
 * **Usuário (Interação/Alteração):** *"Achei caro. Quero tirar o QA e o Designer, e colocar só 1 Dev Fullstack para fazer tudo em 3 meses."*
 * **SquadBuilder (Retorno de Consequências):**
-  * ⚠️ **Risk Score disparou:** 85/100 (Crítico).
-  * 🔴 **Alertas de Impacto:**
+  *  **Risk Score disparou:** 85/100 (Crítico).
+  * **Alertas de Impacto:**
     * **Gargalo de UX:** Sem designer, a usabilidade do app do entregador pode causar alto abandono.
     * **Bugs em Produção:** Sem QA, falhas no pagamento ou no GPS serão descobertas diretamente pelos clientes.
     * **Risco de Atraso:** A carga de trabalho para 1 único Dev cobrir Mobile + API + Painel Admin excede 3 meses. Prazo real estimado subiu para 7 meses.
-  * 💡 **Sugestão de Meio-Termo:** *"Mantenha 1 Dev Fullstack + 1 Designer em meio período para garantir a experiência sem estourar o orçamento."*
+  *  **Sugestão de Meio-Termo:** *"Mantenha 1 Dev Fullstack + 1 Designer em meio período para garantir a experiência sem estourar o orçamento."*
 
 ---
 
-## 💡 Outros Casos de Uso para Teste da IA
+## Outros Casos de Uso para Teste da IA
 
 ### Caso 1: MVP de Startup Enxuta
 * **Inputs:** Web App | Ideia | Complexidade Baixa.
