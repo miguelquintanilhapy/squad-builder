@@ -1,4 +1,4 @@
-import { PLATFORM_LABELS } from '@/lib/labels'
+import { PLATFORM_LABELS, formatNumberPtBR } from '@/lib/labels'
 import { ProjectInput, RiskAlert, RiskLevel, ScopeAnalysis, SquadMember } from '@/types'
 
 const BASE_RISK_BY_COMPLEXITY = { low: 5, medium: 15, enterprise: 25 } as const
@@ -112,7 +112,7 @@ export function assessRisk(
         category: 'timeline',
         severity: ratio > 1.5 ? 'critical' : 'warning',
         title: 'Prazo alvo incompatível com o squad',
-        description: `Com o squad atual, o prazo realista estimado é de ${realisticTimelineMonths.toFixed(1)} meses, acima dos ${input.targetTimelineMonths} meses desejados.`,
+        description: `Com o squad atual, o prazo realista estimado é de ${formatNumberPtBR(realisticTimelineMonths)} meses, acima dos ${input.targetTimelineMonths} meses desejados.`,
         weight,
       })
     }

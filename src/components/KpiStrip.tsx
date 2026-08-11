@@ -1,5 +1,5 @@
 import { Scenario } from '@/types'
-import { formatCurrencyBRL } from '@/lib/labels'
+import { formatCurrencyBRL, formatNumberPtBR } from '@/lib/labels'
 
 function Kpi({ label, value, note }: { label: string; value: React.ReactNode; note?: string }) {
   return (
@@ -34,7 +34,7 @@ export function KpiStrip({ scenario }: { scenario: Scenario }) {
         label="Prazo estimado"
         value={
           <>
-            {scenario.estimatedTimelineMonths}
+            {formatNumberPtBR(scenario.estimatedTimelineMonths)}
             <span className="ml-1 text-sm font-normal text-ink-3">meses</span>
           </>
         }
@@ -42,7 +42,7 @@ export function KpiStrip({ scenario }: { scenario: Scenario }) {
       <Kpi
         label="Investimento total"
         value={formatCurrencyBRL(totalInvestment)}
-        note={`ao longo de ${scenario.estimatedTimelineMonths} meses`}
+        note={`ao longo de ${formatNumberPtBR(scenario.estimatedTimelineMonths)} meses`}
       />
     </div>
   )

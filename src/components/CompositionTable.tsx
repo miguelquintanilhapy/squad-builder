@@ -1,5 +1,5 @@
 import { Scenario } from '@/types'
-import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
+import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL, formatNumberPtBR } from '@/lib/labels'
 import { ALLOCATION_CAPACITY_MULTIPLIER } from '@/lib/rates'
 
 const numCellClasses = 'min-[760px]:w-32 px-[15px] py-2 text-right tnum'
@@ -46,7 +46,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
         <tfoot>
           <tr className="border-t border-rule bg-paper-2 font-semibold">
             <td className="px-[15px] py-2">{totalHeadcount} pessoas no squad</td>
-            <td className={numCellClasses}>{scenario.estimatedTimelineMonths} meses</td>
+            <td className={numCellClasses}>{formatNumberPtBR(scenario.estimatedTimelineMonths)} meses</td>
             <td className={numCellClasses}>{formatCurrencyBRL(scenario.totalMonthlyCost)}</td>
             <td className={numCellClasses}>{formatCurrencyBRL(totalInvestment)}</td>
           </tr>
