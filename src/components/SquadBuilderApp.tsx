@@ -196,6 +196,9 @@ export function SquadBuilderApp() {
                 value={input.description}
                 onChange={(description) => setInput((prev) => ({ ...prev, description }))}
                 onUseSeed={(text) => void handleAnalyze(text)}
+                onSubmit={() => {
+                  if (!analyzeLoading && charCount >= MIN_SCOPE_CHARS) void handleAnalyze()
+                }}
                 disabled={analyzeLoading}
               />
             </div>
@@ -216,10 +219,10 @@ export function SquadBuilderApp() {
                 loading={analyzeLoading}
               >
                 {analyzeLoading ? (
-                  'Lendo escopo…'
+                  scenario ? 'Recalculando…' : 'Dimensionando…'
                 ) : (
                   <>
-                    {scenario ? 'Reler escopo' : 'Ler escopo e montar squad'}
+                    {scenario ? 'Recalcular' : 'Dimensionar squad'}
                     <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" />
                   </>
                 )}
