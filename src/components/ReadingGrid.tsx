@@ -27,7 +27,7 @@ function togglePlatform(current: Platform[], platform: Platform): Platform[] {
 
 const chipBase =
   'inline-flex items-center gap-1 rounded-[2px] border px-2.5 py-[3px] text-[13px] font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60'
-const chipActive = 'border-ink bg-ink text-paper-2'
+const chipActive = 'border-petrol bg-petrol text-paper-2'
 const chipInactive = 'border-rule-2 text-ink-2 hover:border-ink-3'
 
 /**

@@ -1,23 +1,24 @@
 @import 'tailwindcss';
 
 :root {
-  /* Paleta POC aprovado — única paleta da interface. */
-  --paper: #e9ebe7;
-  --paper-2: #f5f6f3;
-  --paper-3: #fdfdfc;
-  --ink: #14201d;
-  --ink-2: #4e5a56;
-  /* Escurecido de #818b87 (2.93:1 em --paper, reprovava até o mínimo de texto grande) pra
-     #636b68 (4.57:1 na superfície mais clara) — calculado, não no olho. Ver revisão externa 1.11. */
-  --ink-3: #636b68;
-  --rule: #cbd0c9;
-  --rule-2: #dde0da;
-  --petrol: #14554e;
-  /* Escurecido de #a9690b (3.71:1 em --paper) pra #965d0a (4.53:1) pelo mesmo motivo. */
+  /* Paleta Ardósia (revisão externa 8.1) — neutro frio em vez do bege quente original, que caía
+     no agrupamento visual mais reconhecível de "gerado por IA". Valores calculados contra AA
+     (4.5:1 no tamanho real de uso), não copiados direto do documento — o próprio --ink-2 da
+     revisão (#67717C) reprovava contra --paper (4.26:1) e foi escurecido pra #636D78 (4.52:1). */
+  --paper: #ebeef1;
+  --paper-2: #f6f7f9;
+  --paper-3: #ffffff;
+  --ink: #18212a;
+  /* Só um tom de texto secundário (a revisão não separa 2 níveis como a paleta antiga fazia). */
+  --ink-2: #636d78;
+  --ink-3: #636d78;
+  --rule: #c6cdd4;
+  --rule-2: #e3e6ea;
+  --petrol: #14584a;
   --ochre: #965d0a;
   --rust: #9c3a21;
   --moss: #2c7458;
-  --grid: rgba(20, 32, 29, 0.055);
+  --grid: rgba(24, 33, 42, 0.055);
 }
 
 @theme inline {
@@ -96,7 +97,7 @@ html {
   }
   .scope-shell:focus-within {
     border-color: var(--petrol);
-    box-shadow: 0 0 0 3px rgba(20, 85, 78, 0.13);
+    box-shadow: 0 0 0 3px rgba(20, 88, 74, 0.13);
   }
 }
 

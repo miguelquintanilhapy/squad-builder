@@ -72,7 +72,7 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                 width={Math.max(trackWidth, 3)}
                 height={full ? 13 : 9}
                 rx={1.5}
-                fill={full ? 'var(--petrol)' : 'rgba(20,85,78,0.4)'}
+                fill={full ? 'var(--petrol)' : 'rgba(20,88,74,0.4)'}
               />
               {!full && (
                 <text x={LABEL_GUTTER + trackWidth + 6} y={y + 11} fontSize={10} fill="var(--ink-3)">
