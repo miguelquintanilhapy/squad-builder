@@ -157,7 +157,6 @@ export function SquadBuilderApp() {
             <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
               SquadBuilder
             </span>
-            <span className="text-[13px] text-ink-3">escopo → squad</span>
           </div>
           <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
         </div>
