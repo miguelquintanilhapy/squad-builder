@@ -58,15 +58,9 @@ export function SquadBuilderApp() {
       const data = await parseJsonOrThrow(response)
       setScopeAnalysis(data.scopeAnalysis)
       setScenario(data.scenario)
-      setHistory([
-        {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          message: data.scenario.summary,
-          scenarioSnapshot: data.scenario,
-          timestamp: Date.now(),
-        },
-      ])
+      // Não semeia o chat com o resumo — ele já aparece na seção 03. O histórico de negociação
+      // começa vazio e só recebe turnos de ajustes reais (ver revisão externa 1.13).
+      setHistory([])
       setLastFailedAction(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao analisar o projeto.')
@@ -148,15 +142,7 @@ export function SquadBuilderApp() {
     const { scopeAnalysis: previewScope, scenario: previewScenario } = buildPreviewScenario()
     setScopeAnalysis(previewScope)
     setScenario(previewScenario)
-    setHistory([
-      {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        message: previewScenario.summary,
-        scenarioSnapshot: previewScenario,
-        timestamp: Date.now(),
-      },
-    ])
+    setHistory([])
   }
 
   const charCount = input.description.trim().length

@@ -59,14 +59,12 @@ export function PrimaryButton({
   disabled,
   loading = false,
   type = 'button',
-  fullWidth = false,
 }: {
   children: React.ReactNode
   onClick?: () => void
   disabled?: boolean
   loading?: boolean
   type?: 'button' | 'submit'
-  fullWidth?: boolean
 }) {
   // Desabilitado é outline neutro, nunca a cor primária com opacidade baixa — quem explica o
   // que falta é o texto ao lado do botão, não o próprio botão.
@@ -75,7 +73,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${fullWidth ? 'w-full' : ''} group inline-flex items-center justify-center gap-2.5 rounded-[3px] border px-[22px] py-[11px] text-[15px] font-semibold transition-[transform,background-color,box-shadow] duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 ${
+      className={`group inline-flex items-center justify-center gap-2.5 rounded-[3px] border px-[22px] py-[11px] text-[15px] font-semibold transition-[transform,background-color,box-shadow] duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 ${
         disabled
           ? 'cursor-not-allowed border-rule bg-transparent text-ink-3'
           : 'border-ink bg-ink text-paper-2 hover:-translate-y-px hover:shadow-[0_3px_0_0_var(--petrol)]'

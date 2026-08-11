@@ -58,10 +58,12 @@ export function NegotiationChat({
             disabled={loading}
             className="w-full resize-y rounded-[3px] border border-rule-2 bg-paper-3 px-3 py-2 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 focus:border-petrol focus:shadow-[0_0_0_3px_rgba(20,85,78,0.13)] disabled:opacity-50"
           />
-          <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading} fullWidth>
-            {!loading && <Send className="size-3.5" />}
-            {loading ? 'Recalculando...' : 'Enviar'}
-          </PrimaryButton>
+          <div className="flex justify-end">
+            <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading}>
+              {!loading && <Send className="size-3.5" />}
+              {loading ? 'Recalculando...' : 'Enviar'}
+            </PrimaryButton>
+          </div>
         </div>
       </div>
     </Panel>
