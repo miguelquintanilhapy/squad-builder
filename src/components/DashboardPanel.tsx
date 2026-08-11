@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'motion/react'
+import { AlertTriangle } from 'lucide-react'
 import { Scenario } from '@/types'
-import { formatNumberPtBR } from '@/lib/labels'
+import { formatMonthsLabel } from '@/lib/labels'
 import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
 import { CompositionTable } from '@/components/CompositionTable'
@@ -62,13 +63,21 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
     // populado): stagger real via Motion, não CSS solto. Atualizações de negociação seguintes
     // reusam esta mesma árvore.
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-6">
+      {scenario.budgetAlert && (
+        <motion.div variants={groupVariants}>
+          <div className="flex items-start gap-3 rounded-[3px] border border-ochre/30 bg-ochre/5 px-4 py-3 text-sm text-ink">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-ochre" strokeWidth={2} />
+            <p>{scenario.budgetAlert.suggestion}</p>
+          </div>
+        </motion.div>
+      )}
       <motion.div variants={groupVariants}>
         <KpiStrip scenario={scenario} />
       </motion.div>
       <motion.div variants={groupVariants}>
         <Panel
           title="Curva de alocação"
-          note={`${scenario.squad.length} papéis · ${formatNumberPtBR(scenario.estimatedTimelineMonths)} meses`}
+          note={`${scenario.squad.length} papéis · ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
         >
           <AllocationChart scenario={scenario} />
         </Panel>

@@ -12,6 +12,8 @@ const PREVIEW_INPUT: ProjectInput = {
   platforms: ['ios', 'android', 'web'],
   stage: 'idea',
   complexity: 'medium',
+  targetTimelineMonths: 6,
+  monthlyBudget: 45000,
   description:
     'Um app de entregas locais com motos. O cliente pede pelo celular, paga no app com pix ou cartão e acompanha o motoboy no mapa em tempo real. Precisa de um painel web pro lojista acompanhar pedidos e de repasse automático pros entregadores.',
 }
@@ -40,7 +42,7 @@ export function buildPreviewScenario(): { scopeAnalysis: ScopeAnalysis; scenario
     scenario: {
       ...scenario,
       summary:
-        'Esse escopo pede rastreamento em tempo real e pagamento em trânsito — as duas coisas mais caras de sustentar em produção, não de construir. O squad abaixo cobre mobile, backend e o painel do lojista; o risco maior hoje é lançar sem QA dedicado nesse tipo de fluxo.',
+        'Esse escopo pede rastreamento em tempo real e pagamento em trânsito — as duas coisas mais caras de sustentar em produção, não de construir. O squad abaixo cobre mobile, backend, design e QA; o risco maior hoje é lidar com dados de pagamento sem uma revisão de segurança dedicada, que só entra automaticamente em escopos de complexidade enterprise.',
       midGroundSuggestion:
         scenario.riskScore > 30
           ? 'Se o orçamento for o problema, mantenha o QA e corte o designer pra meio período — usabilidade dá pra iterar depois do lançamento, bug em pagamento não dá.'

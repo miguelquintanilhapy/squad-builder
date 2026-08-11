@@ -111,6 +111,12 @@ export interface RiskAlert {
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 
+/** Estouro de teto mensal — sempre visível, fora da fila de drivers (ver riskEngine.assessRisk). */
+export interface BudgetAlert {
+  overageAmount: number
+  suggestion: string
+}
+
 /** Resultado final calculado deterministicamente + narrado pela LLM. */
 export interface Scenario {
   squad: SquadMember[]
@@ -119,8 +125,11 @@ export interface Scenario {
   riskScore: number // 0-100
   riskLevel: RiskLevel
   alerts: RiskAlert[]
-  /** Os 3 alertas de maior peso no risk score, pra exibição no painel de risco. */
+  /** Todos os alertas que somaram no score, ordenados por peso — nenhum é truncado em silêncio. */
   drivers: RiskAlert[]
+  /** Pontos de partida do score, só pela complexidade — base + soma dos drivers = riskScore. */
+  riskBase: number
+  budgetAlert?: BudgetAlert
   /** Premissas assumidas no cálculo (ex: contratação PJ, sem verba de infra) — o usuário corrige a leitura acima se algo não valer. */
   assumptions: string[]
   summary: string

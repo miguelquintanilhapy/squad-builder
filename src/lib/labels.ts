@@ -64,3 +64,32 @@ export function formatCurrencyBRL(value: number): string {
 export function formatNumberPtBR(value: number): string {
   return value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
 }
+
+/**
+ * O prazo estimado (pessoa-mês / capacidade) não tem precisão de dia — "2,3 meses" comunica uma
+ * exatidão que o modelo não tem. Mostra faixa (piso–teto) em vez de decimal; se a faixa colapsa
+ * num inteiro, mostra só o inteiro. Todo derivado do prazo (investimento total, custo por papel
+ * no período) usa monthsRange pra herdar a mesma faixa, não o ponto médio.
+ */
+export function monthsRange(months: number): { lower: number; upper: number } {
+  return { lower: Math.floor(months), upper: Math.ceil(months) }
+}
+
+export function formatMonthsLabel(months: number): string {
+  const { lower, upper } = monthsRange(months)
+  if (lower === upper) return `${lower} ${lower === 1 ? 'mês' : 'meses'}`
+  return `${lower} a ${upper} meses`
+}
+
+/** Só os dígitos da faixa, sem "meses" — pra usar como valor grande de KPI com o sufixo separado. */
+export function formatMonthsCompact(months: number): string {
+  const { lower, upper } = monthsRange(months)
+  return lower === upper ? `${lower}` : `${lower}–${upper}`
+}
+
+/** Mesmo valor multiplicado pelos dois extremos da faixa de prazo — nunca pelo ponto médio cru. */
+export function formatCurrencyRangeBRL(monthlyValue: number, months: number): string {
+  const { lower, upper } = monthsRange(months)
+  if (lower === upper) return formatCurrencyBRL(monthlyValue * lower)
+  return `${formatCurrencyBRL(monthlyValue * lower)} – ${formatCurrencyBRL(monthlyValue * upper)}`
+}

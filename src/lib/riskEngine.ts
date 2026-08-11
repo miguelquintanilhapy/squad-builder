@@ -1,5 +1,5 @@
-import { PLATFORM_LABELS, formatNumberPtBR } from '@/lib/labels'
-import { ProjectInput, RiskAlert, RiskLevel, ScopeAnalysis, SquadMember } from '@/types'
+import { PLATFORM_LABELS, formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
+import { BudgetAlert, ProjectInput, RiskAlert, RiskLevel, ScopeAnalysis, SquadMember } from '@/types'
 
 const BASE_RISK_BY_COMPLEXITY = { low: 5, medium: 15, enterprise: 25 } as const
 
@@ -30,8 +30,16 @@ export interface RiskAssessment {
   riskScore: number
   riskLevel: RiskLevel
   alerts: RiskAlert[]
+  /** Todos os fatores que somaram no score, ordenados por peso — nenhum é escondido da tela. */
   drivers: RiskAlert[]
+  /** Pontos de partida do score, só pela complexidade do escopo — a linha que faltava pra fechar a soma. */
+  riskBase: number
   assumptions: string[]
+  /**
+   * Estouro de teto mensal: sai da fila de drivers (não compete por espaço/peso com os outros
+   * fatores) e fica sempre visível, ancorado nos KPIs. Continua contando pro score.
+   */
+  budgetAlert?: BudgetAlert
 }
 
 export function assessRisk(
@@ -41,7 +49,8 @@ export function assessRisk(
   realisticTimelineMonths: number,
   totalMonthlyCost: number
 ): RiskAssessment {
-  let score = BASE_RISK_BY_COMPLEXITY[scope.complexity]
+  const riskBase = BASE_RISK_BY_COMPLEXITY[scope.complexity]
+  let score = riskBase
   const alerts: RiskAlert[] = []
 
   const needsQa = scope.complexity !== 'low' || scope.estimatedEffortPersonMonths > 6
@@ -112,32 +121,32 @@ export function assessRisk(
         category: 'timeline',
         severity: ratio > 1.5 ? 'critical' : 'warning',
         title: 'Prazo alvo incompatível com o squad',
-        description: `Com o squad atual, o prazo realista estimado é de ${formatNumberPtBR(realisticTimelineMonths)} meses, acima dos ${input.targetTimelineMonths} meses desejados.`,
+        description: `Com o squad atual, o prazo realista estimado é de ${formatMonthsLabel(realisticTimelineMonths)}, acima dos ${input.targetTimelineMonths} meses desejados.`,
         weight,
       })
     }
   }
 
+  // Estouro de teto não entra em "alerts"/"drivers" — vira budgetAlert, sempre visível, pra não
+  // competir por espaço de exibição com fatores de peso maior (ver 1.5/3.12 da revisão externa).
+  let budgetAlert: BudgetAlert | undefined
   if (input.monthlyBudget && totalMonthlyCost > input.monthlyBudget) {
+    const overageAmount = totalMonthlyCost - input.monthlyBudget
     const ratio = totalMonthlyCost / input.monthlyBudget
-    const weight = clamp((ratio - 1) * 20, 0, 20)
-    score += weight
-    alerts.push({
-      category: 'budget',
-      severity: ratio > 1.3 ? 'critical' : 'warning',
-      title: 'Custo do squad acima do orçamento',
-      description: `O squad atual custa R$ ${totalMonthlyCost.toLocaleString('pt-BR')}/mês, acima do orçamento de R$ ${input.monthlyBudget.toLocaleString('pt-BR')}/mês informado.`,
-      weight,
-    })
+    score += clamp((ratio - 1) * 20, 0, 20)
+    budgetAlert = {
+      overageAmount,
+      suggestion: `Squad atual custa ${formatCurrencyBRL(totalMonthlyCost)}/mês, ${formatCurrencyBRL(overageAmount)} acima do teto de ${formatCurrencyBRL(input.monthlyBudget)}. Renegocie o prazo ou tire um papel de suporte pra caber — use o chat de negociação abaixo.`,
+    }
   }
 
   const riskScore = Math.round(clamp(score, 0, 100))
   const riskLevel: RiskLevel =
     riskScore <= 25 ? 'low' : riskScore <= 50 ? 'medium' : riskScore <= 75 ? 'high' : 'critical'
 
-  const drivers = [...alerts].sort((a, b) => b.weight - a.weight).slice(0, 3)
+  const drivers = [...alerts].sort((a, b) => b.weight - a.weight)
 
-  return { riskScore, riskLevel, alerts, drivers, assumptions: buildAssumptions(squad, scope) }
+  return { riskScore, riskLevel, alerts, drivers, riskBase, budgetAlert, assumptions: buildAssumptions(squad, scope) }
 }
 
 /** Premissas assumidas no cálculo — geradas a partir do squad/escopo reais, não texto fixo. */

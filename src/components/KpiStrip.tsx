@@ -1,5 +1,5 @@
 import { Scenario } from '@/types'
-import { formatCurrencyBRL, formatNumberPtBR } from '@/lib/labels'
+import { formatCurrencyBRL, formatCurrencyRangeBRL, formatMonthsCompact, formatMonthsLabel } from '@/lib/labels'
 
 function Kpi({ label, value, note }: { label: string; value: React.ReactNode; note?: string }) {
   return (
@@ -15,7 +15,6 @@ function Kpi({ label, value, note }: { label: string; value: React.ReactNode; no
 
 export function KpiStrip({ scenario }: { scenario: Scenario }) {
   const totalHeadcount = scenario.squad.reduce((sum, m) => sum + m.quantity, 0)
-  const totalInvestment = scenario.totalMonthlyCost * scenario.estimatedTimelineMonths
 
   return (
     <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-rule-2 bg-rule-2 sm:grid-cols-4">
@@ -34,15 +33,15 @@ export function KpiStrip({ scenario }: { scenario: Scenario }) {
         label="Prazo estimado"
         value={
           <>
-            {formatNumberPtBR(scenario.estimatedTimelineMonths)}
+            {formatMonthsCompact(scenario.estimatedTimelineMonths)}
             <span className="ml-1 text-sm font-normal text-ink-3">meses</span>
           </>
         }
       />
       <Kpi
-        label="Investimento total"
-        value={formatCurrencyBRL(totalInvestment)}
-        note={`ao longo de ${formatNumberPtBR(scenario.estimatedTimelineMonths)} meses`}
+        label="Custo acumulado no período"
+        value={formatCurrencyRangeBRL(scenario.totalMonthlyCost, scenario.estimatedTimelineMonths)}
+        note={`ao longo de ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
       />
     </div>
   )
