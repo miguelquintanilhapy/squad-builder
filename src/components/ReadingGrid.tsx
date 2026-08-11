@@ -28,7 +28,10 @@ function togglePlatform(current: Platform[], platform: Platform): Platform[] {
 const chipBase =
   'inline-flex items-center gap-1 rounded-[2px] border px-2.5 py-[3px] text-[13px] font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60'
 const chipActive = 'border-petrol bg-petrol text-paper-2'
-const chipInactive = 'border-rule-2 text-ink-2 hover:border-ink-3'
+// border-rule-2 batia só 1,25:1 contra o card branco — quase invisível como contorno de um
+// controle clicável (WCAG 1.4.11 pede 3:1). border-ink-3 resolve (5,26:1) sem escurecer o
+// hairline compartilhado que o resto do app usa só como divisor, não como borda de controle.
+const chipInactive = 'border-ink-3 text-ink-2 hover:border-ink'
 
 /**
  * Segundo canal de seleção além da cor (contraste/daltonismo): o check só aparece quando ativo,
