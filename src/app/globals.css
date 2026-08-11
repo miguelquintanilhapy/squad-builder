@@ -7,11 +7,14 @@
   --paper-3: #fdfdfc;
   --ink: #14201d;
   --ink-2: #4e5a56;
-  --ink-3: #818b87;
+  /* Escurecido de #818b87 (2.93:1 em --paper, reprovava até o mínimo de texto grande) pra
+     #636b68 (4.57:1 na superfície mais clara) — calculado, não no olho. Ver revisão externa 1.11. */
+  --ink-3: #636b68;
   --rule: #cbd0c9;
   --rule-2: #dde0da;
   --petrol: #14554e;
-  --ochre: #a9690b;
+  /* Escurecido de #a9690b (3.71:1 em --paper) pra #965d0a (4.53:1) pelo mesmo motivo. */
+  --ochre: #965d0a;
   --rust: #9c3a21;
   --moss: #2c7458;
   --grid: rgba(20, 32, 29, 0.055);
