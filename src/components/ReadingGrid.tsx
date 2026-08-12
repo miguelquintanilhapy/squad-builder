@@ -80,7 +80,7 @@ function DimensionBlock({
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-paper-3 pt-[13px] pr-[15px] pb-[14px] pl-[15px]">
+    <div className="rounded-[7px] bg-paper-3 pt-[13px] pr-[15px] pb-[14px] pl-[15px]">
       <div className="mb-[9px] text-[12.5px] font-medium text-ink-3">{label}</div>
       <div
         role={radioGroup ? 'radiogroup' : undefined}
@@ -104,7 +104,7 @@ export function ReadingGrid({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(215px,1fr))] gap-px overflow-hidden rounded-[7px] border border-rule-2 bg-rule-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(215px,1fr))] gap-3">
         <DimensionBlock label="Tipo de produto">
           {PRODUCT_TYPES.map((type) => (
             <Chip

@@ -3,9 +3,11 @@ import { formatCurrencyBRL, formatCurrencyRangeBRL, formatMonthsCompact, formatM
 
 function Kpi({ label, value, note }: { label: string; value: React.ReactNode; note?: string }) {
   return (
-    <div className="bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
+    // Cada KPI é a própria superfície, separada por espaço real (gap), não por hairline —
+    // o número precisa dominar sem competir com uma grade de linhas em volta (briefing §10).
+    <div className="rounded-[7px] bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
       <div className="text-[12.5px] font-medium text-ink-3">{label}</div>
-      <div className="tnum mt-1.5 font-display text-[32px] font-bold leading-[1.14] tracking-[-0.032em] text-ink">
+      <div className="tnum mt-1.5 font-display text-[36px] font-extrabold leading-[1.1] tracking-[-0.032em] text-ink">
         {value}
       </div>
       {note && <div className="tnum mt-1 text-[12.5px] text-ink-3">{note}</div>}
@@ -17,7 +19,7 @@ export function KpiStrip({ scenario }: { scenario: Scenario }) {
   const totalHeadcount = scenario.squad.reduce((sum, m) => sum + m.quantity, 0)
 
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[7px] border border-rule-2 bg-rule-2 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <Kpi
         label="Squad sugerido"
         value={

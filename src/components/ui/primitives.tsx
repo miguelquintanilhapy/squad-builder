@@ -1,23 +1,15 @@
 import { Loader2 } from 'lucide-react'
 
-export function Card({
-  className = '',
-  children,
-}: {
-  className?: string
-  children: React.ReactNode
-}) {
-  return <div className={`rounded-[7px] border border-rule-2 bg-paper-3 ${className}`}>{children}</div>
-}
-
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[12.5px] font-medium text-ink-3">{children}</h2>
 }
 
 /**
  * Painel com cabeçalho (título + nota opcional) — cromo compartilhado por composição, risco e
- * alocação. Sem padding no corpo (como o .scroller do POC): tabela, SVG e o grid do RiskPanel já
- * levam o próprio espaçamento interno; quem precisar de respiro (ex: NegotiationChat) adiciona.
+ * alocação. Sem borda: a superfície (paper-3 sobre o paper-2 da página) e uma elevação bem leve
+ * definem o limite, não uma linha (briefing §4/§11 — "raised" é elevação com parcimônia, não
+ * borda em tudo). Sem padding no corpo: tabela, SVG e o grid do RiskPanel já levam o próprio
+ * espaçamento interno; quem precisar de respiro (ex: NegotiationChat) adiciona.
  */
 export function Panel({
   title,
@@ -29,8 +21,8 @@ export function Panel({
   children: React.ReactNode
 }) {
   return (
-    <div className="overflow-hidden rounded-[7px] border border-rule-2 bg-paper-3">
-      <div className="flex items-baseline justify-between gap-3.5 border-b border-rule-2 bg-paper-2 px-[15px] py-[11px]">
+    <div className="overflow-hidden rounded-[7px] bg-paper-3 shadow-[0_1px_2px_rgba(24,33,42,0.04),0_2px_8px_rgba(24,33,42,0.06)]">
+      <div className="flex items-baseline justify-between gap-3.5 bg-paper-2 px-[15px] py-[11px]">
         <h3 className="font-display text-[17px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
         {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
       </div>

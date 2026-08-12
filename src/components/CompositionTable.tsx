@@ -8,7 +8,7 @@ import {
 } from '@/lib/labels'
 import { ALLOCATION_CAPACITY_MULTIPLIER } from '@/lib/rates'
 
-const numCellClasses = 'min-[760px]:w-32 px-[15px] py-2 text-right tnum'
+const numCellClasses = 'min-[760px]:w-32 px-[15px] py-3 text-right tnum'
 const numHeadClasses = 'min-[760px]:w-32 px-[15px] py-[9px] text-right text-[12.5px] font-medium text-ink-3'
 
 export function CompositionTable({ scenario }: { scenario: Scenario }) {
@@ -39,11 +39,13 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
             const perPerson = member.monthlyCostPerPerson ?? 0
             const monthlyCost = perPerson * member.quantity
             return (
-              <tr key={`${member.role}-${index}`} className="border-b border-rule-2 last:border-b-0 hover:bg-paper-2">
-                <td className="px-[15px] py-2 text-ink">
-                  <div>
+              // Sem linha por papel — a separação vem do padding generoso e do hover, não de
+              // borda (briefing §4/§18: reduzir bordas pesadas e linhas excessivas em tabela).
+              <tr key={`${member.role}-${index}`} className="hover:bg-paper-2">
+                <td className="px-[15px] py-3 text-ink">
+                  <div className="font-semibold">
                     {member.quantity}x {ROLE_LABELS[member.role]}{' '}
-                    <span className="text-[12.5px] text-ink-3">{SENIORITY_LABELS[member.seniority]}</span>
+                    <span className="font-normal text-[12.5px] text-ink-3">{SENIORITY_LABELS[member.seniority]}</span>
                   </div>
                   {member.justification && (
                     <div className="mt-0.5 text-[12.5px] text-ink-3">{member.justification}</div>
@@ -66,8 +68,8 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
           })}
         </tbody>
         <tfoot>
-          <tr className="border-t border-rule bg-paper-2 font-semibold">
-            <td className="px-[15px] py-2">{totalHeadcount} pessoas no squad</td>
+          <tr className="bg-paper-2 font-semibold">
+            <td className="px-[15px] py-3">{totalHeadcount} pessoas no squad</td>
             <td className={numCellClasses}>{formatMonthsLabel(scenario.estimatedTimelineMonths)}</td>
             <td className={numCellClasses}>{formatCurrencyBRL(scenario.totalMonthlyCost)}</td>
             <td className={numCellClasses}>

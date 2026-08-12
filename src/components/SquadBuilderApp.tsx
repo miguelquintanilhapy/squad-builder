@@ -188,7 +188,7 @@ export function SquadBuilderApp() {
           </div>
         </section>
 
-        <section ref={scopeFormRef} className="wrap border-t border-rule py-8 sm:py-10">
+        <section ref={scopeFormRef} className="wrap py-12 sm:py-16">
           {/* Mais largo que os 760px originais (fechava demais frente ao container de 1680px das
               outras seções — ver revisão externa 1.14), mas sem ir pra largura total: textarea e
               inputs não têm a mesma justificativa de tabela/gráfico pra ocupar a tela inteira. */}
@@ -267,7 +267,7 @@ export function SquadBuilderApp() {
         </section>
 
         {scopeAnalysis && (
-          <section className="wrap border-t border-rule py-8 sm:py-10">
+          <section className="wrap py-12 sm:py-16">
             <Eyebrow>O que entendemos</Eyebrow>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Leitura do escopo
@@ -280,7 +280,7 @@ export function SquadBuilderApp() {
         )}
 
         {(analyzeLoading || scenario) && (
-          <section className="wrap border-t border-rule py-8 sm:py-10">
+          <section className="wrap py-12 sm:py-16">
             <Eyebrow>Squad recomendado</Eyebrow>
             {scenario && (
               <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
