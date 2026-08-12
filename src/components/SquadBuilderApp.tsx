@@ -168,7 +168,7 @@ export function SquadBuilderApp() {
               outras seções — ver revisão externa 1.14), mas sem ir pra largura total: textarea e
               inputs não têm a mesma justificativa de tabela/gráfico pra ocupar a tela inteira. */}
           <div className="max-w-[960px]">
-            <Eyebrow index="01">Escopo</Eyebrow>
+            <Eyebrow>Escopo</Eyebrow>
             <h1 className="font-display text-[clamp(30px,4.6vw,46px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
               Descreva o produto.
               <br />O resto a gente <span className="text-petrol">deduz</span>.
@@ -251,7 +251,7 @@ export function SquadBuilderApp() {
 
         {scopeAnalysis && (
           <section className="wrap border-t border-rule py-8 sm:py-10">
-            <Eyebrow index="02">O que entendemos</Eyebrow>
+            <Eyebrow>O que entendemos</Eyebrow>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Leitura do escopo
             </h2>
@@ -264,7 +264,7 @@ export function SquadBuilderApp() {
 
         {(analyzeLoading || scenario) && (
           <section className="wrap border-t border-rule py-8 sm:py-10">
-            <Eyebrow index="03">Squad recomendado</Eyebrow>
+            <Eyebrow>Squad recomendado</Eyebrow>
             {scenario && (
               <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
             )}
