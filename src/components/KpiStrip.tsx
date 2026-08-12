@@ -30,7 +30,15 @@ export function KpiStrip({ scenario }: { scenario: Scenario }) {
         }
         note={`${scenario.squad.length} papéis`}
       />
-      <Kpi label="Custo mensal" value={formatCurrencyBRL(scenario.totalMonthlyCost)} />
+      <Kpi
+        label="Custo mensal"
+        value={
+          <>
+            {formatCurrencyBRL(scenario.totalMonthlyCost)}
+            <span className="ml-1 text-sm font-normal text-ink-3">/mês</span>
+          </>
+        }
+      />
       <Kpi
         label="Prazo estimado"
         value={

@@ -23,7 +23,7 @@ export function Panel({
   return (
     <div className="overflow-hidden rounded-[7px] bg-paper-3 shadow-[0_1px_2px_rgba(24,33,42,0.04),0_2px_8px_rgba(24,33,42,0.06)]">
       <div className="flex items-baseline justify-between gap-3.5 bg-paper-2 px-[15px] py-[11px]">
-        <h3 className="font-display text-[17px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
+        <h3 className="font-display text-[19px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
         {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
       </div>
       {children}
