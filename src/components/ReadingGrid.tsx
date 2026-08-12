@@ -26,7 +26,9 @@ function togglePlatform(current: Platform[], platform: Platform): Platform[] {
 }
 
 const chipBase =
-  'inline-flex items-center gap-1 rounded-[2px] border px-2.5 py-[3px] text-[13px] font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60'
+  // Chip/badge é o único lugar com raio total (briefing §12: "pills apenas para badges/chips") —
+  // cards/inputs/botões ficam em 7px, isso os diferencia visualmente como uma categoria própria.
+  'inline-flex items-center gap-1 rounded-full border px-3 py-[5px] text-[13px] font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60'
 const chipActive = 'border-petrol bg-petrol text-paper-2'
 // border-rule-2 batia só 1,25:1 contra o card branco — quase invisível como contorno de um
 // controle clicável (WCAG 1.4.11 pede 3:1). border-ink-3 resolve (5,26:1) sem escurecer o
@@ -102,7 +104,7 @@ export function ReadingGrid({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(215px,1fr))] gap-px overflow-hidden rounded-[3px] border border-rule-2 bg-rule-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(215px,1fr))] gap-px overflow-hidden rounded-[7px] border border-rule-2 bg-rule-2">
         <DimensionBlock label="Tipo de produto">
           {PRODUCT_TYPES.map((type) => (
             <Chip

@@ -27,7 +27,7 @@ export function RiskPanel({ scenario }: { scenario: Scenario }) {
   const color = RISK_COLOR[scenario.riskLevel]
 
   return (
-    <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[3px] bg-rule-2 sm:grid-cols-[210px_1fr]">
+    <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[7px] bg-rule-2 sm:grid-cols-[210px_1fr]">
       <div className="bg-paper-3 p-4">
         <div className="flex items-baseline gap-1">
           <span

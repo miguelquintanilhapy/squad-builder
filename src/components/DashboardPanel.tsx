@@ -11,13 +11,13 @@ import { RiskPanel } from '@/components/RiskPanel'
 import { Panel } from '@/components/ui/primitives'
 
 function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-[3px] bg-rule-2 ${className}`} />
+  return <div className={`animate-pulse rounded-[7px] bg-rule-2 ${className}`} />
 }
 
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-rule-2 bg-rule-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[7px] border border-rule-2 bg-rule-2 sm:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex flex-col gap-2 bg-paper-3 p-4">
             <Skeleton className="h-3 w-20" />
@@ -26,7 +26,7 @@ function DashboardSkeleton() {
         ))}
       </div>
       {[1, 2, 3].map((panel) => (
-        <div key={panel} className="rounded-[3px] border border-rule-2 bg-paper-3 p-4">
+        <div key={panel} className="rounded-[7px] border border-rule-2 bg-paper-3 p-4">
           <Skeleton className="h-4 w-1/3" />
           <div className="mt-4 flex flex-col gap-3">
             {[1, 2, 3].map((row) => (
@@ -65,7 +65,7 @@ export function DashboardPanel({ scenario, loading }: { scenario: Scenario | nul
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col gap-6">
       {scenario.budgetAlert && (
         <motion.div variants={groupVariants}>
-          <div className="flex items-start gap-3 rounded-[3px] border border-ochre/30 bg-ochre/5 px-4 py-3 text-sm text-ink">
+          <div className="flex items-start gap-3 rounded-[7px] border border-ochre/30 bg-ochre/5 px-4 py-3 text-sm text-ink">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-ochre" strokeWidth={2} />
             <p>{scenario.budgetAlert.suggestion}</p>
           </div>

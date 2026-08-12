@@ -7,7 +7,7 @@ export function Card({
   className?: string
   children: React.ReactNode
 }) {
-  return <div className={`rounded-[3px] border border-rule-2 bg-paper-3 ${className}`}>{children}</div>
+  return <div className={`rounded-[7px] border border-rule-2 bg-paper-3 ${className}`}>{children}</div>
 }
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,7 @@ export function Panel({
   children: React.ReactNode
 }) {
   return (
-    <div className="overflow-hidden rounded-[3px] border border-rule-2 bg-paper-3">
+    <div className="overflow-hidden rounded-[7px] border border-rule-2 bg-paper-3">
       <div className="flex items-baseline justify-between gap-3.5 border-b border-rule-2 bg-paper-2 px-[15px] py-[11px]">
         <h3 className="font-display text-[17px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
         {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}

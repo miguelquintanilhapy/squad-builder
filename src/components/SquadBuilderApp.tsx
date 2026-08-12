@@ -196,7 +196,7 @@ export function SquadBuilderApp() {
             <Eyebrow>Escopo</Eyebrow>
 
             {error && (
-              <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[3px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
+              <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[7px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
                 <span className="flex items-center gap-2.5">
                   <AlertCircle className="size-4 shrink-0" strokeWidth={2} />
                   {error}

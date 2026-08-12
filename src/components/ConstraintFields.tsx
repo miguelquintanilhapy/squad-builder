@@ -1,7 +1,7 @@
 'use client'
 
 const inputShellClasses =
-  'flex h-[39px] items-center overflow-hidden rounded-[3px] border border-rule-2 bg-paper-3 transition-[border-color,box-shadow] duration-150 focus-within:border-petrol focus-within:shadow-[0_0_0_3px_rgba(20,88,74,0.13)]'
+  'flex h-[39px] items-center overflow-hidden rounded-[7px] border border-rule-2 bg-paper-3 transition-[border-color,box-shadow] duration-150 focus-within:border-petrol focus-within:shadow-[0_0_0_3px_rgba(20,88,74,0.13)]'
 
 const affixClasses = 'flex h-full items-center bg-paper-2 px-2.5 text-[13.5px] text-ink-3'
 

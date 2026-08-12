@@ -1,12 +1,12 @@
 @import 'tailwindcss';
 
 :root {
-  /* Paleta Ardósia (revisão externa 8.1) — neutro frio em vez do bege quente original, que caía
-     no agrupamento visual mais reconhecível de "gerado por IA". Valores calculados contra AA
-     (4.5:1 no tamanho real de uso), não copiados direto do documento — o próprio --ink-2 da
-     revisão (#67717C) reprovava contra --paper (4.26:1) e foi escurecido pra #636D78 (4.52:1). */
-  --paper: #ebeef1;
-  --paper-2: #f6f7f9;
+  /* Segunda rodada (briefing UI/UX §17): fundo mais neutro/claro que a Ardósia anterior, pra
+     fugir da leitura de "dashboard admin". Hierarquia bg → subtle (agrupamento recuado, ex.
+     cabeçalho de painel/tabela) → surface (cards, tabelas) — "raised" não é token de cor, é
+     elevação (sombra) aplicada com parcimônia só onde precisa chamar atenção (ver Panel/RiskPanel). */
+  --paper: #f7f8fa;
+  --paper-2: #e4e7eb;
   --paper-3: #ffffff;
   --ink: #18212a;
   /* Só um tom de texto secundário (a revisão não separa 2 níveis como a paleta antiga fazia). */
@@ -88,7 +88,7 @@ html {
   .scope-shell {
     position: relative;
     border: 1px solid var(--rule-2);
-    border-radius: 3px;
+    border-radius: 7px;
     background: var(--paper-3);
     background-image: linear-gradient(var(--grid) 1px, transparent 1px);
     background-size: 100% 26px;
