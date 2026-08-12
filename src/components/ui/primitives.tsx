@@ -45,7 +45,7 @@ export function Panel({
  */
 export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-5 font-display text-[14px] font-bold tracking-[-0.01em] text-petrol">{children}</div>
+    <div className="mb-5 font-display text-[19px] font-bold tracking-[-0.015em] text-petrol">{children}</div>
   )
 }
 
