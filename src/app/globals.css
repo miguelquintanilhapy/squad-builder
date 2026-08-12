@@ -19,6 +19,12 @@
   --rust: #9c3a21;
   --moss: #2c7458;
   --grid: rgba(24, 33, 42, 0.055);
+  /* Elevação única de "superfície levantada" (Panel, header) — um token só, pra não desalinhar
+     as duas sombras se um dia precisar ajustar (já aconteceu, viviam como 2 literais soltos). */
+  --shadow-raised: 0 1px 2px rgba(24, 33, 42, 0.04), 0 2px 8px rgba(24, 33, 42, 0.06);
+  /* Anel de foco petrol — repetia como literal em 3 lugares (scope-shell, prazo/orçamento,
+     textarea de negociação); um token só evita divergir se a cor petrol mudar de novo. */
+  --shadow-focus: 0 0 0 3px rgba(20, 88, 74, 0.13);
 }
 
 @theme inline {
@@ -84,7 +90,7 @@ html {
      lisa + sombra bem leve, mesma elevação do Panel, em vez de borda embaixo. */
   .app-header {
     background: var(--paper-3);
-    box-shadow: 0 1px 2px rgba(24, 33, 42, 0.04), 0 2px 8px rgba(24, 33, 42, 0.06);
+    box-shadow: var(--shadow-raised);
   }
 
   /* Campo de escopo: papel milimetrado ao fundo, alinhado ao line-height do textarea. */
@@ -103,7 +109,7 @@ html {
   }
   .scope-shell:focus-within {
     border-color: var(--petrol);
-    box-shadow: 0 0 0 3px rgba(20, 88, 74, 0.13);
+    box-shadow: var(--shadow-focus);
   }
 }
 
