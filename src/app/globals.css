@@ -80,8 +80,11 @@ html {
     }
   }
 
+  /* Cor lisa (era gradiente) — briefing §11/§29 evita gradiente decorativo. Superfície branca
+     lisa + sombra bem leve, mesma elevação do Panel, em vez de borda embaixo. */
   .app-header {
-    background: linear-gradient(var(--paper-2), var(--paper));
+    background: var(--paper-3);
+    box-shadow: 0 1px 2px rgba(24, 33, 42, 0.04), 0 2px 8px rgba(24, 33, 42, 0.06);
   }
 
   /* Campo de escopo: papel milimetrado ao fundo, alinhado ao line-height do textarea. */

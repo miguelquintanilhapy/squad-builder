@@ -155,13 +155,22 @@ export function SquadBuilderApp() {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
-      <header className="app-header border-b border-rule">
+      {/* Contexto tipo breadcrumb ("SquadBuilder / <projeto>") só quando já existe uma análise —
+          orientação visual (onde estou, em qual projeto), não funcionalidade nova: é a mesma
+          descrição que o usuário já escreveu, só truncada. Sem borda embaixo (briefing §4/§8). */}
+      <header className="app-header">
         <div className="wrap flex items-center justify-between gap-3.5 py-5">
           <div className="flex items-baseline gap-[11px]">
             <BrandMark />
             <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
               SquadBuilder
             </span>
+            {scenario && (
+              <>
+                <span className="text-ink-3">/</span>
+                <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
+              </>
+            )}
           </div>
           <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
         </div>
