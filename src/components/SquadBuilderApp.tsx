@@ -172,7 +172,7 @@ export function SquadBuilderApp() {
             — abrir já em campo de texto/inputs lia como pouco profissional. min-h-screen (mais a
             altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
         <section className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center">
-          <h1 className="max-w-[18ch] font-display text-[clamp(40px,7vw,72px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
+          <h1 className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
             Descreva o produto.
             <br />Receba o <span className="text-petrol">squad</span>.
           </h1>

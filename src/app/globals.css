@@ -35,11 +35,11 @@
   --color-rust: var(--rust);
   --color-moss: var(--moss);
 
-  /* Bricolage Grotesque pra display (h1/h2, KPIs, risk score, wordmark), IBM Plex Sans
-     pra tudo mais — as duas únicas famílias permitidas nesta interface. Nenhuma mono na UI:
+  /* Montserrat pra display (h1/h2, KPIs, risk score, wordmark) — alternativa gratuita à Proxima
+     Nova, que é paga e sem licença aqui. IBM Plex Sans pra tudo mais. Nenhuma mono na UI:
      removida junto com CompositionTable/KpiStrip, os últimos componentes que usavam font-mono. */
   --font-sans: var(--font-ibm-plex-sans);
-  --font-display: var(--font-bricolage);
+  --font-display: var(--font-montserrat);
 }
 
 html {

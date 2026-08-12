@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Sans, Montserrat } from "next/font/google";
 import "./globals.css";
 
-// Bricolage Grotesque: títulos, valores numéricos grandes, wordmark. IBM Plex Sans: todo o resto.
-const bricolageGrotesque = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+// Montserrat: títulos, valores numéricos grandes, wordmark — alternativa gratuita mais parecida
+// com a Proxima Nova (paga, sem licença neste projeto). IBM Plex Sans: todo o resto.
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
   weight: ["700", "800"],
   display: "swap",
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${bricolageGrotesque.variable} ${ibmPlexSans.variable} h-full antialiased`}>
+    <html lang="pt-BR" className={`${montserrat.variable} ${ibmPlexSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-paper text-ink-2">{children}</body>
     </html>
   );
