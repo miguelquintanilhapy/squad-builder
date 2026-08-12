@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { AlertCircle, ArrowRight } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { AlertCircle, ArrowDown, ArrowRight } from 'lucide-react'
 import { NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, MIN_SCOPE_CHARS } from '@/components/ScopeField'
@@ -31,6 +31,7 @@ async function parseJsonOrThrow(response: Response) {
 }
 
 export function SquadBuilderApp() {
+  const scopeFormRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
   const [scopeAnalysis, setScopeAnalysis] = useState<ScopeAnalysis | null>(null)
   const [scenario, setScenario] = useState<Scenario | null>(null)
@@ -148,6 +149,10 @@ export function SquadBuilderApp() {
   const charCount = input.description.trim().length
   const missingChars = MIN_SCOPE_CHARS - charCount
 
+  function scrollToScopeForm() {
+    scopeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
       <header className="app-header border-b border-rule">
@@ -163,20 +168,32 @@ export function SquadBuilderApp() {
       </header>
 
       <main className="flex-1">
-        <section className="wrap py-8 sm:py-10">
+        {/* Primeira coisa que a pessoa vê: frase de impacto centralizada, não o formulário direto
+            — abrir já em campo de texto/inputs lia como pouco profissional. min-h-screen (mais a
+            altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
+        <section className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center">
+          <h1 className="max-w-[18ch] font-display text-[clamp(40px,7vw,72px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
+            Descreva o produto.
+            <br />Receba o <span className="text-petrol">squad</span>.
+          </h1>
+          <p className="mt-4 max-w-[56ch] text-lg text-ink-2">
+            Escreva como você explicaria pra um tech lead novo no time — em texto corrido, sem
+            formulário. A partir daí montamos o squad, o custo mensal, o prazo e os riscos.
+          </p>
+          <div className="mt-8">
+            <PrimaryButton onClick={scrollToScopeForm} type="button">
+              Começar
+              <ArrowDown className="size-4" />
+            </PrimaryButton>
+          </div>
+        </section>
+
+        <section ref={scopeFormRef} className="wrap border-t border-rule py-8 sm:py-10">
           {/* Mais largo que os 760px originais (fechava demais frente ao container de 1680px das
               outras seções — ver revisão externa 1.14), mas sem ir pra largura total: textarea e
               inputs não têm a mesma justificativa de tabela/gráfico pra ocupar a tela inteira. */}
           <div className="max-w-[960px]">
             <Eyebrow>Escopo</Eyebrow>
-            <h1 className="font-display text-[clamp(30px,4.6vw,46px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
-              Descreva o produto.
-              <br />O resto a gente <span className="text-petrol">deduz</span>.
-            </h1>
-            <p className="mt-2.5 max-w-[56ch] text-base text-ink-2">
-              Escreva como você explicaria pra um tech lead novo no time — em texto corrido, sem
-              formulário. A partir daí montamos o squad, o custo mensal, o prazo e os riscos.
-            </p>
 
             {error && (
               <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[3px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
