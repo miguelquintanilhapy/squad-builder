@@ -64,7 +64,7 @@ export function PrimaryButton({
       className={`group inline-flex items-center justify-center gap-2.5 rounded-[7px] border px-[22px] py-[11px] text-[15px] font-semibold transition-[transform,background-color,box-shadow] duration-300 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 ${
         disabled
           ? 'cursor-not-allowed border-rule bg-transparent text-ink-3'
-          : 'border-ink bg-ink text-paper-2 shadow-[0_6px_16px_-4px_rgba(20,88,74,0)] hover:-translate-y-px hover:shadow-[0_6px_16px_-4px_rgba(20,88,74,0.35)]'
+          : 'border-ink bg-ink text-paper-2 shadow-[0_6px_16px_-4px_rgba(20,88,74,0)] hover:-translate-y-px hover:shadow-[0_6px_16px_-4px_rgba(20,88,74,0.35)] active:translate-y-0 active:scale-[0.98] active:shadow-none'
       }`}
     >
       {loading && <Loader2 className="size-4 animate-spin" />}

@@ -98,6 +98,9 @@ html {
     background-position: 0 15px;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
+  .scope-shell:hover {
+    border-color: var(--ink-3);
+  }
   .scope-shell:focus-within {
     border-color: var(--petrol);
     box-shadow: 0 0 0 3px rgba(20, 88, 74, 0.13);

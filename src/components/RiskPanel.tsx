@@ -42,7 +42,8 @@ export function RiskPanel({ scenario }: { scenario: Scenario }) {
           </span>
           <span className="tnum text-[16px] font-medium text-ink-3">/100</span>
         </div>
-        <div className="mt-1.5 text-[13.5px] font-medium" style={{ color }}>
+        <div className="mt-1.5 flex items-center gap-1.5 text-[13.5px] font-medium" style={{ color }}>
+          <span aria-hidden="true" className="inline-block size-[7px] rounded-full" style={{ background: color }} />
           Risco {RISK_LEVEL_LABELS[scenario.riskLevel].toLowerCase()}
         </div>
         <div className="mt-[13px] h-1.5 overflow-hidden rounded-full bg-rule-2">
