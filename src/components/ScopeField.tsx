@@ -6,6 +6,10 @@ import { SCOPE_SEEDS } from '@/lib/seeds'
 // intencional (evita estimar sobre nada), só não pode parecer botão quebrado o tempo todo.
 export const MIN_SCOPE_CHARS = 20
 
+// Alto o suficiente pra um PRD colado por engano ainda caber — mas sem truncar silenciosamente:
+// acima disso o envio bloqueia e o motivo aparece (revisão externa 2.4).
+export const MAX_SCOPE_CHARS = 6000
+
 export function ScopeField({
   value,
   onChange,
@@ -21,6 +25,8 @@ export function ScopeField({
   disabled?: boolean
 }) {
   const count = value.trim().length
+  const overMax = count > MAX_SCOPE_CHARS
+  const nearMax = !overMax && count > MAX_SCOPE_CHARS * 0.9
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -40,9 +46,15 @@ export function ScopeField({
           rows={7}
           className="block w-full resize-y border-0 bg-transparent px-4 py-3.5 text-base leading-[26px] text-ink outline-none placeholder:text-ink-3"
         />
-        <div className="flex items-center justify-between gap-3 border-t border-dashed border-rule-2 px-[15px] py-2 text-[12.5px] text-ink-3">
-          <span>{count} caracteres</span>
-          <span>Quanto mais concreto, menos chute</span>
+        <div className="flex items-center justify-between gap-3 border-t border-dashed border-rule-2 px-[15px] py-2 text-[12.5px]">
+          <span className={overMax ? 'font-medium text-rust' : nearMax ? 'text-ochre' : 'text-ink-3'}>
+            {count.toLocaleString('pt-BR')} caracteres
+          </span>
+          <span className={overMax ? 'font-medium text-rust' : 'text-ink-3'}>
+            {overMax
+              ? `${(count - MAX_SCOPE_CHARS).toLocaleString('pt-BR')} acima do limite de ${MAX_SCOPE_CHARS.toLocaleString('pt-BR')} — reduza pra continuar`
+              : 'Quanto mais concreto, menos chute'}
+          </span>
         </div>
       </div>
 

@@ -24,6 +24,26 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
 const RETRYABLE_STATUSES = new Set(['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'INTERNAL'])
 const RETRY_DELAYS_MS = [600, 1500]
 
+// Sem isso, uma chamada travada fica pendente indefinidamente e a UI não tem como saber a
+// diferença entre "ainda processando" e "nunca vai responder" (revisão externa 2.1).
+const REQUEST_TIMEOUT_MS = 30_000
+
+function withTimeout<T>(promise: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => reject(new Error('TIMEOUT')), REQUEST_TIMEOUT_MS)
+    promise.then(
+      (value) => {
+        clearTimeout(timeoutId)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timeoutId)
+        reject(error)
+      }
+    )
+  })
+}
+
 interface GeminiApiError {
   code?: number
   message?: string
@@ -65,8 +85,13 @@ function toFriendlyError(parsed: GeminiApiError | null, fallback: Error): Error 
 async function callGemini<T>(fn: () => Promise<T>): Promise<T> {
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     try {
-      return await fn()
+      return await withTimeout(fn())
     } catch (error) {
+      if (error instanceof Error && error.message === 'TIMEOUT') {
+        // Sem retry automático aqui: já esperou o limite inteiro, dobrar a espera é pior UX
+        // que devolver o controle e deixar o usuário decidir se tenta de novo.
+        throw new Error(`A IA demorou mais de ${REQUEST_TIMEOUT_MS / 1000}s pra responder. Tenta de novo.`)
+      }
       const parsed = parseGeminiError(error)
       const canRetry = parsed?.status ? RETRYABLE_STATUSES.has(parsed.status) : false
       const isLastAttempt = attempt === RETRY_DELAYS_MS.length

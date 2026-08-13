@@ -60,12 +60,14 @@ export function DashboardPanel({
   scenario,
   loading,
   recomputing = false,
+  onCancelRecompute,
 }: {
   scenario: Scenario | null
   loading: boolean
   /** Recálculo por edição de chip: mantém os números antigos visíveis (esmaecidos), nunca volta
    * pro skeleton — perder o ponto de comparação é o pior momento pra isso (revisão externa 2.5). */
   recomputing?: boolean
+  onCancelRecompute?: () => void
 }) {
   if (loading) {
     return <DashboardSkeleton />
@@ -78,9 +80,20 @@ export function DashboardPanel({
   return (
     <div className="relative">
       {recomputing && (
-        <div className="absolute right-0 top-0 z-10 flex items-center gap-1.5 rounded-full bg-ink px-3 py-1 text-[12.5px] font-medium text-paper-2 shadow-[var(--shadow-raised)]">
-          <Loader2 className="size-3 animate-spin" />
-          Recalculando
+        <div className="absolute right-0 top-0 z-10 flex items-center gap-2.5 rounded-full bg-ink pl-3 pr-1.5 py-1 text-[12.5px] font-medium text-paper-2 shadow-[var(--shadow-raised)]">
+          <span className="flex items-center gap-1.5">
+            <Loader2 className="size-3 animate-spin" />
+            Recalculando
+          </span>
+          {onCancelRecompute && (
+            <button
+              type="button"
+              onClick={onCancelRecompute}
+              className="rounded-full px-2 py-0.5 underline underline-offset-2 hover:bg-paper-3/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-paper-2 focus-visible:outline-offset-1"
+            >
+              Cancelar
+            </button>
+          )}
         </div>
       )}
       {/* Entrada orquestrada uma única vez, na primeira revelação (scenario passa de null a

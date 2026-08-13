@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { AlertCircle, ArrowDown, ArrowRight } from 'lucide-react'
 import { NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
-import { ScopeField, MIN_SCOPE_CHARS } from '@/components/ScopeField'
+import { ScopeField, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
 import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
@@ -56,11 +56,22 @@ export function SquadBuilderApp() {
   // A ação que falhou por último — "tentar de novo" reexecuta exatamente ela, em vez de sempre
   // reanalisar do zero (o erro pode ter vindo do chat de negociação ou de um recálculo de chip).
   const [lastFailedAction, setLastFailedAction] = useState<(() => void) | null>(null)
+  // Um controller por tipo de ação — cancelar uma não deve abortar as outras se, por algum
+  // motivo, mais de uma estiver em voo (revisão externa 2.1: cancelar durante o loading).
+  const analyzeAbortRef = useRef<AbortController | null>(null)
+  const recomputeAbortRef = useRef<AbortController | null>(null)
+  const negotiateAbortRef = useRef<AbortController | null>(null)
+
+  function isAbortError(err: unknown): boolean {
+    return err instanceof DOMException && err.name === 'AbortError'
+  }
 
   async function handleAnalyze(descriptionOverride?: string) {
     const nextInput = descriptionOverride !== undefined ? { ...input, description: descriptionOverride } : input
     if (descriptionOverride !== undefined) setInput(nextInput)
 
+    const controller = new AbortController()
+    analyzeAbortRef.current = controller
     setAnalyzeLoading(true)
     setError(null)
     // Duas chamadas em sequência, não uma: a leitura de escopo já aparece na tela (chips
@@ -71,6 +82,7 @@ export function SquadBuilderApp() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nextInput),
+        signal: controller.signal,
       })
       const scopeData = await parseJsonOrThrow(scopeResponse)
       setScopeAnalysis(scopeData.scopeAnalysis)
@@ -82,13 +94,16 @@ export function SquadBuilderApp() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scopeAnalysis: scopeData.scopeAnalysis, input: nextInput }),
+        signal: controller.signal,
       })
       const scenarioData = await parseJsonOrThrow(scenarioResponse)
       setScenario(scenarioData.scenario)
       setLastFailedAction(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao analisar o projeto.')
-      setLastFailedAction(() => () => handleAnalyze())
+      if (!isAbortError(err)) {
+        setError(err instanceof Error ? err.message : 'Erro ao analisar o projeto.')
+        setLastFailedAction(() => () => handleAnalyze())
+      }
     } finally {
       setAnalyzeLoading(false)
     }
@@ -96,6 +111,8 @@ export function SquadBuilderApp() {
 
   async function handleRecompute(nextScope: ScopeAnalysis) {
     setScopeAnalysis(nextScope)
+    const controller = new AbortController()
+    recomputeAbortRef.current = controller
     setRecomputeLoading(true)
     setError(null)
     try {
@@ -103,13 +120,16 @@ export function SquadBuilderApp() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scopeAnalysis: nextScope, input }),
+        signal: controller.signal,
       })
       const data = await parseJsonOrThrow(response)
       setScenario(data.scenario)
       setLastFailedAction(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao recalcular o squad.')
-      setLastFailedAction(() => () => handleRecompute(nextScope))
+      if (!isAbortError(err)) {
+        setError(err instanceof Error ? err.message : 'Erro ao recalcular o squad.')
+        setLastFailedAction(() => () => handleRecompute(nextScope))
+      }
     } finally {
       setRecomputeLoading(false)
     }
@@ -118,10 +138,10 @@ export function SquadBuilderApp() {
   async function handleNegotiate(message: string) {
     if (!scopeAnalysis || !scenario) return
 
-    setHistory((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: 'user', message, timestamp: Date.now() },
-    ])
+    const userTurnId = crypto.randomUUID()
+    setHistory((prev) => [...prev, { id: userTurnId, role: 'user', message, timestamp: Date.now() }])
+    const controller = new AbortController()
+    negotiateAbortRef.current = controller
     setNegotiateLoading(true)
     setError(null)
 
@@ -135,6 +155,7 @@ export function SquadBuilderApp() {
           currentSquad: scenario.squad,
           userMessage: message,
         }),
+        signal: controller.signal,
       })
       const data = await parseJsonOrThrow(response)
       setInput(data.input)
@@ -151,8 +172,14 @@ export function SquadBuilderApp() {
       ])
       setLastFailedAction(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao renegociar o squad.')
-      setLastFailedAction(() => () => handleNegotiate(message))
+      if (isAbortError(err)) {
+        // Cancelado pelo usuário: some com o pedido que ele mesmo desistiu de mandar, em vez de
+        // deixar uma mensagem sem resposta pendurada no histórico.
+        setHistory((prev) => prev.filter((turn) => turn.id !== userTurnId))
+      } else {
+        setError(err instanceof Error ? err.message : 'Erro ao renegociar o squad.')
+        setLastFailedAction(() => () => handleNegotiate(message))
+      }
     } finally {
       setNegotiateLoading(false)
     }
@@ -171,6 +198,7 @@ export function SquadBuilderApp() {
 
   const charCount = input.description.trim().length
   const missingChars = MIN_SCOPE_CHARS - charCount
+  const scopeOutOfRange = charCount < MIN_SCOPE_CHARS || charCount > MAX_SCOPE_CHARS
 
   function scrollToScopeForm() {
     scopeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -249,7 +277,7 @@ export function SquadBuilderApp() {
                 onChange={(description) => setInput((prev) => ({ ...prev, description }))}
                 onUseSeed={(text) => void handleAnalyze(text)}
                 onSubmit={() => {
-                  if (!analyzeLoading && charCount >= MIN_SCOPE_CHARS) void handleAnalyze()
+                  if (!analyzeLoading && !scopeOutOfRange) void handleAnalyze()
                 }}
                 disabled={analyzeLoading}
               />
@@ -267,7 +295,7 @@ export function SquadBuilderApp() {
             <div className="mt-5 flex flex-wrap items-center gap-3.5">
               <PrimaryButton
                 onClick={() => void handleAnalyze()}
-                disabled={analyzeLoading || charCount < MIN_SCOPE_CHARS}
+                disabled={analyzeLoading || scopeOutOfRange}
                 loading={analyzeLoading}
               >
                 {analyzeLoading ? (
@@ -279,11 +307,24 @@ export function SquadBuilderApp() {
                   </>
                 )}
               </PrimaryButton>
-              <span className={`text-[13px] ${charCount < MIN_SCOPE_CHARS ? 'text-ochre' : 'text-ink-3'}`}>
-                {charCount < MIN_SCOPE_CHARS
-                  ? `Faltam ${missingChars} caracteres pra liberar`
-                  : 'Leitura em texto livre, sem formulário'}
-              </span>
+              {analyzeLoading && (
+                <button
+                  type="button"
+                  onClick={() => analyzeAbortRef.current?.abort()}
+                  className="text-[13px] font-medium text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+                >
+                  Cancelar
+                </button>
+              )}
+              {!analyzeLoading && (
+                <span className={`text-[13px] ${scopeOutOfRange ? 'text-ochre' : 'text-ink-3'}`}>
+                  {charCount < MIN_SCOPE_CHARS
+                    ? `Faltam ${missingChars} caracteres pra liberar`
+                    : charCount > MAX_SCOPE_CHARS
+                      ? `${charCount - MAX_SCOPE_CHARS} caracteres acima do limite — reduza pra liberar`
+                      : 'Leitura em texto livre, sem formulário'}
+                </span>
+              )}
             </div>
 
             {SHOW_PREVIEW_BUTTON && (
@@ -317,10 +358,20 @@ export function SquadBuilderApp() {
             {scenario && (
               <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
             )}
-            <DashboardPanel scenario={scenario} loading={analyzeLoading} recomputing={recomputeLoading} />
+            <DashboardPanel
+              scenario={scenario}
+              loading={analyzeLoading}
+              recomputing={recomputeLoading}
+              onCancelRecompute={() => recomputeAbortRef.current?.abort()}
+            />
             {scenario && (
               <div className="mt-6">
-                <NegotiationChat history={history} onSend={handleNegotiate} loading={negotiateLoading} />
+                <NegotiationChat
+                  history={history}
+                  onSend={handleNegotiate}
+                  loading={negotiateLoading}
+                  onCancel={() => negotiateAbortRef.current?.abort()}
+                />
               </div>
             )}
           </section>

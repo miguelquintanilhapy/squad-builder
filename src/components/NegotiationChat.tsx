@@ -8,10 +8,12 @@ export function NegotiationChat({
   history,
   onSend,
   loading,
+  onCancel,
 }: {
   history: NegotiationTurn[]
   onSend: (message: string) => void
   loading: boolean
+  onCancel?: () => void
 }) {
   const [message, setMessage] = useState('')
 
@@ -67,7 +69,16 @@ export function NegotiationChat({
             disabled={loading}
             className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50"
           />
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3.5">
+            {loading && onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="text-[13px] font-medium text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+              >
+                Cancelar
+              </button>
+            )}
             <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading}>
               {!loading && <Send className="size-3.5" />}
               {loading ? 'Recalculando...' : 'Enviar'}
