@@ -160,9 +160,49 @@ function riscoAlto() {
   )
 }
 
+/**
+ * `alocacao-variavel` — gráfico de 3.7: percentuais diferentes por papel na mesma curva
+ * (full-time e part-time misturados). Não varia por mês — o motor não modela isso hoje (allocation
+ * é único por membro do squad ao longo de todo o período), decisão já tomada e reafirmada.
+ */
+function alocacaoVariavel() {
+  const scope: ScopeAnalysis = {
+    productTypes: ['web-app'],
+    platforms: ['web'],
+    stage: 'prototype',
+    complexity: 'medium',
+    estimatedEffortPersonMonths: 6,
+    requiredCapabilities: ['admin-panel'],
+    keyRisksNoted: [],
+    summary: 'Plataforma web de médio porte, começando com parte do time em meio período pra validar antes de escalar.',
+  }
+  const input: ProjectInput = {
+    productTypes: scope.productTypes,
+    platforms: scope.platforms,
+    stage: scope.stage,
+    complexity: scope.complexity,
+    description:
+      'Plataforma web de gestão. Quero começar com backend e QA full-time, mas frontend, design e DevOps só meio período enquanto validamos.',
+  }
+  const squad: SquadMember[] = [
+    { role: 'dev-backend', seniority: 'pleno', quantity: 1, allocation: 'full-time' },
+    { role: 'qa', seniority: 'pleno', quantity: 1, allocation: 'full-time' },
+    { role: 'dev-frontend', seniority: 'pleno', quantity: 1, allocation: 'part-time' },
+    { role: 'designer-uxui', seniority: 'pleno', quantity: 1, allocation: 'part-time' },
+    { role: 'devops', seniority: 'senior', quantity: 1, allocation: 'part-time' },
+  ]
+  return build(
+    squad,
+    scope,
+    input,
+    'Backend e QA full-time sustentam o núcleo; frontend, design e DevOps entram em meio período enquanto o escopo ainda está validando — a curva de alocação reflete essa mistura por papel.'
+  )
+}
+
 export const MOCK_FIXTURES: Record<string, () => { scopeAnalysis: ScopeAnalysis; scenario: Scenario }> = {
   minimo,
   grande,
   'estouro-orcamento': estouroOrcamento,
   'risco-alto': riscoAlto,
+  'alocacao-variavel': alocacaoVariavel,
 }
