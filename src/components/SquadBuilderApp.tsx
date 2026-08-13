@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { AlertCircle, ArrowDown, ArrowRight } from 'lucide-react'
+import { AlertCircle, ArrowDown, ArrowRight, HelpCircle } from 'lucide-react'
 import { NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
@@ -53,6 +53,12 @@ export function SquadBuilderApp() {
   const [negotiateLoading, setNegotiateLoading] = useState(false)
   const [recomputeLoading, setRecomputeLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Escopo vago ou fora de domínio: perguntas em vez de squad fabricado sobre nada (revisão
+  // externa 2.2/2.3). Não some com scopeAnalysis/scenario anteriores — só some se nunca existiu.
+  const [clarification, setClarification] = useState<{
+    reason: 'insufficient' | 'out-of-domain'
+    questions: string[]
+  } | null>(null)
   // A ação que falhou por último — "tentar de novo" reexecuta exatamente ela, em vez de sempre
   // reanalisar do zero (o erro pode ter vindo do chat de negociação ou de um recálculo de chip).
   const [lastFailedAction, setLastFailedAction] = useState<(() => void) | null>(null)
@@ -74,6 +80,7 @@ export function SquadBuilderApp() {
     analyzeAbortRef.current = controller
     setAnalyzeLoading(true)
     setError(null)
+    setClarification(null)
     // Duas chamadas em sequência, não uma: a leitura de escopo já aparece na tela (chips
     // preenchidos) enquanto o squad ainda está sendo calculado — progresso real, não spinner
     // opaco de 10-30s (ver revisão externa 2.7).
@@ -85,6 +92,10 @@ export function SquadBuilderApp() {
         signal: controller.signal,
       })
       const scopeData = await parseJsonOrThrow(scopeResponse)
+      if (scopeData.needsClarification) {
+        setClarification({ reason: scopeData.reason, questions: scopeData.questions })
+        return
+      }
       setScopeAnalysis(scopeData.scopeAnalysis)
       // Não semeia o chat com o resumo — ele já aparece na seção 03. O histórico de negociação
       // começa vazio e só recebe turnos de ajustes reais (ver revisão externa 1.13).
@@ -268,6 +279,27 @@ export function SquadBuilderApp() {
                 >
                   Tentar de novo
                 </button>
+              </div>
+            )}
+
+            {clarification && (
+              <div className="mt-5 rounded-[7px] border border-ochre/30 bg-ochre/5 px-4 py-3.5 text-sm text-ink">
+                <p className="flex items-center gap-2.5 font-medium">
+                  <HelpCircle className="size-4 shrink-0 text-ochre" strokeWidth={2} />
+                  {clarification.reason === 'out-of-domain'
+                    ? 'Isso não parece ser um projeto de software'
+                    : 'Preciso de mais detalhe pra estimar com confiança'}
+                </p>
+                <p className="mt-1.5 text-ink-2">
+                  {clarification.reason === 'out-of-domain'
+                    ? 'O SquadBuilder dimensiona squads de engenharia de software. Se o seu projeto tem um componente digital (app, site, sistema), descreva essa parte abaixo.'
+                    : 'Ainda não dá pra montar um squad com confiança sobre isso — sem detalhe, o número seria só um chute. Responde no texto acima e tenta de novo:'}
+                </p>
+                <ul className="mt-2 list-disc pl-5 text-ink-2">
+                  {clarification.questions.map((question, index) => (
+                    <li key={index}>{question}</li>
+                  ))}
+                </ul>
               </div>
             )}
 

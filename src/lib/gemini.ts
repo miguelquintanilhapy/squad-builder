@@ -140,6 +140,11 @@ const ALLOCATIONS = ['full-time', 'part-time']
 const SCOPE_ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
   properties: {
+    // Triagem antes da estimativa: sem isso, um escopo vago ou fora de domínio ainda produz
+    // squad + risco baixo — confiança fabricada sobre nada (revisão externa 2.2/2.3).
+    inDomain: { type: Type.BOOLEAN },
+    sufficientForEstimate: { type: Type.BOOLEAN },
+    clarifyingQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
     productTypes: { type: Type.ARRAY, items: { type: Type.STRING, enum: PRODUCT_TYPES } },
     platforms: { type: Type.ARRAY, items: { type: Type.STRING, enum: PLATFORMS } },
     stage: { type: Type.STRING, enum: STAGES },
@@ -150,6 +155,9 @@ const SCOPE_ANALYSIS_SCHEMA = {
     summary: { type: Type.STRING },
   },
   required: [
+    'inDomain',
+    'sufficientForEstimate',
+    'clarifyingQuestions',
     'productTypes',
     'platforms',
     'stage',
@@ -159,6 +167,12 @@ const SCOPE_ANALYSIS_SCHEMA = {
     'keyRisksNoted',
     'summary',
   ],
+}
+
+export interface ScopeClarificationNeeded {
+  ok: false
+  reason: 'insufficient' | 'out-of-domain'
+  questions: string[]
 }
 
 /** Faz o parse do JSON da resposta e transforma falhas de formato num erro claro pra UI. */
@@ -221,7 +235,9 @@ function sanitizeScopeAnalysis(raw: unknown): ScopeAnalysis {
   }
 }
 
-export async function analyzeScope(input: ProjectInput): Promise<ScopeAnalysis> {
+export async function analyzeScope(
+  input: ProjectInput
+): Promise<{ ok: true; scopeAnalysis: ScopeAnalysis } | ScopeClarificationNeeded> {
   const prompt = `Você é um arquiteto de software sênior que traduz descrições de projetos em uma leitura estruturada de escopo, para alimentar um motor de cálculo de squad/custo/prazo.
 
 O fundador descreveu o projeto em texto livre — essa descrição é a fonte principal, leia com atenção. Os campos abaixo são pistas adicionais opcionais, informadas antes da leitura do texto, e podem estar vazias:
@@ -234,7 +250,12 @@ O fundador descreveu o projeto em texto livre — essa descrição é a fonte pr
 
 Descrição livre do escopo: """${input.description}"""
 
-Analise o texto livre com atenção para identificar funcionalidades e integrações (pagamentos, geolocalização/GPS em tempo real, chat, notificações, painel admin, integrações de terceiros, IA/ML, necessidade de alta escala, exigências de compliance).
+Antes de estimar, faça a triagem:
+1. "inDomain": false se o pedido não é sobre construir um produto de software/digital (ex: abrir uma padaria, uma loja física, um pedido pessoal sem nenhum componente de software). true se for um projeto de software, app, plataforma ou sistema.
+2. "sufficientForEstimate": false se o texto é vago demais pra sustentar uma estimativa com confiança real (ex: "quero um app massa", sem dizer o quê ele faz, pra quem, ou qual problema resolve) — mesmo que o texto seja longo, se não dá pra saber o que construir, é insuficiente. true se há detalhe concreto suficiente (funcionalidades, público, problema a resolver) pra estimar com confiança.
+3. Se "inDomain" for false OU "sufficientForEstimate" for false, preencha "clarifyingQuestions" com até 3 perguntas curtas e concretas que, respondidas, destravariam uma estimativa real — e pode deixar os outros campos com valores neutros/vazios, eles não serão usados. Se ambos forem true, "clarifyingQuestions" fica vazio.
+
+Se a triagem passar (inDomain e sufficientForEstimate true), analise o texto livre com atenção para identificar funcionalidades e integrações (pagamentos, geolocalização/GPS em tempo real, chat, notificações, painel admin, integrações de terceiros, IA/ML, necessidade de alta escala, exigências de compliance).
 
 Estime o esforço de desenvolvimento necessário em pessoa-mês (pessoa-mês = quanto uma pessoa plena, em tempo integral, levaria para entregar sozinha; um projeto que precisa de 2 pessoas plenas por 4 meses tem ~8 pessoa-mês de esforço). Seja realista: não subestime a complexidade de integrações e múltiplas plataformas.
 
@@ -251,7 +272,24 @@ Responda respeitando estritamente o schema JSON fornecido.`
     })
   )
 
-  return sanitizeScopeAnalysis(parseJsonResponse(response.text, 'ler o escopo'))
+  const raw = parseJsonResponse(response.text, 'ler o escopo') as Record<string, unknown>
+  const inDomain = raw.inDomain !== false
+  const sufficientForEstimate = raw.sufficientForEstimate !== false
+
+  if (!inDomain || !sufficientForEstimate) {
+    const questions = Array.isArray(raw.clarifyingQuestions)
+      ? raw.clarifyingQuestions.filter((q): q is string => typeof q === 'string').slice(0, 3)
+      : []
+    return {
+      ok: false,
+      reason: inDomain ? 'insufficient' : 'out-of-domain',
+      questions: questions.length
+        ? questions
+        : ['Pode descrever com mais detalhe o que o produto faz e para quem?'],
+    }
+  }
+
+  return { ok: true, scopeAnalysis: sanitizeScopeAnalysis(raw) }
 }
 
 const PROPOSED_SQUAD_SCHEMA = {

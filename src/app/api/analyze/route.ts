@@ -16,8 +16,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const scopeAnalysis = await analyzeScope(input)
-    return NextResponse.json({ scopeAnalysis })
+    const result = await analyzeScope(input)
+    if (!result.ok) {
+      // Escopo vago ou fora de domínio: devolve perguntas em vez de números fabricados sobre
+      // nada (revisão externa 2.2/2.3) — status 200 porque não é erro, é um resultado válido.
+      return NextResponse.json({ needsClarification: true, reason: result.reason, questions: result.questions })
+    }
+    return NextResponse.json({ scopeAnalysis: result.scopeAnalysis })
   } catch (error) {
     console.error('Erro em /api/analyze', error)
     const message = error instanceof Error ? error.message : 'Erro desconhecido ao analisar o projeto.'
