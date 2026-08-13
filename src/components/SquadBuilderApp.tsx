@@ -11,6 +11,7 @@ import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
+import { MOCK_FIXTURES } from '@/lib/mockFixtures'
 
 const SHOW_PREVIEW_BUTTON = process.env.NODE_ENV !== 'production'
 
@@ -30,11 +31,23 @@ async function parseJsonOrThrow(response: Response) {
   return data
 }
 
+// Dev-only: ?mock=nome carrega um fixture de borda (squad grande, risco alto, estouro de
+// orçamento...) sem gastar cota da API. Ver src/lib/mockFixtures.ts pelos nomes disponíveis.
+function getMockFixtureFromUrl(): { scopeAnalysis: ScopeAnalysis; scenario: Scenario } | null {
+  if (typeof window === 'undefined' || !SHOW_PREVIEW_BUTTON) return null
+  const mockName = new URLSearchParams(window.location.search).get('mock')
+  const fixture = mockName ? MOCK_FIXTURES[mockName] : undefined
+  return fixture ? fixture() : null
+}
+
 export function SquadBuilderApp() {
   const scopeFormRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
-  const [scopeAnalysis, setScopeAnalysis] = useState<ScopeAnalysis | null>(null)
-  const [scenario, setScenario] = useState<Scenario | null>(null)
+  // Lazy initializer (não efeito): roda só na primeira renderização, então não dispara o lint de
+  // "setState em effect" nem faz o dashboard piscar do vazio pro fixture depois do mount.
+  const [initialMock] = useState(getMockFixtureFromUrl)
+  const [scopeAnalysis, setScopeAnalysis] = useState<ScopeAnalysis | null>(initialMock?.scopeAnalysis ?? null)
+  const [scenario, setScenario] = useState<Scenario | null>(initialMock?.scenario ?? null)
   const [history, setHistory] = useState<NegotiationTurn[]>([])
   const [analyzeLoading, setAnalyzeLoading] = useState(false)
   const [negotiateLoading, setNegotiateLoading] = useState(false)
