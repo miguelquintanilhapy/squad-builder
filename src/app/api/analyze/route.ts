@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server'
 import { ProjectInput } from '@/types'
-import { analyzeScope, narrateScenario } from '@/lib/gemini'
-import { suggestInitialSquad } from '@/lib/squadPlanner'
-import { computeScenario } from '@/lib/calculator'
+import { analyzeScope } from '@/lib/gemini'
 
+/**
+ * Só a leitura de escopo (1ª das 3 chamadas do fluxo). O squad/custo/prazo/risco + narração
+ * ficam pro /api/recompute — o cliente chama os dois em sequência e já renderiza os chips
+ * assim que este resolve, em vez de esperar tudo pra mostrar o primeiro pedaço (ver revisão
+ * externa 2.7: "progresso real, não teatro").
+ */
 export async function POST(request: Request) {
   const input = (await request.json()) as ProjectInput
 
@@ -13,14 +17,7 @@ export async function POST(request: Request) {
 
   try {
     const scopeAnalysis = await analyzeScope(input)
-    const squad = suggestInitialSquad(scopeAnalysis, input)
-    const scenario = computeScenario(squad, scopeAnalysis, input)
-    const { summary, midGroundSuggestion } = await narrateScenario({ scope: scopeAnalysis, input, scenario })
-
-    return NextResponse.json({
-      scopeAnalysis,
-      scenario: { ...scenario, summary, midGroundSuggestion },
-    })
+    return NextResponse.json({ scopeAnalysis })
   } catch (error) {
     console.error('Erro em /api/analyze', error)
     const message = error instanceof Error ? error.message : 'Erro desconhecido ao analisar o projeto.'

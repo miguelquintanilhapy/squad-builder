@@ -63,18 +63,28 @@ export function SquadBuilderApp() {
 
     setAnalyzeLoading(true)
     setError(null)
+    // Duas chamadas em sequência, não uma: a leitura de escopo já aparece na tela (chips
+    // preenchidos) enquanto o squad ainda está sendo calculado — progresso real, não spinner
+    // opaco de 10-30s (ver revisão externa 2.7).
     try {
-      const response = await fetch('/api/analyze', {
+      const scopeResponse = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nextInput),
       })
-      const data = await parseJsonOrThrow(response)
-      setScopeAnalysis(data.scopeAnalysis)
-      setScenario(data.scenario)
+      const scopeData = await parseJsonOrThrow(scopeResponse)
+      setScopeAnalysis(scopeData.scopeAnalysis)
       // Não semeia o chat com o resumo — ele já aparece na seção 03. O histórico de negociação
       // começa vazio e só recebe turnos de ajustes reais (ver revisão externa 1.13).
       setHistory([])
+
+      const scenarioResponse = await fetch('/api/recompute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scopeAnalysis: scopeData.scopeAnalysis, input: nextInput }),
+      })
+      const scenarioData = await parseJsonOrThrow(scenarioResponse)
+      setScenario(scenarioData.scenario)
       setLastFailedAction(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao analisar o projeto.')
@@ -307,7 +317,7 @@ export function SquadBuilderApp() {
             {scenario && (
               <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
             )}
-            <DashboardPanel scenario={scenario} loading={analyzeLoading} />
+            <DashboardPanel scenario={scenario} loading={analyzeLoading} recomputing={recomputeLoading} />
             {scenario && (
               <div className="mt-6">
                 <NegotiationChat history={history} onSend={handleNegotiate} loading={negotiateLoading} />
