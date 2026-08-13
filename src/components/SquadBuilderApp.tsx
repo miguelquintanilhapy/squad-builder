@@ -40,13 +40,23 @@ function getMockFixtureFromUrl(): { scopeAnalysis: ScopeAnalysis; scenario: Scen
   return fixture ? fixture() : null
 }
 
+/** Campos que a ReadingGrid deixa corrigir manualmente — os únicos que podem ser "editados". */
+type EditableScopeField = 'productTypes' | 'platforms' | 'stage' | 'complexity'
+type ScopeOverrides = Partial<Pick<ScopeAnalysis, EditableScopeField>>
+
 export function SquadBuilderApp() {
   const scopeFormRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
   // Lazy initializer (não efeito): roda só na primeira renderização, então não dispara o lint de
   // "setState em effect" nem faz o dashboard piscar do vazio pro fixture depois do mount.
   const [initialMock] = useState(getMockFixtureFromUrl)
-  const [scopeAnalysis, setScopeAnalysis] = useState<ScopeAnalysis | null>(initialMock?.scopeAnalysis ?? null)
+  // aiScope é sempre a última leitura da IA, intacta. manualOverrides guarda só os campos que o
+  // usuário corrigiu na ReadingGrid — sobrevivem a um "Recalcular" que traga uma leitura nova,
+  // em vez de serem sobrescritos por ela (revisão externa 2.6: "recálculo nunca reverte escolha
+  // manual"). scopeAnalysis é sempre a junção dos dois, nunca guardado direto.
+  const [aiScope, setAiScope] = useState<ScopeAnalysis | null>(initialMock?.scopeAnalysis ?? null)
+  const [manualOverrides, setManualOverrides] = useState<ScopeOverrides>({})
+  const scopeAnalysis = aiScope ? { ...aiScope, ...manualOverrides } : null
   const [scenario, setScenario] = useState<Scenario | null>(initialMock?.scenario ?? null)
   const [history, setHistory] = useState<NegotiationTurn[]>([])
   const [analyzeLoading, setAnalyzeLoading] = useState(false)
@@ -96,15 +106,20 @@ export function SquadBuilderApp() {
         setClarification({ reason: scopeData.reason, questions: scopeData.questions })
         return
       }
-      setScopeAnalysis(scopeData.scopeAnalysis)
+      const freshScope: ScopeAnalysis = scopeData.scopeAnalysis
+      setAiScope(freshScope)
       // Não semeia o chat com o resumo — ele já aparece na seção 03. O histórico de negociação
       // começa vazio e só recebe turnos de ajustes reais (ver revisão externa 1.13).
       setHistory([])
 
+      // manualOverrides continua valendo por cima da leitura nova — se o usuário corrigiu
+      // "Complexidade" pra Enterprise, reescrever a descrição e recalcular não deve voltar isso
+      // pra Médio nas costas dele.
+      const mergedScope = { ...freshScope, ...manualOverrides }
       const scenarioResponse = await fetch('/api/recompute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scopeAnalysis: scopeData.scopeAnalysis, input: nextInput }),
+        body: JSON.stringify({ scopeAnalysis: mergedScope, input: nextInput }),
         signal: controller.signal,
       })
       const scenarioData = await parseJsonOrThrow(scenarioResponse)
@@ -120,8 +135,8 @@ export function SquadBuilderApp() {
     }
   }
 
-  async function handleRecompute(nextScope: ScopeAnalysis) {
-    setScopeAnalysis(nextScope)
+  /** Só a parte de rede do recálculo — usada tanto por edição de chip quanto por "restaurar". */
+  async function runRecompute(nextScope: ScopeAnalysis) {
     const controller = new AbortController()
     recomputeAbortRef.current = controller
     setRecomputeLoading(true)
@@ -139,11 +154,26 @@ export function SquadBuilderApp() {
     } catch (err) {
       if (!isAbortError(err)) {
         setError(err instanceof Error ? err.message : 'Erro ao recalcular o squad.')
-        setLastFailedAction(() => () => handleRecompute(nextScope))
+        setLastFailedAction(() => () => runRecompute(nextScope))
       }
     } finally {
       setRecomputeLoading(false)
     }
+  }
+
+  /** Clique num chip da ReadingGrid: o campo tocado passa a ser "editado à mão" — sobrevive a
+   * qualquer leitura futura da IA até o usuário mesmo restaurar (ver handleRestoreField). */
+  function handleRecompute(nextScope: ScopeAnalysis, changedField: EditableScopeField) {
+    setManualOverrides((prev) => ({ ...prev, [changedField]: nextScope[changedField] }))
+    void runRecompute(nextScope)
+  }
+
+  function handleRestoreField(field: EditableScopeField) {
+    if (!aiScope) return
+    const remainingOverrides = { ...manualOverrides }
+    delete remainingOverrides[field]
+    setManualOverrides(remainingOverrides)
+    void runRecompute({ ...aiScope, ...remainingOverrides })
   }
 
   async function handleNegotiate(message: string) {
@@ -202,7 +232,8 @@ export function SquadBuilderApp() {
 
   function handlePreview() {
     const { scopeAnalysis: previewScope, scenario: previewScenario } = buildPreviewScenario()
-    setScopeAnalysis(previewScope)
+    setAiScope(previewScope)
+    setManualOverrides({})
     setScenario(previewScenario)
     setHistory([])
   }
@@ -380,7 +411,13 @@ export function SquadBuilderApp() {
             <p className="mt-1.5 mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">
               Inferido do seu texto. Clique pra corrigir — o squad recalcula na hora.
             </p>
-            <ReadingGrid scope={scopeAnalysis} onChange={handleRecompute} disabled={recomputeLoading} />
+            <ReadingGrid
+              scope={scopeAnalysis}
+              onChange={handleRecompute}
+              editedFields={Object.keys(manualOverrides) as EditableScopeField[]}
+              onRestoreField={handleRestoreField}
+              disabled={recomputeLoading}
+            />
           </section>
         )}
 

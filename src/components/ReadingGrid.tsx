@@ -72,16 +72,41 @@ function Chip({
 function DimensionBlock({
   label,
   radioGroup,
+  edited,
+  onRestore,
   children,
 }: {
   label: string
   /** Grupos exclusivos (estágio/complexidade) marcam o wrapper como radiogroup — sem div extra. */
   radioGroup?: boolean
+  /** Campo corrigido à mão — sobrevive a qualquer releitura futura da IA (revisão externa 2.6). */
+  edited?: boolean
+  onRestore?: () => void
   children: React.ReactNode
 }) {
   return (
     <div className="rounded-[7px] bg-paper-3 pt-[13px] pr-[15px] pb-[14px] pl-[15px]">
-      <div className="mb-[9px] text-[12.5px] font-medium text-ink-3">{label}</div>
+      <div className="mb-[9px] flex items-center justify-between gap-2 text-[12.5px] font-medium text-ink-3">
+        <span className="flex items-center gap-1.5">
+          {label}
+          {edited && (
+            <span
+              aria-hidden="true"
+              title="Editado à mão"
+              className="inline-block size-[5px] rounded-full bg-petrol"
+            />
+          )}
+        </span>
+        {edited && onRestore && (
+          <button
+            type="button"
+            onClick={onRestore}
+            className="font-medium text-petrol underline underline-offset-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+          >
+            Restaurar leitura da IA
+          </button>
+        )}
+      </div>
       <div
         role={radioGroup ? 'radiogroup' : undefined}
         aria-label={radioGroup ? label : undefined}
@@ -93,43 +118,65 @@ function DimensionBlock({
   )
 }
 
+type EditableScopeField = 'productTypes' | 'platforms' | 'stage' | 'complexity'
+
 export function ReadingGrid({
   scope,
   onChange,
+  editedFields = [],
+  onRestoreField,
   disabled,
 }: {
   scope: ScopeAnalysis
-  onChange: (next: ScopeAnalysis) => void
+  onChange: (next: ScopeAnalysis, changedField: EditableScopeField) => void
+  /** Quais campos foram corrigidos à mão — mostra o indicador + "restaurar" nesse bloco. */
+  editedFields?: EditableScopeField[]
+  onRestoreField?: (field: EditableScopeField) => void
   disabled?: boolean
 }) {
+  const isEdited = (field: EditableScopeField) => editedFields.includes(field)
+
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-[repeat(auto-fit,minmax(215px,1fr))] gap-3">
-        <DimensionBlock label="Tipo de produto">
+        <DimensionBlock
+          label="Tipo de produto"
+          edited={isEdited('productTypes')}
+          onRestore={onRestoreField && (() => onRestoreField('productTypes'))}
+        >
           {PRODUCT_TYPES.map((type) => (
             <Chip
               key={type}
               label={PRODUCT_TYPE_LABELS[type]}
               active={scope.productTypes.includes(type)}
               disabled={disabled}
-              onClick={() => onChange({ ...scope, productTypes: toggleItem(scope.productTypes, type) })}
+              onClick={() => onChange({ ...scope, productTypes: toggleItem(scope.productTypes, type) }, 'productTypes')}
             />
           ))}
         </DimensionBlock>
 
-        <DimensionBlock label="Plataforma">
+        <DimensionBlock
+          label="Plataforma"
+          edited={isEdited('platforms')}
+          onRestore={onRestoreField && (() => onRestoreField('platforms'))}
+        >
           {PLATFORMS.map((platform) => (
             <Chip
               key={platform}
               label={PLATFORM_LABELS[platform]}
               active={scope.platforms.includes(platform)}
               disabled={disabled}
-              onClick={() => onChange({ ...scope, platforms: togglePlatform(scope.platforms, platform) })}
+              onClick={() => onChange({ ...scope, platforms: togglePlatform(scope.platforms, platform) }, 'platforms')}
             />
           ))}
         </DimensionBlock>
 
-        <DimensionBlock label="Estágio" radioGroup>
+        <DimensionBlock
+          label="Estágio"
+          radioGroup
+          edited={isEdited('stage')}
+          onRestore={onRestoreField && (() => onRestoreField('stage'))}
+        >
           {STAGES.map((stage) => (
             <Chip
               key={stage}
@@ -137,12 +184,17 @@ export function ReadingGrid({
               label={STAGE_LABELS[stage]}
               active={scope.stage === stage}
               disabled={disabled}
-              onClick={() => onChange({ ...scope, stage })}
+              onClick={() => onChange({ ...scope, stage }, 'stage')}
             />
           ))}
         </DimensionBlock>
 
-        <DimensionBlock label="Complexidade" radioGroup>
+        <DimensionBlock
+          label="Complexidade"
+          radioGroup
+          edited={isEdited('complexity')}
+          onRestore={onRestoreField && (() => onRestoreField('complexity'))}
+        >
           {COMPLEXITIES.map((complexity) => (
             <Chip
               key={complexity}
@@ -150,7 +202,7 @@ export function ReadingGrid({
               label={COMPLEXITY_LABELS[complexity]}
               active={scope.complexity === complexity}
               disabled={disabled}
-              onClick={() => onChange({ ...scope, complexity })}
+              onClick={() => onChange({ ...scope, complexity }, 'complexity')}
             />
           ))}
         </DimensionBlock>
