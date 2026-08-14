@@ -42,7 +42,7 @@ export function NegotiationChat({
     <Panel title="Negociação">
       <div className="p-6">
         <div
-          className={hasVersions ? 'grid grid-cols-1 gap-6 lg:mx-auto lg:grid-cols-[380px_680px] lg:items-start' : ''}
+          className={hasVersions ? 'grid grid-cols-1 gap-6 lg:mx-auto lg:grid-cols-[420px_700px] lg:items-start' : ''}
         >
           <div className={`flex w-full flex-col gap-5 ${hasVersions ? '' : 'mx-auto max-w-[640px]'}`}>
             {history.length > 0 && (

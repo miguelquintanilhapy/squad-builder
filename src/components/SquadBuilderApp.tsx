@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { AlertCircle, ArrowDown, ArrowRight, HelpCircle } from 'lucide-react'
+import { AlertCircle, ArrowRight, HelpCircle } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, ScopeSeeds, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
@@ -347,7 +347,7 @@ export function SquadBuilderApp() {
           <div className="mt-8">
             <PrimaryButton onClick={scrollToScopeForm} type="button">
               Montar meu squad
-              <ArrowDown className="size-4" />
+              <ArrowRight className="size-4" />
             </PrimaryButton>
           </div>
         </section>
