@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { ScenarioVersion } from '@/types'
-import { formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
 
 /**
  * Trilha de decisões, não lista de cards: cada versão é um nó numa linha do tempo, e a partir da
  * segunda o rótulo é a mensagem literal que o usuário mandou — deixando explícito que aquele
  * pedido foi a causa do cenário, não uma edição de dados qualquer (revisão externa 3.1 pedia
- * comparação entre cenários; esta é a camada visual que faz a causa saltar aos olhos).
+ * comparação entre cenários; esta é a camada visual que faz a causa saltar aos olhos). Os números
+ * do cenário resultante ficam só no ImpactSummary — repeti-los aqui competiria com ele por
+ * atenção, e a trilha deve ficar leve, só a causa (o pedido), não a consequência.
  */
 export function VersionList({
   versions,
@@ -28,7 +29,7 @@ export function VersionList({
   if (versions.length < 2) return null
 
   return (
-    <div className="relative max-h-72 overflow-y-auto pr-1">
+    <div className="relative max-h-96 overflow-y-auto pr-1">
       <div className="absolute bottom-3 left-[5px] top-3 w-px bg-rule-2" aria-hidden="true" />
       <div className="flex flex-col">
         {versions.map((version, index) => {
@@ -42,7 +43,7 @@ export function VersionList({
               type="button"
               onClick={() => onSelect(version.id)}
               aria-current={isActive}
-              className={`group relative flex w-full items-start gap-3 rounded-[7px] py-2.5 pl-0 pr-2.5 text-left transition-colors ${
+              className={`group relative flex w-full items-start gap-3 rounded-[7px] py-2 pl-0 pr-2.5 text-left transition-colors ${
                 isActive ? 'bg-petrol/5' : 'hover:bg-paper-2/60'
               }`}
             >
@@ -70,21 +71,12 @@ export function VersionList({
                   )}
                 </div>
                 <p
-                  className={`mt-0.5 truncate text-[13.5px] ${
-                    isFirst ? 'not-italic' : 'italic'
-                  } ${isActive ? 'font-medium text-ink' : 'text-ink-3 group-hover:text-ink-2'}`}
+                  className={`mt-0.5 truncate ${isFirst ? 'not-italic' : 'italic'} ${
+                    isActive ? 'text-[14.5px] font-medium text-ink' : 'text-[13px] text-ink-3 group-hover:text-ink-2'
+                  }`}
                 >
                   {isFirst ? version.label : `"${version.label}"`}
                 </p>
-                <div
-                  className={`tnum mt-1 flex flex-wrap gap-x-3 gap-y-0.5 ${
-                    isActive ? 'text-[12.5px] text-ink-2' : 'text-[11.5px] text-ink-3'
-                  }`}
-                >
-                  <span>{formatCurrencyBRL(version.scenario.totalMonthlyCost)}/mês</span>
-                  <span>{formatMonthsLabel(version.scenario.estimatedTimelineMonths)}</span>
-                  <span>Risco {version.scenario.riskScore}</span>
-                </div>
               </div>
             </button>
           )

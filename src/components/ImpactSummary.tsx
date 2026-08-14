@@ -41,32 +41,31 @@ function Metric({
   delta: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5 rounded-[7px] bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
+    <div className="flex flex-col gap-2 rounded-[7px] bg-paper-3 px-5 pt-4 pb-[15px]">
       <span className="text-[12.5px] font-medium text-ink-3">{label}</span>
-      <div className="flex items-baseline gap-2">
-        <span className="tnum text-[13px] text-ink-3 line-through">{previousValue}</span>
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={String(activeValue)}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="tnum font-display text-[26px] font-extrabold leading-none tracking-[-0.03em] text-ink"
-          >
-            {activeValue}
-          </motion.span>
-        </AnimatePresence>
-      </div>
+      <span className="tnum whitespace-nowrap text-[12px] text-ink-3 line-through">{previousValue}</span>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={String(activeValue)}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          className="tnum whitespace-nowrap font-display text-[28px] font-extrabold leading-none tracking-[-0.03em] text-ink"
+        >
+          {activeValue}
+        </motion.span>
+      </AnimatePresence>
       {delta}
     </div>
   )
 }
 
 /**
- * O impacto da versão ativa contra a anterior, grande e explícito — a mesma comparação que
- * VersionList já mostra em linha fina por versão, só que ampliada pra ser a primeira coisa que o
- * olho pega ao trocar de cenário (revisão externa 3.1 pedia comparação; aqui é a versão visual dela).
+ * O impacto da versão ativa contra a anterior é o foco desta coluna, não a trilha — por isso
+ * cabeçalho no mesmo peso visual do Eyebrow (usado nos títulos de seção do topo da página), 3
+ * colunas lado a lado (não empilhadas: comparar precisa caber num só golpe de vista) e números
+ * maiores que os da trilha. A trilha mostra a causa (o pedido); aqui mostra a consequência.
  */
 export function ImpactSummary({ active, previous }: { active: ScenarioVersion; previous?: ScenarioVersion }) {
   if (!previous) return null
@@ -81,9 +80,11 @@ export function ImpactSummary({ active, previous }: { active: ScenarioVersion; p
   const riskDirection: Direction = riskDelta === 0 ? 'flat' : riskDelta > 0 ? 'up' : 'down'
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <span className="text-[12.5px] font-medium text-ink-3">Impacto vs. versão anterior</span>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+    <div className="flex flex-col gap-3">
+      <div className="font-display text-[17px] font-bold tracking-[-0.015em] text-petrol">
+        Impacto vs. versão anterior
+      </div>
+      <div className="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-3">
         <Metric
           label="Custo mensal"
           previousValue={formatCurrencyBRL(previous.scenario.totalMonthlyCost)}
