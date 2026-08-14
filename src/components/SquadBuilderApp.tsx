@@ -349,7 +349,7 @@ export function SquadBuilderApp() {
           </p>
           <div className="mt-8">
             <PrimaryButton onClick={scrollToScopeForm} type="button">
-              Começar
+              Montar meu squad
               <ArrowDown className="size-4" />
             </PrimaryButton>
           </div>
