@@ -67,7 +67,8 @@ export function RiskPanel({
         </div>
       </div>
       <div>
-        <ul className="m-0 list-none p-0">
+        <p className="text-[12.5px] font-medium text-ink-2">Por que esse risco?</p>
+        <ul className="m-0 mt-1.5 list-none p-0">
           <WeightRow weight={scenario.riskBase}>Base pela complexidade do escopo.</WeightRow>
           {scenario.drivers.map((driver, index) => (
             <WeightRow key={index} weight={driver.weight}>

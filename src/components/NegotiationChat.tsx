@@ -4,6 +4,7 @@ import { Send } from 'lucide-react'
 import { NegotiationTurn, ScenarioVersion } from '@/types'
 import { Panel, PrimaryButton, SectionLabel } from '@/components/ui/primitives'
 import { VersionList } from '@/components/VersionList'
+import { ImpactSummary } from '@/components/ImpactSummary'
 
 export function NegotiationChat({
   history,
@@ -30,18 +31,27 @@ export function NegotiationChat({
     setMessage('')
   }
 
+  const activeIndex = versions.findIndex((v) => v.id === activeVersionId)
+  const activeVersion = activeIndex >= 0 ? versions[activeIndex] : null
+  const previousVersion = activeIndex > 0 ? versions[activeIndex - 1] : undefined
+
   return (
     <Panel title="Negociação">
-      <div className="mx-auto flex max-w-[640px] flex-col gap-4 p-4">
+      <div className="mx-auto flex max-w-[640px] flex-col gap-5 p-4">
         {versions.length > 1 && (
-          <div className="flex flex-col gap-2">
-            <SectionLabel>Versões</SectionLabel>
-            <VersionList versions={versions} activeVersionId={activeVersionId} onSelect={onSelectVersion} />
-          </div>
+          <>
+            <div className="flex flex-col gap-2">
+              <SectionLabel>Trilha de decisões</SectionLabel>
+              <VersionList versions={versions} activeVersionId={activeVersionId} onSelect={onSelectVersion} />
+            </div>
+
+            {activeVersion && <ImpactSummary active={activeVersion} previous={previousVersion} />}
+          </>
         )}
 
         {history.length > 0 && (
-          <div className="flex max-h-80 flex-col gap-3.5 overflow-y-auto">
+          <div className="flex max-h-80 flex-col gap-4 overflow-y-auto">
+            <SectionLabel>Histórico da negociação</SectionLabel>
             <AnimatePresence initial={false}>
               {history.map((turn) => (
                 <motion.div
@@ -49,18 +59,12 @@ export function NegotiationChat({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                  className={turn.role === 'user' ? 'ml-10' : 'mr-2'}
+                  className={`border-l-2 pl-3.5 ${turn.role === 'user' ? 'border-petrol' : 'border-rule-2'}`}
                 >
-                  <p className="mb-1 text-[12.5px] font-medium text-ink-3">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-3">
                     {turn.role === 'user' ? 'Você' : 'SquadBuilder'}
                   </p>
-                  <p
-                    className={`text-sm leading-relaxed ${
-                      turn.role === 'user' ? 'rounded-[7px] bg-paper-2 px-3 py-2 text-ink' : 'text-ink-2'
-                    }`}
-                  >
-                    {turn.message}
-                  </p>
+                  <p className="text-[14px] leading-relaxed text-ink-2">{turn.message}</p>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -68,7 +72,7 @@ export function NegotiationChat({
         )}
 
         <div className="flex flex-col gap-2.5">
-          <SectionLabel>Enviar ajuste</SectionLabel>
+          <SectionLabel>Registrar novo ajuste</SectionLabel>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}

@@ -1,0 +1,124 @@
+import { AnimatePresence, motion } from 'motion/react'
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
+import { RiskLevel, ScenarioVersion } from '@/types'
+import { formatCurrencyBRL, formatMonthsLabel, formatNumberPtBR } from '@/lib/labels'
+
+const RISK_COLOR: Record<RiskLevel, string> = {
+  low: 'var(--moss)',
+  medium: 'var(--ochre)',
+  high: 'var(--rust)',
+  critical: 'var(--rust)',
+}
+
+type Direction = 'up' | 'down' | 'flat'
+
+/** Pill de delta: cor e seta dependem só da direção — quem decide se "melhor" é pra cima ou pra
+ * baixo é o chamador (custo/prazo: menos é melhor; risco: idem), não este componente. */
+function DeltaPill({ direction, good, children }: { direction: Direction; good: boolean; children: React.ReactNode }) {
+  const color = direction === 'flat' ? 'var(--ink-3)' : good ? 'var(--moss)' : 'var(--rust)'
+  const Icon = direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus
+
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold"
+      style={{ color, background: direction === 'flat' ? 'var(--rule-2)' : `color-mix(in srgb, ${color} 12%, transparent)` }}
+    >
+      <Icon className="size-3" strokeWidth={2.5} />
+      {children}
+    </span>
+  )
+}
+
+function Metric({
+  label,
+  previousValue,
+  activeValue,
+  delta,
+}: {
+  label: string
+  previousValue: React.ReactNode
+  activeValue: React.ReactNode
+  delta: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-[7px] bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
+      <span className="text-[12.5px] font-medium text-ink-3">{label}</span>
+      <div className="flex items-baseline gap-2">
+        <span className="tnum text-[13px] text-ink-3 line-through">{previousValue}</span>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={String(activeValue)}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            className="tnum font-display text-[26px] font-extrabold leading-none tracking-[-0.03em] text-ink"
+          >
+            {activeValue}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+      {delta}
+    </div>
+  )
+}
+
+/**
+ * O impacto da versão ativa contra a anterior, grande e explícito — a mesma comparação que
+ * VersionList já mostra em linha fina por versão, só que ampliada pra ser a primeira coisa que o
+ * olho pega ao trocar de cenário (revisão externa 3.1 pedia comparação; aqui é a versão visual dela).
+ */
+export function ImpactSummary({ active, previous }: { active: ScenarioVersion; previous?: ScenarioVersion }) {
+  if (!previous) return null
+
+  const costDelta = active.scenario.totalMonthlyCost - previous.scenario.totalMonthlyCost
+  const costDirection: Direction = costDelta === 0 ? 'flat' : costDelta > 0 ? 'up' : 'down'
+
+  const timelineDelta = active.scenario.estimatedTimelineMonths - previous.scenario.estimatedTimelineMonths
+  const timelineDirection: Direction = timelineDelta === 0 ? 'flat' : timelineDelta > 0 ? 'up' : 'down'
+
+  const riskDelta = active.scenario.riskScore - previous.scenario.riskScore
+  const riskDirection: Direction = riskDelta === 0 ? 'flat' : riskDelta > 0 ? 'up' : 'down'
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <span className="text-[12.5px] font-medium text-ink-3">Impacto vs. versão anterior</span>
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        <Metric
+          label="Custo mensal"
+          previousValue={formatCurrencyBRL(previous.scenario.totalMonthlyCost)}
+          activeValue={formatCurrencyBRL(active.scenario.totalMonthlyCost)}
+          delta={
+            <DeltaPill direction={costDirection} good={costDelta <= 0}>
+              {costDelta === 0 ? 'sem mudança' : `${costDelta > 0 ? '+' : ''}${formatCurrencyBRL(costDelta)}`}
+            </DeltaPill>
+          }
+        />
+        <Metric
+          label="Prazo estimado"
+          previousValue={formatMonthsLabel(previous.scenario.estimatedTimelineMonths)}
+          activeValue={formatMonthsLabel(active.scenario.estimatedTimelineMonths)}
+          delta={
+            <DeltaPill direction={timelineDirection} good={timelineDelta <= 0}>
+              {timelineDelta === 0
+                ? 'sem mudança'
+                : `${timelineDelta > 0 ? '+' : ''}${formatNumberPtBR(timelineDelta)} meses`}
+            </DeltaPill>
+          }
+        />
+        <Metric
+          label="Risk score"
+          previousValue={`${previous.scenario.riskScore}/100`}
+          activeValue={
+            <span style={{ color: RISK_COLOR[active.scenario.riskLevel] }}>{active.scenario.riskScore}/100</span>
+          }
+          delta={
+            <DeltaPill direction={riskDirection} good={riskDelta <= 0}>
+              {riskDelta === 0 ? 'sem mudança' : `${riskDelta > 0 ? '+' : ''}${riskDelta} pts`}
+            </DeltaPill>
+          }
+        />
+      </div>
+    </div>
+  )
+}
