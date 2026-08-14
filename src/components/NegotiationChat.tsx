@@ -1,19 +1,26 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Send } from 'lucide-react'
-import { NegotiationTurn } from '@/types'
+import { NegotiationTurn, ScenarioVersion } from '@/types'
 import { Panel, PrimaryButton, SectionLabel } from '@/components/ui/primitives'
+import { VersionList } from '@/components/VersionList'
 
 export function NegotiationChat({
   history,
   onSend,
   loading,
   onCancel,
+  versions,
+  activeVersionId,
+  onSelectVersion,
 }: {
   history: NegotiationTurn[]
   onSend: (message: string) => void
   loading: boolean
   onCancel?: () => void
+  versions: ScenarioVersion[]
+  activeVersionId: string | null
+  onSelectVersion: (id: string) => void
 }) {
   const [message, setMessage] = useState('')
 
@@ -26,6 +33,13 @@ export function NegotiationChat({
   return (
     <Panel title="Negociação">
       <div className="mx-auto flex max-w-[640px] flex-col gap-4 p-4">
+        {versions.length > 1 && (
+          <div className="flex flex-col gap-2">
+            <SectionLabel>Versões</SectionLabel>
+            <VersionList versions={versions} activeVersionId={activeVersionId} onSelect={onSelectVersion} />
+          </div>
+        )}
+
         {history.length > 0 && (
           <div className="flex max-h-80 flex-col gap-3.5 overflow-y-auto">
             <AnimatePresence initial={false}>

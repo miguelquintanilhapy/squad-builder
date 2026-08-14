@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { AlertCircle, ArrowDown, ArrowRight, HelpCircle } from 'lucide-react'
-import { ContractType, NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
+import { ContractType, NegotiationTurn, ProjectInput, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
@@ -58,6 +58,10 @@ export function SquadBuilderApp() {
   const [manualOverrides, setManualOverrides] = useState<ScopeOverrides>({})
   const scopeAnalysis = aiScope ? { ...aiScope, ...manualOverrides } : null
   const [scenario, setScenario] = useState<Scenario | null>(initialMock?.scenario ?? null)
+  const [versions, setVersions] = useState<ScenarioVersion[]>(() =>
+    initialMock ? [{ id: crypto.randomUUID(), label: 'Diagnóstico inicial', ...initialMock, input: INITIAL_INPUT }] : []
+  )
+  const [activeVersionId, setActiveVersionId] = useState<string | null>(() => versions[0]?.id ?? null)
   const [history, setHistory] = useState<NegotiationTurn[]>([])
   const [analyzeLoading, setAnalyzeLoading] = useState(false)
   const [negotiateLoading, setNegotiateLoading] = useState(false)
@@ -124,6 +128,17 @@ export function SquadBuilderApp() {
       })
       const scenarioData = await parseJsonOrThrow(scenarioResponse)
       setScenario(scenarioData.scenario)
+      // Novo diagnóstico do zero: a lista de versões reinicia — comparar contra negociações de
+      // um escopo que não existe mais não faz sentido (revisão externa 3.1).
+      const v1: ScenarioVersion = {
+        id: crypto.randomUUID(),
+        label: 'Diagnóstico inicial',
+        scopeAnalysis: mergedScope,
+        scenario: scenarioData.scenario,
+        input: nextInput,
+      }
+      setVersions([v1])
+      setActiveVersionId(v1.id)
       setLastFailedAction(null)
     } catch (err) {
       if (!isAbortError(err)) {
@@ -152,6 +167,15 @@ export function SquadBuilderApp() {
       })
       const data = await parseJsonOrThrow(response)
       setScenario(data.scenario)
+      // Correção de leitura, restauração ou premissa editável atualizam a versão ativa no
+      // lugar — não é um pedido de negociação novo, não merece virar uma versão à parte.
+      setVersions((prev) =>
+        prev.map((v) =>
+          v.id === activeVersionId
+            ? { ...v, scopeAnalysis: nextScope, scenario: data.scenario, input: nextInputForRecompute }
+            : v
+        )
+      )
       setLastFailedAction(null)
     } catch (err) {
       if (!isAbortError(err)) {
@@ -221,6 +245,17 @@ export function SquadBuilderApp() {
           timestamp: Date.now(),
         },
       ])
+      // Pedido em linguagem natural vira o rótulo da versão — o que a pessoa está tentando
+      // fazer é comparar cenários, não só ler uma resposta e perder o anterior (revisão 3.1).
+      const newVersion: ScenarioVersion = {
+        id: crypto.randomUUID(),
+        label: message,
+        scopeAnalysis,
+        scenario: data.scenario,
+        input: data.input,
+      }
+      setVersions((prev) => [...prev, newVersion])
+      setActiveVersionId(newVersion.id)
       setLastFailedAction(null)
     } catch (err) {
       if (isAbortError(err)) {
@@ -236,6 +271,17 @@ export function SquadBuilderApp() {
     }
   }
 
+  /** Volta pra uma versão anterior comparável — as demais continuam na lista, nada é descartado. */
+  function handleSelectVersion(id: string) {
+    const version = versions.find((v) => v.id === id)
+    if (!version) return
+    setActiveVersionId(id)
+    setAiScope(version.scopeAnalysis)
+    setManualOverrides({})
+    setScenario(version.scenario)
+    setInput(version.input)
+  }
+
   function handleRetry() {
     lastFailedAction?.()
   }
@@ -246,6 +292,15 @@ export function SquadBuilderApp() {
     setManualOverrides({})
     setScenario(previewScenario)
     setHistory([])
+    const v1: ScenarioVersion = {
+      id: crypto.randomUUID(),
+      label: 'Diagnóstico inicial',
+      scopeAnalysis: previewScope,
+      scenario: previewScenario,
+      input,
+    }
+    setVersions([v1])
+    setActiveVersionId(v1.id)
   }
 
   const charCount = input.description.trim().length
@@ -451,6 +506,9 @@ export function SquadBuilderApp() {
                   onSend={handleNegotiate}
                   loading={negotiateLoading}
                   onCancel={() => negotiateAbortRef.current?.abort()}
+                  versions={versions}
+                  activeVersionId={activeVersionId}
+                  onSelectVersion={handleSelectVersion}
                 />
               </div>
             )}

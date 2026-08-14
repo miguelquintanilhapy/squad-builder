@@ -160,6 +160,19 @@ export interface NegotiationState {
   history: NegotiationTurn[]
 }
 
+/**
+ * Um snapshot completo e comparável do cenário — não "chat com histórico", versionamento de
+ * verdade (revisão externa 3.1): lista de versões, diff dos números, voltar a uma anterior,
+ * pedido em linguagem natural preservado como rótulo.
+ */
+export interface ScenarioVersion {
+  id: string
+  label: string
+  scopeAnalysis: ScopeAnalysis
+  scenario: Scenario
+  input: ProjectInput
+}
+
 /** Proposta de squad extraída pela LLM a partir de uma mensagem de negociação do usuário. */
 export interface ProposedSquadChange {
   squad: SquadMember[]
