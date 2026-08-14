@@ -313,9 +313,9 @@ export function SquadBuilderApp() {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
-      {/* Contexto tipo breadcrumb ("SquadBuilder / <projeto>") só quando já existe uma análise —
-          orientação visual (onde estou, em qual projeto), não funcionalidade nova: é a mesma
-          descrição que o usuário já escreveu, só truncada. Sem borda embaixo (briefing §4/§8). */}
+      {/* Contexto ("SquadBuilder <projeto>") só quando já existe uma análise — orientação visual
+          (onde estou, em qual projeto), não funcionalidade nova: é a mesma descrição que o
+          usuário já escreveu, só truncada. Sem borda embaixo (briefing §4/§8). */}
       <header className="app-header">
         <div className="wrap flex items-center justify-between gap-3.5 py-5">
           <div className="flex items-baseline gap-[11px]">
@@ -324,10 +324,7 @@ export function SquadBuilderApp() {
               SquadBuilder
             </span>
             {scenario && (
-              <>
-                <span className="text-ink-3">/</span>
-                <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
-              </>
+              <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
             )}
           </div>
           <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
@@ -362,7 +359,7 @@ export function SquadBuilderApp() {
               teto de largura própria: usa o wrap inteiro, como as seções de baixo, porque agora a
               coluna direita (auto, do tamanho do conteúdo) precisa de espaço real ao lado do texto. */}
           <div>
-            <Eyebrow>Escopo</Eyebrow>
+            <Eyebrow>O que você está construindo?</Eyebrow>
 
             {error && (
               <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[7px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
