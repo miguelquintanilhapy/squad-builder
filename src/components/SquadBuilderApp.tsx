@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { AlertCircle, ArrowDown, ArrowRight, HelpCircle } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
-import { ScopeField, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
+import { ScopeField, ScopeSeeds, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
 import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
@@ -356,10 +356,12 @@ export function SquadBuilderApp() {
         </section>
 
         <section ref={scopeFormRef} className="wrap py-12 sm:py-16">
-          {/* Mais largo que os 760px originais (fechava demais frente ao container de 1680px das
-              outras seções — ver revisão externa 1.14), mas sem ir pra largura total: textarea e
-              inputs não têm a mesma justificativa de tabela/gráfico pra ocupar a tela inteira. */}
-          <div className="max-w-[960px]">
+          {/* Duas colunas: texto livre + botão à esquerda (posição original), "Ou parta de" e os
+              campos numéricos à direita do textarea, cada grupo numa linha só (sem quebrar 2x2)
+              — preenche o vazio que sobrava com conteúdo de verdade, não com centralização. Sem
+              teto de largura própria: usa o wrap inteiro, como as seções de baixo, porque agora a
+              coluna direita (auto, do tamanho do conteúdo) precisa de espaço real ao lado do texto. */}
+          <div>
             <Eyebrow>Escopo</Eyebrow>
 
             {error && (
@@ -399,71 +401,73 @@ export function SquadBuilderApp() {
               </div>
             )}
 
-            <div className="mt-5">
-              <ScopeField
-                value={input.description}
-                onChange={(description) => setInput((prev) => ({ ...prev, description }))}
-                onUseSeed={(text) => void handleAnalyze(text)}
-                onSubmit={() => {
-                  if (!analyzeLoading && !scopeOutOfRange) void handleAnalyze()
-                }}
-                disabled={analyzeLoading}
-              />
-            </div>
+            <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto]">
+              <div>
+                <ScopeField
+                  value={input.description}
+                  onChange={(description) => setInput((prev) => ({ ...prev, description }))}
+                  onSubmit={() => {
+                    if (!analyzeLoading && !scopeOutOfRange) void handleAnalyze()
+                  }}
+                  disabled={analyzeLoading}
+                />
 
-            <div className="mt-5">
-              <ConstraintFields
-                targetTimelineMonths={input.targetTimelineMonths}
-                monthlyBudget={input.monthlyBudget}
-                onChange={(patch) => setInput((prev) => ({ ...prev, ...patch }))}
-                disabled={analyzeLoading}
-              />
-            </div>
+                <div className="mt-5 flex flex-wrap items-center gap-3.5">
+                  <PrimaryButton
+                    onClick={() => void handleAnalyze()}
+                    disabled={analyzeLoading || scopeOutOfRange}
+                    loading={analyzeLoading}
+                  >
+                    {analyzeLoading ? (
+                      scenario ? 'Recalculando…' : 'Dimensionando…'
+                    ) : (
+                      <>
+                        {scenario ? 'Recalcular' : 'Dimensionar squad'}
+                        <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" />
+                      </>
+                    )}
+                  </PrimaryButton>
+                  {analyzeLoading && (
+                    <button
+                      type="button"
+                      onClick={() => analyzeAbortRef.current?.abort()}
+                      className="text-[13px] font-medium text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                  {!analyzeLoading && (
+                    <span className={`text-[13px] ${scopeOutOfRange ? 'text-ochre' : 'text-ink-3'}`}>
+                      {charCount < MIN_SCOPE_CHARS
+                        ? `Faltam ${missingChars} caracteres pra liberar`
+                        : charCount > MAX_SCOPE_CHARS
+                          ? `${charCount - MAX_SCOPE_CHARS} caracteres acima do limite — reduza pra liberar`
+                          : 'Leitura em texto livre, sem formulário'}
+                    </span>
+                  )}
+                </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3.5">
-              <PrimaryButton
-                onClick={() => void handleAnalyze()}
-                disabled={analyzeLoading || scopeOutOfRange}
-                loading={analyzeLoading}
-              >
-                {analyzeLoading ? (
-                  scenario ? 'Recalculando…' : 'Dimensionando…'
-                ) : (
-                  <>
-                    {scenario ? 'Recalcular' : 'Dimensionar squad'}
-                    <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" />
-                  </>
+                {SHOW_PREVIEW_BUTTON && (
+                  <button
+                    type="button"
+                    onClick={handlePreview}
+                    className="mt-3.5 text-[12.5px] text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+                  >
+                    Dev: ver com dados de exemplo (sem chamar a API)
+                  </button>
                 )}
-              </PrimaryButton>
-              {analyzeLoading && (
-                <button
-                  type="button"
-                  onClick={() => analyzeAbortRef.current?.abort()}
-                  className="text-[13px] font-medium text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
-                >
-                  Cancelar
-                </button>
-              )}
-              {!analyzeLoading && (
-                <span className={`text-[13px] ${scopeOutOfRange ? 'text-ochre' : 'text-ink-3'}`}>
-                  {charCount < MIN_SCOPE_CHARS
-                    ? `Faltam ${missingChars} caracteres pra liberar`
-                    : charCount > MAX_SCOPE_CHARS
-                      ? `${charCount - MAX_SCOPE_CHARS} caracteres acima do limite — reduza pra liberar`
-                      : 'Leitura em texto livre, sem formulário'}
-                </span>
-              )}
-            </div>
+              </div>
 
-            {SHOW_PREVIEW_BUTTON && (
-              <button
-                type="button"
-                onClick={handlePreview}
-                className="mt-3.5 text-[12.5px] text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
-              >
-                Dev: ver com dados de exemplo (sem chamar a API)
-              </button>
-            )}
+              <div className="flex flex-col gap-6">
+                <ScopeSeeds onUseSeed={(text) => void handleAnalyze(text)} disabled={analyzeLoading} />
+                <ConstraintFields
+                  targetTimelineMonths={input.targetTimelineMonths}
+                  monthlyBudget={input.monthlyBudget}
+                  onChange={(patch) => setInput((prev) => ({ ...prev, ...patch }))}
+                  disabled={analyzeLoading}
+                />
+              </div>
+            </div>
           </div>
         </section>
 

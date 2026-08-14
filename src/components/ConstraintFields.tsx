@@ -17,7 +17,7 @@ export function ConstraintFields({
   disabled?: boolean
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-2.5">
+    <div className="flex flex-nowrap items-end gap-2.5">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="prazo" className="text-[13.5px] text-ink-2">
           Prazo alvo
