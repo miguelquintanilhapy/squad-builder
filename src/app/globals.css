@@ -52,6 +52,12 @@ html {
   color-scheme: light;
 }
 
+/* Todo clicável do site é <button> — navegadores não aplicam cursor de mão em <button> por
+   padrão (diferente de <a>), então sem isso os chips/toggles/botões pareciam não-clicáveis. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 /*
  * @layer components garante que as utilities do Tailwind (py-*, pt-*, px-* etc.) sempre
  * vençam essas classes, independente da ordem no arquivo — sem isso, um shorthand como
