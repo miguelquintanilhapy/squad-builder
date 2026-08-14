@@ -419,10 +419,10 @@ export function SquadBuilderApp() {
                     loading={analyzeLoading}
                   >
                     {analyzeLoading ? (
-                      scenario ? 'Recalculando…' : 'Dimensionando…'
+                      scenario ? 'Recalculando…' : 'Montando…'
                     ) : (
                       <>
-                        {scenario ? 'Recalcular' : 'Dimensionar squad'}
+                        {scenario ? 'Recalcular' : 'Montar squad'}
                         <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" />
                       </>
                     )}
