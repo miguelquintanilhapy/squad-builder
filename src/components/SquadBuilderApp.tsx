@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { AlertCircle, ArrowDown, ArrowRight, HelpCircle } from 'lucide-react'
-import { NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
+import { ContractType, NegotiationTurn, ProjectInput, Scenario, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
@@ -135,8 +135,10 @@ export function SquadBuilderApp() {
     }
   }
 
-  /** Só a parte de rede do recálculo — usada tanto por edição de chip quanto por "restaurar". */
-  async function runRecompute(nextScope: ScopeAnalysis) {
+  /** Só a parte de rede do recálculo — usada por edição de chip, "restaurar" e premissa editável.
+   * Aceita um input explícito porque setInput não reflete no `input` fechado nesta função antes
+   * do próximo render — passar direto evita recalcular com o valor antigo. */
+  async function runRecompute(nextScope: ScopeAnalysis, nextInputForRecompute: ProjectInput = input) {
     const controller = new AbortController()
     recomputeAbortRef.current = controller
     setRecomputeLoading(true)
@@ -145,7 +147,7 @@ export function SquadBuilderApp() {
       const response = await fetch('/api/recompute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scopeAnalysis: nextScope, input }),
+        body: JSON.stringify({ scopeAnalysis: nextScope, input: nextInputForRecompute }),
         signal: controller.signal,
       })
       const data = await parseJsonOrThrow(response)
@@ -154,7 +156,7 @@ export function SquadBuilderApp() {
     } catch (err) {
       if (!isAbortError(err)) {
         setError(err instanceof Error ? err.message : 'Erro ao recalcular o squad.')
-        setLastFailedAction(() => () => runRecompute(nextScope))
+        setLastFailedAction(() => () => runRecompute(nextScope, nextInputForRecompute))
       }
     } finally {
       setRecomputeLoading(false)
@@ -166,6 +168,14 @@ export function SquadBuilderApp() {
   function handleRecompute(nextScope: ScopeAnalysis, changedField: EditableScopeField) {
     setManualOverrides((prev) => ({ ...prev, [changedField]: nextScope[changedField] }))
     void runRecompute(nextScope)
+  }
+
+  /** Premissa editável (revisão externa 3.2): trocar PJ/CLT recalcula de verdade, não só o texto. */
+  function handleContractTypeChange(contractType: ContractType) {
+    if (!scopeAnalysis) return
+    const nextInput = { ...input, contractType }
+    setInput(nextInput)
+    void runRecompute(scopeAnalysis, nextInput)
   }
 
   function handleRestoreField(field: EditableScopeField) {
@@ -432,6 +442,7 @@ export function SquadBuilderApp() {
               loading={analyzeLoading}
               recomputing={recomputeLoading}
               onCancelRecompute={() => recomputeAbortRef.current?.abort()}
+              onContractTypeChange={handleContractTypeChange}
             />
             {scenario && (
               <div className="mt-6">

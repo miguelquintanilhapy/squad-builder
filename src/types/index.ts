@@ -19,6 +19,9 @@ export type ProjectStage =
 
 export type ComplexityLevel = 'low' | 'medium' | 'enterprise'
 
+/** PJ é o padrão dos valores de referência em rates.ts; CLT aplica o multiplicador de encargos. */
+export type ContractType = 'pj' | 'clt'
+
 /** Entrada híbrida do usuário: chips/dropdowns + texto livre + filtros opcionais. */
 export interface ProjectInput {
   productTypes: ProductType[]
@@ -28,6 +31,8 @@ export interface ProjectInput {
   description: string
   targetTimelineMonths?: number
   monthlyBudget?: number
+  /** Premissa editável (revisão externa 3.2) — ausente = 'pj', o padrão dos valores de referência. */
+  contractType?: ContractType
 }
 
 export type SeniorityLevel = 'junior' | 'pleno' | 'senior'
@@ -130,7 +135,9 @@ export interface Scenario {
   /** Pontos de partida do score, só pela complexidade — base + soma dos drivers = riskScore. */
   riskBase: number
   budgetAlert?: BudgetAlert
-  /** Premissas assumidas no cálculo (ex: contratação PJ, sem verba de infra) — o usuário corrige a leitura acima se algo não valer. */
+  /** Premissa editável que efetivamente entrou no cálculo de custo — não só texto (revisão 3.2). */
+  contractType: ContractType
+  /** Premissas assumidas no cálculo (ex: sem verba de infra) — o usuário corrige a leitura acima se algo não valer. */
   assumptions: string[]
   summary: string
   midGroundSuggestion?: string

@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react'
 import { AlertTriangle, Loader2 } from 'lucide-react'
-import { Scenario } from '@/types'
+import { ContractType, Scenario } from '@/types'
 import { formatMonthsLabel } from '@/lib/labels'
 import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
@@ -61,6 +61,7 @@ export function DashboardPanel({
   loading,
   recomputing = false,
   onCancelRecompute,
+  onContractTypeChange,
 }: {
   scenario: Scenario | null
   loading: boolean
@@ -68,6 +69,7 @@ export function DashboardPanel({
    * pro skeleton — perder o ponto de comparação é o pior momento pra isso (revisão externa 2.5). */
   recomputing?: boolean
   onCancelRecompute?: () => void
+  onContractTypeChange?: (contractType: ContractType) => void
 }) {
   if (loading) {
     return <DashboardSkeleton />
@@ -131,7 +133,7 @@ export function DashboardPanel({
         </motion.div>
         <motion.div variants={groupVariants}>
           <Panel title="Risk score">
-            <RiskPanel scenario={scenario} />
+            <RiskPanel scenario={scenario} onContractTypeChange={onContractTypeChange} />
           </Panel>
         </motion.div>
       </motion.div>

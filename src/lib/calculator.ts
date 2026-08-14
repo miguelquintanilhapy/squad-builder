@@ -1,16 +1,19 @@
-import { ProjectInput, Scenario, ScopeAnalysis, SquadMember } from '@/types'
+import { ContractType, ProjectInput, Scenario, ScopeAnalysis, SquadMember } from '@/types'
 import { capacityForMember, monthlyCostForMember } from './rates'
 import { assessRisk } from './riskEngine'
 
-function withCosts(squad: SquadMember[]): SquadMember[] {
+function withCosts(squad: SquadMember[], contractType: ContractType): SquadMember[] {
   return squad.map((m) => ({
     ...m,
-    monthlyCostPerPerson: monthlyCostForMember(m.role, m.seniority, 1, m.allocation),
+    monthlyCostPerPerson: monthlyCostForMember(m.role, m.seniority, 1, m.allocation, contractType),
   }))
 }
 
-function totalCost(squad: SquadMember[]): number {
-  return squad.reduce((sum, m) => sum + monthlyCostForMember(m.role, m.seniority, m.quantity, m.allocation), 0)
+function totalCost(squad: SquadMember[], contractType: ContractType): number {
+  return squad.reduce(
+    (sum, m) => sum + monthlyCostForMember(m.role, m.seniority, m.quantity, m.allocation, contractType),
+    0
+  )
 }
 
 function totalEngineeringCapacity(squad: SquadMember[]): number {
@@ -22,11 +25,12 @@ function totalEngineeringCapacity(squad: SquadMember[]): number {
  * e a leitura de escopo, calcula custo, prazo realista e risk score sem envolver a LLM.
  */
 export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, input: ProjectInput): Scenario {
+  const contractType = input.contractType ?? 'pj'
   const capacity = totalEngineeringCapacity(squad)
   // Capacidade zero (squad sem nenhum papel de engenharia) é tratada como prazo "infinito" -> teto alto.
   const realisticTimelineMonths = capacity > 0 ? scope.estimatedEffortPersonMonths / capacity : 999
 
-  const cost = totalCost(squad)
+  const cost = totalCost(squad, contractType)
   const { riskScore, riskLevel, alerts, drivers, riskBase, budgetAlert, assumptions } = assessRisk(
     squad,
     scope,
@@ -36,7 +40,7 @@ export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, inpu
   )
 
   return {
-    squad: withCosts(squad),
+    squad: withCosts(squad, contractType),
     totalMonthlyCost: cost,
     estimatedTimelineMonths: Math.round(realisticTimelineMonths * 10) / 10,
     riskScore,
@@ -45,6 +49,7 @@ export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, inpu
     drivers,
     riskBase,
     budgetAlert,
+    contractType,
     assumptions,
     summary: '',
   }

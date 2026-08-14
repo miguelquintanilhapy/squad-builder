@@ -1,6 +1,13 @@
-import { AllocationType, ComplexityLevel, RoleType, SeniorityLevel } from '@/types'
+import { AllocationType, ComplexityLevel, ContractType, RoleType, SeniorityLevel } from '@/types'
 
-/** Custo mensal de referência (R$) por cargo e senioridade — mercado BR, contratação PJ. */
+/**
+ * Multiplicador de encargos CLT sobre o valor PJ (13º, férias+1/3, FGTS, INSS patronal etc.) —
+ * estimativa interna de referência, não uma fonte de mercado citável (revisão externa 3.3/3.2:
+ * premissa precisa ficar editável, não escondida atrás de "custo de referência de mercado").
+ */
+export const CLT_OVERHEAD_MULTIPLIER = 1.65
+
+/** Custo mensal de referência (R$) por cargo e senioridade — estimativa interna, contratação PJ. */
 export const MONTHLY_RATE_BRL: Record<RoleType, Record<SeniorityLevel, number>> = {
   'dev-frontend': { junior: 4000, pleno: 7000, senior: 11000 },
   'dev-backend': { junior: 4500, pleno: 7500, senior: 12000 },
@@ -55,9 +62,10 @@ export function monthlyCostForMember(
   role: RoleType,
   seniority: SeniorityLevel,
   quantity: number,
-  allocation: AllocationType
+  allocation: AllocationType,
+  contractType: ContractType = 'pj'
 ): number {
-  const base = MONTHLY_RATE_BRL[role][seniority]
+  const base = MONTHLY_RATE_BRL[role][seniority] * (contractType === 'clt' ? CLT_OVERHEAD_MULTIPLIER : 1)
   const allocationFactor = ALLOCATION_CAPACITY_MULTIPLIER[allocation]
   return Math.round(base * allocationFactor) * quantity
 }

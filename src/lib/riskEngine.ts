@@ -156,7 +156,10 @@ function buildAssumptions(squad: SquadMember[], scope: ScopeAnalysis): string[] 
     : 'plataforma não informada'
 
   const assumptions = [
-    'Custo de referência de mercado, contratação PJ/CLT com custo cheio.',
+    // Não "custo de referência de mercado" — é estimativa interna, sem fonte de mercado citável.
+    // O modelo de contratação (PJ/CLT) virou parâmetro editável de verdade, não texto solto aqui
+    // (revisão externa 3.2/3.3) — ver Scenario.contractType e o toggle no RiskPanel.
+    'Valores de custo por cargo são estimativas internas de referência, não uma cotação de mercado — ajuste na negociação se não valerem pro seu contexto.',
     `Plataforma considerada: ${platformLabel}.`,
     'Sem orçamento de infraestrutura, licenças ou ferramentas adicionais.',
   ]
