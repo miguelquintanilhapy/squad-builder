@@ -91,7 +91,7 @@ export function RiskPanel({
                     aria-checked={scenario.contractType === ct}
                     disabled={!onContractTypeChange}
                     onClick={() => onContractTypeChange?.(ct)}
-                    className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                    className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.96] ${
                       scenario.contractType === ct
                         ? 'border-petrol bg-petrol text-paper-2'
                         : 'border-ink-3 text-ink-2 hover:border-ink'
