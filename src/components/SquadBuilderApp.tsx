@@ -362,7 +362,9 @@ export function SquadBuilderApp() {
           </div>
         </section>
 
-        <section ref={scopeFormRef} className="wrap py-12 sm:py-16">
+        {/* scroll-mt: compensa o header agora sticky (3.6) — sem isso, scrollIntoView encosta o
+            topo da seção embaixo dele. */}
+        <section ref={scopeFormRef} className="wrap scroll-mt-20 py-12 sm:py-16">
           {/* Duas colunas: texto livre + botão à esquerda (posição original), "Ou parta de" e os
               campos numéricos à direita do textarea, cada grupo numa linha só (sem quebrar 2x2)
               — preenche o vazio que sobrava com conteúdo de verdade, não com centralização. Sem

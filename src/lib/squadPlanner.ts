@@ -62,6 +62,18 @@ function planEngineeringRoles(
   const capacityPerShare = requiredCapacityPerMonth / totalShares
   const seniorityMultiplier = SENIORITY_CAPACITY_MULTIPLIER[seniority]
 
+  // Cada justificativa defende por que o papel existe e o que quebra sem ele — não descreve o
+  // óbvio ("cobre a demanda de X"), que é tautologia e não sobrevive ao teste "se eu apagar,
+  // alguma informação se perde?" (revisão externa 3.9).
+  const ENGINEERING_JUSTIFICATION: Record<string, string> = {
+    'dev-mobile':
+      'Superfície mobile nativa (iOS/Android): sem um dev dedicado, ela disputa tempo com web/back-end e atrasa a entrega mais visível pro usuário final.',
+    'dev-frontend':
+      'Interface web é onde o usuário decide continuar ou abandonar: sem front-end dedicado, toda mudança de UI compete por tempo com API e dados.',
+    'dev-backend':
+      'Sustenta dados, regras de negócio e integrações de todas as superfícies: sem back-end dedicado, a lógica fica espalhada no cliente e frágil a mudanças.',
+  }
+
   return roleShares.map(({ role, share }) => {
     const capacityNeeded = capacityPerShare * share
     const quantity = Math.max(1, Math.ceil(capacityNeeded / seniorityMultiplier))
@@ -72,7 +84,7 @@ function planEngineeringRoles(
       allocation: 'full-time',
       justification: leanFullstack
         ? 'Escopo enxuto e baixa complexidade: 1 dev fullstack cobre front-end e back-end sem fragmentar o time.'
-        : `Cobre a demanda de ${role === 'dev-mobile' ? 'desenvolvimento mobile' : role === 'dev-frontend' ? 'front-end web' : 'back-end/API'} estimada para o escopo.`,
+        : ENGINEERING_JUSTIFICATION[role],
     }
   })
 }
