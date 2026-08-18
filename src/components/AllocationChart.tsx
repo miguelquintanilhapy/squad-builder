@@ -24,6 +24,26 @@ function barBaseColor(member: SquadMember): string {
 }
 
 /**
+ * Texto equivalente à curva visual (ex: "100% (M1–M3), 35% (M4–M6)") — opacidade sozinha não pode
+ * ser o único canal pra comunicar intensidade (mesmo princípio usado pra corrigir os chips em
+ * 1.10; achado de code review). Agrupa meses consecutivos com o mesmo percentual em faixas.
+ */
+function describeAllocationCurve(pcts: number[]): string {
+  const ranges: { pct: number; start: number; end: number }[] = []
+  pcts.forEach((pct, i) => {
+    const last = ranges[ranges.length - 1]
+    if (last && last.pct === pct) {
+      last.end = i
+    } else {
+      ranges.push({ pct, start: i, end: i })
+    }
+  })
+  return ranges
+    .map((r) => (r.start === r.end ? `${r.pct}% (M${r.start + 1})` : `${r.pct}% (M${r.start + 1}–M${r.end + 1})`))
+    .join(', ')
+}
+
+/**
  * Um segmento por mês, opacidade = intensidade de envolvimento naquele mês (revisão externa
  * 3.7): a curva vem de allocationCurve.ts (designer concentra no início, QA na segunda metade,
  * o resto é constante) — não é mais uma barra chapada cobrindo o prazo inteiro sem dizer nada.
@@ -72,9 +92,12 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
         {squad.map((member, index) => {
           const y = TOP_MARGIN + index * ROW_HEIGHT
           const monthlyCost = (member.monthlyCostPerPerson ?? 0) * member.quantity
-          const pcts = member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)
+          const pcts = (member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)).slice(
+            0,
+            monthCount
+          )
           const baseColor = barBaseColor(member)
-          const tooltip = `${roleLabel(member)} ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês`
+          const tooltip = `${roleLabel(member)} ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${describeAllocationCurve(pcts)}`
           return (
             // group + rect de fundo: hover contextual só com CSS, sem estado novo em React.
             <g key={`${member.role}-${index}`} className="group">
@@ -94,7 +117,7 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                   {SENIORITY_LABELS[member.seniority]}
                 </tspan>
               </text>
-              {pcts.slice(0, monthCount).map((pct, m) => (
+              {pcts.map((pct, m) => (
                 <rect
                   key={m}
                   x={LABEL_GUTTER + m * step + 1}
@@ -103,7 +126,11 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                   height={14}
                   rx={2}
                   fill={`rgba(${baseColor}, ${Math.max(pct / 100, 0.14).toFixed(2)})`}
-                />
+                >
+                  {/* Título por segmento: hover num mês específico dá o percentual exato — a
+                      opacidade sozinha não é o único jeito de saber a intensidade daquele mês. */}
+                  <title>{`M${m + 1}: ${pct}%`}</title>
+                </rect>
               ))}
             </g>
           )

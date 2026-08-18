@@ -422,18 +422,36 @@ Escreva:
 
 Responda em português do Brasil, respeitando estritamente o schema JSON fornecido.`
 
+  const requestConfig = {
+    model: MODEL,
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: NARRATION_SCHEMA,
+    },
+  }
+
   async function generate(): Promise<{ summary: string; midGroundSuggestion?: string }> {
-    const response = await callGemini(() =>
-      getClient().models.generateContent({
-        model: MODEL,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: NARRATION_SCHEMA,
-        },
-      })
-    )
+    const response = await callGemini(() => getClient().models.generateContent(requestConfig))
     return parseJsonResponse(response.text, 'narrar o cenário') as { summary: string; midGroundSuggestion?: string }
+  }
+
+  /**
+   * Regeneração por contradição (não por erro transitório) — uma única tentativa sem a escada de
+   * retry do callGemini. Sem isso, o pior caso dobrava o orçamento inteiro de timeout+retries
+   * (até ~91s) em vez de somar só mais um timeout simples (achado de code review). Falha aqui não
+   * propaga: segue com o resultado original, que a suspensão de frase abaixo ainda protege.
+   */
+  async function regenerateOnce(): Promise<{ summary: string; midGroundSuggestion?: string } | null> {
+    try {
+      const response = await withTimeout(getClient().models.generateContent(requestConfig))
+      return parseJsonResponse(response.text, 'narrar o cenário (regeneração)') as {
+        summary: string
+        midGroundSuggestion?: string
+      }
+    } catch {
+      return null
+    }
   }
 
   // midGroundSuggestion é exibido direto ao usuário igual ao summary — checar só o summary
@@ -458,8 +476,11 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
     console.error(
       `[narrateScenario] texto nega "${describeContradiction(contradiction)}", presente no squad — regenerando.`
     )
-    result = await generate()
-    contradiction = detectContradiction(result)
+    const regenerated = await regenerateOnce()
+    if (regenerated) {
+      result = regenerated
+      contradiction = detectContradiction(result)
+    }
   }
   if (contradiction) {
     console.error(`[narrateScenario] contradição persistiu — suprimindo em vez de exibir.`)
