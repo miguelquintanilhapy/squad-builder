@@ -89,7 +89,12 @@ function planEngineeringRoles(
   })
 }
 
-function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel): SquadMember[] {
+/** A partir de quantas pessoas no squad a falta de liderança técnica dedicada vira o primeiro
+ * ponto que um comprador experiente aponta — independente da complexidade formal do projeto
+ * (revisão externa 3.8: squad de 8, todo Pleno, sem tech lead é a falha óbvia do fixture atual). */
+const TECH_LEAD_HEADCOUNT_THRESHOLD = 5
+
+function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, engineeringHeadcount: number): SquadMember[] {
   const support: SquadMember[] = []
   const seniority = DEFAULT_SENIORITY_BY_COMPLEXITY[complexity]
   const uiFacing = needsMobile(scope) || needsWebFrontend(scope)
@@ -124,14 +129,22 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel): Sq
     })
   }
 
-  if (complexity === 'enterprise') {
+  const supportHeadcountSoFar = support.reduce((sum, m) => sum + m.quantity, 0)
+  const totalHeadcountSoFar = engineeringHeadcount + supportHeadcountSoFar
+  if (complexity === 'enterprise' || totalHeadcountSoFar >= TECH_LEAD_HEADCOUNT_THRESHOLD) {
     support.push({
       role: 'tech-lead',
       seniority: 'senior',
       quantity: 1,
       allocation: 'full-time',
-      justification: 'Time grande e escopo complexo precisam de liderança técnica dedicada para coordenar arquitetura.',
+      justification:
+        complexity === 'enterprise'
+          ? 'Time grande e escopo complexo precisam de liderança técnica dedicada para coordenar arquitetura.'
+          : `Squad de ${totalHeadcountSoFar}+ pessoas sem liderança técnica dedicada fragmenta decisões de arquitetura entre quem só executa — o primeiro ponto que um comprador experiente aponta.`,
     })
+  }
+
+  if (complexity === 'enterprise') {
     support.push({
       role: 'product-manager',
       seniority: 'senior',
@@ -169,7 +182,8 @@ export function suggestInitialSquad(scope: ScopeAnalysis, input: ProjectInput): 
   const seniority = DEFAULT_SENIORITY_BY_COMPLEXITY[scope.complexity]
 
   const engineering = planEngineeringRoles(scope, seniority, requiredCapacityPerMonth)
-  const support = planSupportRoles(scope, scope.complexity)
+  const engineeringHeadcount = engineering.reduce((sum, m) => sum + m.quantity, 0)
+  const support = planSupportRoles(scope, scope.complexity, engineeringHeadcount)
 
   return [...engineering, ...support]
 }

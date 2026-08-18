@@ -1,13 +1,20 @@
 import { ContractType, ProjectInput, RoleType, Scenario, ScopeAnalysis, SquadMember } from '@/types'
+import { monthlyAllocationPct } from './allocationCurve'
 import { capacityForMember, monthlyCostForMember } from './rates'
 import { assessRisk } from './riskEngine'
 
 type RateOverrides = Partial<Record<RoleType, number>>
 
-function withCosts(squad: SquadMember[], contractType: ContractType, rateOverrides?: RateOverrides): SquadMember[] {
+function withCosts(
+  squad: SquadMember[],
+  contractType: ContractType,
+  monthCount: number,
+  rateOverrides?: RateOverrides
+): SquadMember[] {
   return squad.map((m) => ({
     ...m,
     monthlyCostPerPerson: monthlyCostForMember(m.role, m.seniority, 1, m.allocation, contractType, rateOverrides?.[m.role]),
+    monthlyAllocationPct: monthlyAllocationPct(m.role, m.allocation, monthCount),
   }))
 }
 
@@ -42,11 +49,15 @@ export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, inpu
     realisticTimelineMonths,
     cost
   )
+  const estimatedTimelineMonths = Math.round(realisticTimelineMonths * 10) / 10
+  // Teto defensivo: capacidade zero (squad sem nenhum papel de engenharia) já cai num prazo de
+  // "infinito" (999) antes daqui — sem isso a curva geraria centenas de meses à toa.
+  const monthCount = Math.min(36, Math.max(1, Math.round(estimatedTimelineMonths)))
 
   return {
-    squad: withCosts(squad, contractType, rateOverrides),
+    squad: withCosts(squad, contractType, monthCount, rateOverrides),
     totalMonthlyCost: cost,
-    estimatedTimelineMonths: Math.round(realisticTimelineMonths * 10) / 10,
+    estimatedTimelineMonths,
     riskScore,
     riskLevel,
     alerts,

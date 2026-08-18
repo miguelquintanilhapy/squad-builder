@@ -161,9 +161,9 @@ function riscoAlto() {
 }
 
 /**
- * `alocacao-variavel` — gráfico de 3.7: percentuais diferentes por papel na mesma curva
- * (full-time e part-time misturados). Não varia por mês — o motor não modela isso hoje (allocation
- * é único por membro do squad ao longo de todo o período), decisão já tomada e reafirmada.
+ * `alocacao-variavel` — gráfico de 3.7: mistura full-time/part-time (teto por membro) com papéis
+ * que agora também variam por mês via allocationCurve.ts (designer concentra no início, QA na
+ * segunda metade) — computeScenario gera a curva real, o fixture só monta o squad.
  */
 function alocacaoVariavel() {
   const scope: ScopeAnalysis = {

@@ -1,6 +1,6 @@
 import { Scenario, SquadMember } from '@/types'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
-import { ALLOCATION_CAPACITY_MULTIPLIER, ENGINEERING_ROLES } from '@/lib/rates'
+import { ENGINEERING_ROLES } from '@/lib/rates'
 
 const LABEL_GUTTER = 170
 const CHART_WIDTH = 1000
@@ -18,16 +18,14 @@ function roleLabel(member: SquadMember): string {
  * (quem viabiliza) pinta num tom secundário — usa um dado que já existe (ENGINEERING_ROLES),
  * não inventa categoria nova só pra variar a barra.
  */
-function barFill(member: SquadMember, full: boolean): string {
-  const isCore = ENGINEERING_ROLES.includes(member.role)
-  if (full) return isCore ? 'var(--petrol)' : 'rgba(20,88,74,0.55)'
-  return isCore ? 'rgba(20,88,74,0.4)' : 'rgba(20,88,74,0.22)'
+function barBaseColor(member: SquadMember): string {
+  return ENGINEERING_ROLES.includes(member.role) ? '20,88,74' : '150,93,10'
 }
 
 /**
- * Barra por papel cobrindo o prazo inteiro (sem fases de entrada/saída — o motor de cálculo
- * trata todo o squad como presente do início ao fim). Alocação parcial vira barra mais fina
- * e clara, com o percentual ao lado. Eixo de meses no topo dá a noção de duração do projeto.
+ * Um segmento por mês, opacidade = intensidade de envolvimento naquele mês (revisão externa
+ * 3.7): a curva vem de allocationCurve.ts (designer concentra no início, QA na segunda metade,
+ * o resto é constante) — não é mais uma barra chapada cobrindo o prazo inteiro sem dizer nada.
  */
 export function AllocationChart({ scenario }: { scenario: Scenario }) {
   const { squad, estimatedTimelineMonths } = scenario
@@ -69,11 +67,10 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
         {squad.map((member, index) => {
           const y = TOP_MARGIN + index * ROW_HEIGHT
-          const allocationFraction = ALLOCATION_CAPACITY_MULTIPLIER[member.allocation]
-          const full = allocationFraction >= 1
-          const allocationPct = Math.round(allocationFraction * 100)
           const monthlyCost = (member.monthlyCostPerPerson ?? 0) * member.quantity
-          const tooltip = `${roleLabel(member)} ${SENIORITY_LABELS[member.seniority]} · ${allocationPct}% · ${formatCurrencyBRL(monthlyCost)}/mês`
+          const pcts = member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)
+          const baseColor = barBaseColor(member)
+          const tooltip = `${roleLabel(member)} ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês`
           return (
             // group + rect de fundo: hover contextual só com CSS, sem estado novo em React.
             <g key={`${member.role}-${index}`} className="group">
@@ -93,19 +90,17 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                   {SENIORITY_LABELS[member.seniority]}
                 </tspan>
               </text>
-              <rect
-                x={LABEL_GUTTER}
-                y={y + (full ? 3 : 5)}
-                width={Math.max(trackWidth, 3)}
-                height={full ? 14 : 10}
-                rx={2}
-                fill={barFill(member, full)}
-              />
-              {!full && (
-                <text x={LABEL_GUTTER + trackWidth + 6} y={y + 12} fontSize={10} fill="var(--ink-3)">
-                  {allocationPct}%
-                </text>
-              )}
+              {pcts.slice(0, monthCount).map((pct, m) => (
+                <rect
+                  key={m}
+                  x={LABEL_GUTTER + m * step + 1}
+                  y={y + 4}
+                  width={Math.max(step - 2, 1)}
+                  height={14}
+                  rx={2}
+                  fill={`rgba(${baseColor}, ${Math.max(pct / 100, 0.14).toFixed(2)})`}
+                />
+              ))}
             </g>
           )
         })}

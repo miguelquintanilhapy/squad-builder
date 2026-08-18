@@ -64,6 +64,9 @@ export interface SquadMember {
   monthlyCostPerPerson?: number
   /** Explicação técnica de por que esse cargo/senioridade está no squad. */
   justification?: string
+  /** % de envolvimento por mês do prazo, determinístico por arquétipo de papel (não a IA — ver
+   * allocationCurve.ts). Substitui a barra chapada do gráfico (revisão externa 3.7). */
+  monthlyAllocationPct?: number[]
 }
 
 export type RequiredCapability =
