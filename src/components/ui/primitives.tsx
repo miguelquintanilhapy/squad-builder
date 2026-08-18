@@ -5,28 +5,25 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Painel com cabeçalho (título + nota opcional) — cromo compartilhado por composição, risco e
- * alocação. Sem borda: a superfície (paper-3 sobre o paper-2 da página) e uma elevação bem leve
- * definem o limite, não uma linha (briefing §4/§11 — "raised" é elevação com parcimônia, não
- * borda em tudo). Sem padding no corpo: tabela, SVG e o grid do RiskPanel já levam o próprio
- * espaçamento interno; quem precisar de respiro (ex: NegotiationChat) adiciona.
+ * Superfície compartilhada por composição, risco e alocação — sem cabeçalho embutido, o título
+ * fica fora (ver PanelTitle), no mesmo padrão do h2 de "Leitura do escopo". Sem borda: a
+ * elevação (sombra) bem leve define o limite, não uma linha (briefing §4/§11 — "raised" é
+ * elevação com parcimônia, não borda em tudo). Sem padding: tabela, SVG e o grid do RiskPanel já
+ * levam o próprio espaçamento interno; quem precisar de respiro (ex: NegotiationChat) adiciona.
  */
-export function Panel({
-  title,
-  note,
-  children,
-}: {
-  title: string
-  note?: string
-  children: React.ReactNode
-}) {
+export function Panel({ children }: { children: React.ReactNode }) {
+  return <div className="overflow-hidden rounded-[7px] bg-paper-3 shadow-[var(--shadow-raised)]">{children}</div>
+}
+
+/**
+ * Título de card, fora da caixa — mesma ideia visual do h2 de "Leitura do escopo": título solto
+ * acima do conteúdo em vez de dentro de uma faixa/cabeçalho embutido no painel.
+ */
+export function PanelTitle({ title, note }: { title: string; note?: string }) {
   return (
-    <div className="overflow-hidden rounded-[7px] bg-paper-3 shadow-[var(--shadow-raised)]">
-      <div className="flex items-baseline justify-between gap-3.5 bg-paper-2 px-[15px] py-[11px]">
-        <h3 className="font-display text-[19px] font-bold tracking-[-0.02em] text-ink">{title}</h3>
-        {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
-      </div>
-      {children}
+    <div className="mb-3 flex items-baseline justify-between gap-3.5">
+      <h3 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">{title}</h3>
+      {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
     </div>
   )
 }
@@ -35,9 +32,11 @@ export function Panel({
  * Cabeçalho de seção: só o rótulo, no lugar e no estilo onde antes ficava o número (display,
  * petrol) — sem numeração decorativa, sem traço de preenchimento.
  */
-export function Eyebrow({ children }: { children: React.ReactNode }) {
+export function Eyebrow({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="mb-5 font-display text-[19px] font-bold tracking-[-0.015em] text-petrol">{children}</div>
+    <div className={`mb-5 font-display text-[19px] font-bold tracking-[-0.015em] text-petrol ${className}`}>
+      {children}
+    </div>
   )
 }
 

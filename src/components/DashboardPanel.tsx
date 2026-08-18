@@ -8,7 +8,7 @@ import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
 import { CompositionTable } from '@/components/CompositionTable'
 import { RiskPanel } from '@/components/RiskPanel'
-import { Panel } from '@/components/ui/primitives'
+import { Panel, PanelTitle } from '@/components/ui/primitives'
 
 function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-[7px] bg-rule-2 ${className}`} />
@@ -21,7 +21,7 @@ function Skeleton({ className = '' }: { className?: string }) {
  */
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-12">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="rounded-[7px] bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
@@ -31,14 +31,14 @@ function DashboardSkeleton() {
         ))}
       </div>
       {[1, 2, 3].map((panel) => (
-        <div key={panel} className="overflow-hidden rounded-[7px] bg-paper-3 shadow-[var(--shadow-raised)]">
-          <div className="bg-paper-2 px-[15px] py-[11px]">
-            <Skeleton className="h-[19px] w-1/4" />
-          </div>
-          <div className="flex flex-col gap-3 p-4">
-            {[1, 2, 3].map((row) => (
-              <Skeleton key={row} className="h-4 w-full" />
-            ))}
+        <div key={panel} className="flex flex-col gap-3">
+          <Skeleton className="h-[19px] w-1/4" />
+          <div className="overflow-hidden rounded-[7px] bg-paper-3 p-4 shadow-[var(--shadow-raised)]">
+            <div className="flex flex-col gap-3">
+              {[1, 2, 3].map((row) => (
+                <Skeleton key={row} className="h-4 w-full" />
+              ))}
+            </div>
           </div>
         </div>
       ))}
@@ -105,7 +105,7 @@ export function DashboardPanel({
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className={`flex flex-col gap-6 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}
+        className={`flex flex-col gap-12 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}
       >
         {scenario.budgetAlert && (
           <motion.div variants={groupVariants}>
@@ -119,20 +119,23 @@ export function DashboardPanel({
           <KpiStrip scenario={scenario} />
         </motion.div>
         <motion.div variants={groupVariants}>
-          <Panel
+          <PanelTitle
             title="Curva de alocação"
             note={`${scenario.squad.length} papéis · ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
-          >
+          />
+          <Panel>
             <AllocationChart scenario={scenario} />
           </Panel>
         </motion.div>
         <motion.div variants={groupVariants}>
-          <Panel title="Composição">
+          <PanelTitle title="Composição" />
+          <Panel>
             <CompositionTable scenario={scenario} />
           </Panel>
         </motion.div>
         <motion.div variants={groupVariants}>
-          <Panel title="Risk score">
+          <PanelTitle title="Risk score" />
+          <Panel>
             <RiskPanel scenario={scenario} onContractTypeChange={onContractTypeChange} />
           </Panel>
         </motion.div>

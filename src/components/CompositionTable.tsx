@@ -17,7 +17,7 @@ function RoleCard({ member, timelineMonths }: { member: Scenario['squad'][number
   const monthlyCost = perPerson * member.quantity
 
   return (
-    <div className="rounded-[7px] bg-paper-2 p-3.5">
+    <div className="rounded-[7px] border border-rule-2 bg-paper-3 p-3.5">
       <div className="font-semibold text-ink">
         {member.quantity}x {ROLE_LABELS[member.role]}{' '}
         <span className="font-normal text-[12.5px] text-ink-3">{SENIORITY_LABELS[member.seniority]}</span>
@@ -52,7 +52,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
         {scenario.squad.map((member, index) => (
           <RoleCard key={`${member.role}-${index}`} member={member} timelineMonths={scenario.estimatedTimelineMonths} />
         ))}
-        <div className="rounded-[7px] bg-paper-2 p-3.5 text-[13.5px] font-semibold text-ink">
+        <div className="rounded-[7px] border border-rule-2 bg-paper p-3.5 text-[13.5px] font-semibold text-ink">
           {totalHeadcount} pessoas no squad
           <dl className="mt-2.5 grid grid-cols-3 gap-2 text-[13px] font-normal">
             <div>
@@ -76,7 +76,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
       <div className="hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[560px] border-collapse text-[14.5px]">
           <thead>
-            <tr className="bg-paper-2">
+            <tr className="border-b border-rule-2">
               <th scope="col" className="px-[15px] py-[9px] text-left text-[12.5px] font-medium text-ink-3">
                 Papel
               </th>
@@ -99,7 +99,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
               return (
                 // Sem linha por papel — a separação vem do padding generoso e do hover, não de
                 // borda (briefing §4/§18: reduzir bordas pesadas e linhas excessivas em tabela).
-                <tr key={`${member.role}-${index}`} className="hover:bg-paper-2">
+                <tr key={`${member.role}-${index}`} className="hover:bg-paper">
                   <td className="px-[15px] py-3 text-ink">
                     <div className="font-semibold">
                       {member.quantity}x {ROLE_LABELS[member.role]}{' '}
@@ -126,7 +126,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
             })}
           </tbody>
           <tfoot>
-            <tr className="bg-paper-2 font-semibold">
+            <tr className="border-t border-rule-2 bg-paper font-semibold">
               <td className="px-[15px] py-3">{totalHeadcount} pessoas no squad</td>
               <td className={numCellClasses}>{formatMonthsLabel(scenario.estimatedTimelineMonths)}</td>
               <td className={numCellClasses}>{formatCurrencyBRL(scenario.totalMonthlyCost)}</td>

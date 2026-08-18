@@ -3,7 +3,7 @@
 const inputShellClasses =
   'flex h-[39px] items-center overflow-hidden rounded-[7px] border border-rule-2 bg-paper-3 transition-[border-color,box-shadow] duration-150 hover:border-ink-3 focus-within:border-petrol focus-within:shadow-[var(--shadow-focus)]'
 
-const affixClasses = 'flex h-full items-center bg-paper-2 px-2.5 text-[13.5px] text-ink-3'
+const affixClasses = 'flex h-full items-center bg-paper px-2.5 text-[13.5px] text-ink-3'
 
 export function ConstraintFields({
   targetTimelineMonths,

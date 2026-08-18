@@ -341,8 +341,8 @@ export function SquadBuilderApp() {
             <br />Receba o <span className="text-petrol">squad</span>.
           </h1>
           <p className="mt-4 max-w-[56ch] text-lg text-ink-2">
-            Escreva como você explicaria pra um tech lead novo no time — em texto corrido, sem
-            formulário. A partir daí montamos o squad, o custo mensal, o prazo e os riscos.
+            Escreva em texto corrido, sem formulário. O SquadBuilder dimensiona o time, o custo
+            mensal e o prazo — o ponto de equilíbrio antes de qualquer contratação.
           </p>
           <div className="mt-8">
             <PrimaryButton onClick={scrollToScopeForm} type="button">
@@ -489,10 +489,11 @@ export function SquadBuilderApp() {
 
         {(analyzeLoading || scenario) && (
           <section className="wrap py-12 sm:py-16">
-            <Eyebrow>Squad recomendado</Eyebrow>
-            {scenario && (
-              <p className="mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">{scenario.summary}</p>
-            )}
+            {/* O ápice da experiência (o squad é o "produto" que a pessoa veio buscar) — título no
+                mesmo peso visual do h1, não mais um Eyebrow pequeno como as outras seções. */}
+            <h2 className="mb-8 text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink">
+              <span className="text-petrol">Squad</span> recomendado
+            </h2>
             <DashboardPanel
               scenario={scenario}
               loading={analyzeLoading}
@@ -501,7 +502,7 @@ export function SquadBuilderApp() {
               onContractTypeChange={handleContractTypeChange}
             />
             {scenario && (
-              <div className="mt-6">
+              <div className="mt-12">
                 <NegotiationChat
                   history={history}
                   onSend={handleNegotiate}

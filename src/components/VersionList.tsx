@@ -44,7 +44,7 @@ export function VersionList({
               onClick={() => onSelect(version.id)}
               aria-current={isActive}
               className={`group relative flex w-full items-start gap-3 rounded-[7px] py-2 pl-0 pr-2.5 text-left transition-colors ${
-                isActive ? 'bg-petrol/5' : 'hover:bg-paper-2/60'
+                isActive ? 'bg-petrol/5' : 'hover:bg-paper'
               }`}
             >
               <span className="relative z-10 mt-[3px] flex size-[11px] shrink-0 items-center justify-center">
