@@ -12,6 +12,7 @@ import { NegotiationChat } from '@/components/NegotiationChat'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
+import { formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
 
 const SHOW_PREVIEW_BUTTON = process.env.NODE_ENV !== 'production'
 
@@ -327,7 +328,16 @@ export function SquadBuilderApp() {
               <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
             )}
           </div>
-          <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
+          {/* Resumo sticky (revisão externa 3.6): os números-chave continuam visíveis rolando a
+              página, mesmo depois que o KpiStrip já saiu da tela. */}
+          {scenario ? (
+            <span className="tnum text-[12.5px] font-medium text-ink">
+              {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
+              {formatCurrencyBRL(scenario.totalMonthlyCost)}/mês · {formatMonthsLabel(scenario.estimatedTimelineMonths)}
+            </span>
+          ) : (
+            <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
+          )}
         </div>
       </header>
 

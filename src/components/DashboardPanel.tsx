@@ -14,32 +14,28 @@ function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-[7px] bg-rule-2 ${className}`} />
 }
 
+const SKELETON_PANEL_TITLES = ['Curva de alocação', 'Composição', 'Risk score']
+
 /**
- * Precisa bater quase pixel a pixel com o layout final (Kpi/Panel reais) — senão troca de
- * skeleton pra conteúdo é um salto visível bem no momento de maior atenção do usuário. Por isso
- * repete a mesma estrutura sem borda + sombra do Panel/Kpi reais, em vez de uma caixa genérica.
+ * Reusa KpiStrip (em modo loading) e Panel/PanelTitle reais em vez de copiar a estrutura à mão —
+ * um shell duplicado sempre diverge do layout real na próxima mudança (revisão externa 2.8). Só
+ * o miolo de cada painel continua genérico (linhas), já que o conteúdo varia demais pra valer o
+ * espelhamento pixel a pixel.
  */
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-12">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="rounded-[7px] bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="mt-2.5 h-9 w-16" />
-          </div>
-        ))}
-      </div>
-      {[1, 2, 3].map((panel) => (
-        <div key={panel} className="flex flex-col gap-3">
-          <Skeleton className="h-[19px] w-1/4" />
-          <div className="overflow-hidden rounded-[7px] bg-paper-3 p-4 shadow-[var(--shadow-raised)]">
-            <div className="flex flex-col gap-3">
+      <KpiStrip scenario={null} loading />
+      {SKELETON_PANEL_TITLES.map((title) => (
+        <div key={title}>
+          <PanelTitle title={title} />
+          <Panel>
+            <div className="flex flex-col gap-3 p-4">
               {[1, 2, 3].map((row) => (
                 <Skeleton key={row} className="h-4 w-full" />
               ))}
             </div>
-          </div>
+          </Panel>
         </div>
       ))}
     </div>

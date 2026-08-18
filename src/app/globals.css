@@ -94,7 +94,12 @@ button:not(:disabled) {
 
   /* Cor lisa (era gradiente) — briefing §11/§29 evita gradiente decorativo. Superfície branca
      lisa + sombra bem leve, mesma elevação do Panel, em vez de borda embaixo. */
+  /* Sticky: vira o resumo de números-chave (revisão externa 3.6) assim que a página rola além
+     do KpiStrip — sem isso, ler a tabela de Composição já perde de vista squad/custo/prazo. */
   .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     background: var(--paper-3);
     box-shadow: var(--shadow-raised);
   }
