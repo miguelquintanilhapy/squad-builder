@@ -482,7 +482,7 @@ export function SquadBuilderApp() {
               onChange={handleRecompute}
               editedFields={Object.keys(manualOverrides) as EditableScopeField[]}
               onRestoreField={handleRestoreField}
-              disabled={recomputeLoading}
+              disabled={recomputeLoading || analyzeLoading}
             />
           </section>
         )}

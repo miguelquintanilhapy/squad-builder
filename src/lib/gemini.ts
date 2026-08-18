@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai'
+import { z } from 'zod'
 import { ProjectInput, ProposedSquadChange, Scenario, ScopeAnalysis, SquadMember } from '@/types'
 
 // A LLM nunca calcula custo/prazo/risco: ela só lê texto livre e devolve dados estruturados
@@ -133,9 +134,9 @@ const ROLES = [
   'product-manager',
   'data-engineer',
   'security-specialist',
-]
-const SENIORITIES = ['junior', 'pleno', 'senior']
-const ALLOCATIONS = ['full-time', 'part-time']
+] as const
+const SENIORITIES = ['junior', 'pleno', 'senior'] as const
+const ALLOCATIONS = ['full-time', 'part-time'] as const
 
 const SCOPE_ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
@@ -314,6 +315,24 @@ const PROPOSED_SQUAD_SCHEMA = {
   required: ['squad'],
 }
 
+// ProposedSquadChange vem de texto livre do usuário e muta custo/prazo/risco direto — é a
+// superfície mais perigosa da negociação e, ao contrário de ScopeAnalysis, não tinha nenhuma
+// validação (revisão externa 3.11). Campo malformado aqui não pode virar número na tela.
+const PROPOSED_SQUAD_CHANGE_SCHEMA = z.object({
+  squad: z
+    .array(
+      z.object({
+        role: z.enum(ROLES),
+        seniority: z.enum(SENIORITIES),
+        quantity: z.number().int().positive(),
+        allocation: z.enum(ALLOCATIONS),
+      })
+    )
+    .min(1),
+  targetTimelineMonths: z.number().positive().optional(),
+  targetMonthlyBudget: z.number().positive().optional(),
+})
+
 export async function extractProposedSquad(params: {
   scope: ScopeAnalysis
   input: ProjectInput
@@ -354,7 +373,13 @@ Responda respeitando estritamente o schema JSON fornecido.`
     })
   )
 
-  return parseJsonResponse(response.text, 'reinterpretar o squad') as ProposedSquadChange
+  const raw = parseJsonResponse(response.text, 'reinterpretar o squad')
+  const parsed = PROPOSED_SQUAD_CHANGE_SCHEMA.safeParse(raw)
+  if (!parsed.success) {
+    console.error('[extractProposedSquad] resposta fora do schema esperado:', parsed.error.flatten())
+    throw new Error('A IA devolveu uma proposta de squad em formato inválido. Tenta reformular o pedido.')
+  }
+  return parsed.data as ProposedSquadChange
 }
 
 const NARRATION_SCHEMA = {
