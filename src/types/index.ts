@@ -33,6 +33,9 @@ export interface ProjectInput {
   monthlyBudget?: number
   /** Premissa editável (revisão externa 3.2) — ausente = 'pj', o padrão dos valores de referência. */
   contractType?: ContractType
+  /** Premissa editável (revisão externa 3.2): corrige o custo de referência mensal (PJ, tempo
+   * integral) assumido para um papel — sobrescreve MONTHLY_RATE_BRL[role][seniority] só nele. */
+  rateOverrides?: Partial<Record<RoleType, number>>
 }
 
 export type SeniorityLevel = 'junior' | 'pleno' | 'senior'

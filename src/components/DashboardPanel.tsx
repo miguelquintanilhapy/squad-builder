@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react'
 import { AlertTriangle, Loader2 } from 'lucide-react'
-import { ContractType, Scenario } from '@/types'
+import { ContractType, RoleType, Scenario } from '@/types'
 import { formatMonthsLabel } from '@/lib/labels'
 import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
@@ -58,6 +58,8 @@ export function DashboardPanel({
   recomputing = false,
   onCancelRecompute,
   onContractTypeChange,
+  rateOverrides,
+  onRateOverrideChange,
 }: {
   scenario: Scenario | null
   loading: boolean
@@ -66,6 +68,8 @@ export function DashboardPanel({
   recomputing?: boolean
   onCancelRecompute?: () => void
   onContractTypeChange?: (contractType: ContractType) => void
+  rateOverrides?: Partial<Record<RoleType, number>>
+  onRateOverrideChange?: (role: RoleType, monthlyRate: number) => void
 }) {
   if (loading) {
     return <DashboardSkeleton />
@@ -132,7 +136,12 @@ export function DashboardPanel({
         <motion.div variants={groupVariants}>
           <PanelTitle title="Risk score" />
           <Panel>
-            <RiskPanel scenario={scenario} onContractTypeChange={onContractTypeChange} />
+            <RiskPanel
+              scenario={scenario}
+              onContractTypeChange={onContractTypeChange}
+              rateOverrides={rateOverrides}
+              onRateOverrideChange={onRateOverrideChange}
+            />
           </Panel>
         </motion.div>
       </motion.div>

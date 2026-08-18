@@ -1,7 +1,87 @@
-import { ContractType, RiskLevel, Scenario } from '@/types'
-import { RISK_LEVEL_LABELS } from '@/lib/labels'
+import { useState } from 'react'
+import { ContractType, RiskLevel, RoleType, Scenario } from '@/types'
+import { RISK_LEVEL_LABELS, ROLE_LABELS, formatCurrencyBRL } from '@/lib/labels'
+import { MONTHLY_RATE_BRL } from '@/lib/rates'
 
 const CONTRACT_TYPE_LABELS: Record<ContractType, string> = { pj: 'PJ', clt: 'CLT' }
+
+/**
+ * Custo de referência por papel (revisão externa 3.2) — a assunção que mais gera desconfiança
+ * quando fixa: "R$ 8.000 pra Dev Mobile Pleno" varia por região/senioridade real. Editável aqui,
+ * junto das outras premissas, em vez de escondida atrás de "custo de mercado".
+ */
+function RateOverrideRow({
+  role,
+  effectiveRate,
+  onChange,
+}: {
+  role: RoleType
+  effectiveRate: number
+  onChange?: (role: RoleType, monthlyRate: number) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(String(effectiveRate))
+
+  function commit() {
+    const value = Number(draft)
+    if (Number.isFinite(value) && value > 0) onChange?.(role, value)
+    setEditing(false)
+  }
+
+  const label = `Custo de referência (${ROLE_LABELS[role]}, PJ integral)`
+
+  if (!onChange) {
+    return (
+      <li>
+        {label}: {formatCurrencyBRL(effectiveRate)}/mês
+      </li>
+    )
+  }
+
+  if (editing) {
+    return (
+      <li className="flex flex-wrap items-center gap-2">
+        <span>{label}:</span>
+        <input
+          type="number"
+          min={1}
+          step={100}
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit()
+            if (e.key === 'Escape') {
+              setDraft(String(effectiveRate))
+              setEditing(false)
+            }
+          }}
+          className="w-24 rounded border border-rule-2 bg-paper-3 px-1.5 py-0.5 text-[12.5px] text-ink outline-none focus:border-petrol"
+        />
+        <span>/mês</span>
+      </li>
+    )
+  }
+
+  return (
+    <li className="flex flex-wrap items-center gap-2">
+      <span>
+        {label}: {formatCurrencyBRL(effectiveRate)}/mês
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          setDraft(String(effectiveRate))
+          setEditing(true)
+        }}
+        className="text-[11px] font-medium text-petrol underline underline-offset-2 hover:text-ink"
+      >
+        editar
+      </button>
+    </li>
+  )
+}
 
 const RISK_COLOR: Record<RiskLevel, string> = {
   low: 'var(--moss)',
@@ -30,12 +110,20 @@ function WeightRow({ weight, children }: { weight: number; children: React.React
 export function RiskPanel({
   scenario,
   onContractTypeChange,
+  rateOverrides,
+  onRateOverrideChange,
 }: {
   scenario: Scenario
   /** Ausente = premissa fica só-leitura (ex: snapshot de uma versão passada da negociação). */
   onContractTypeChange?: (contractType: ContractType) => void
+  rateOverrides?: Partial<Record<RoleType, number>>
+  onRateOverrideChange?: (role: RoleType, monthlyRate: number) => void
 }) {
   const color = RISK_COLOR[scenario.riskLevel]
+
+  // Uma linha por papel distinto no squad — mesma senioridade e taxa pra todas as entradas
+  // desse papel, mesmo que o squad tenha, num caso raro, o mesmo papel em duas senioridades.
+  const distinctRoles = [...new Map(scenario.squad.map((m) => [m.role, m.seniority])).entries()]
 
   return (
     // As duas colunas compartilham a superfície do Panel — sem caixa própria por coluna, só o
@@ -103,6 +191,14 @@ export function RiskPanel({
                 ))}
               </span>
             </li>
+            {distinctRoles.map(([role, seniority]) => (
+              <RateOverrideRow
+                key={role}
+                role={role}
+                effectiveRate={rateOverrides?.[role] ?? MONTHLY_RATE_BRL[role][seniority]}
+                onChange={onRateOverrideChange}
+              />
+            ))}
             {scenario.assumptions.map((assumption, index) => (
               <li key={index}>{assumption}</li>
             ))}

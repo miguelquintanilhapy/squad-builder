@@ -63,9 +63,12 @@ export function monthlyCostForMember(
   seniority: SeniorityLevel,
   quantity: number,
   allocation: AllocationType,
-  contractType: ContractType = 'pj'
+  contractType: ContractType = 'pj',
+  /** Premissa editável (revisão externa 3.2): substitui MONTHLY_RATE_BRL[role][seniority]. */
+  rateOverride?: number
 ): number {
-  const base = MONTHLY_RATE_BRL[role][seniority] * (contractType === 'clt' ? CLT_OVERHEAD_MULTIPLIER : 1)
+  const referenceRate = rateOverride ?? MONTHLY_RATE_BRL[role][seniority]
+  const base = referenceRate * (contractType === 'clt' ? CLT_OVERHEAD_MULTIPLIER : 1)
   const allocationFactor = ALLOCATION_CAPACITY_MULTIPLIER[allocation]
   return Math.round(base * allocationFactor) * quantity
 }

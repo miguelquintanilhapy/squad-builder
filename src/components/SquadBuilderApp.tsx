@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { AlertCircle, ArrowRight, HelpCircle } from 'lucide-react'
-import { ContractType, NegotiationTurn, ProjectInput, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
+import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { ScopeField, ScopeSeeds, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
@@ -199,6 +199,15 @@ export function SquadBuilderApp() {
   function handleContractTypeChange(contractType: ContractType) {
     if (!scopeAnalysis) return
     const nextInput = { ...input, contractType }
+    setInput(nextInput)
+    void runRecompute(scopeAnalysis, nextInput)
+  }
+
+  /** Premissa editável (revisão externa 3.2): corrigir o custo de referência de um papel recalcula
+   * de verdade — é o que separa calculadora de adivinhação. */
+  function handleRateOverrideChange(role: RoleType, monthlyRate: number) {
+    if (!scopeAnalysis) return
+    const nextInput = { ...input, rateOverrides: { ...input.rateOverrides, [role]: monthlyRate } }
     setInput(nextInput)
     void runRecompute(scopeAnalysis, nextInput)
   }
@@ -512,6 +521,8 @@ export function SquadBuilderApp() {
               recomputing={recomputeLoading}
               onCancelRecompute={() => recomputeAbortRef.current?.abort()}
               onContractTypeChange={handleContractTypeChange}
+              rateOverrides={input.rateOverrides}
+              onRateOverrideChange={handleRateOverrideChange}
             />
             {scenario && (
               <div className="mt-12">
