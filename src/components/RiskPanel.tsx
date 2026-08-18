@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ContractType, RiskLevel, RoleType, Scenario } from '@/types'
-import { RISK_LEVEL_LABELS, ROLE_LABELS, formatCurrencyBRL } from '@/lib/labels'
+import { RISK_LEVEL_LABELS, ROLE_LABELS, formatCurrencyBRL, parseCurrencyPtBR } from '@/lib/labels'
 import { MONTHLY_RATE_BRL } from '@/lib/rates'
 
 const CONTRACT_TYPE_LABELS: Record<ContractType, string> = { pj: 'PJ', clt: 'CLT' }
@@ -23,7 +23,9 @@ function RateOverrideRow({
   const [draft, setDraft] = useState(String(effectiveRate))
 
   function commit() {
-    const value = Number(draft)
+    // parseCurrencyPtBR, não Number() cru: "8.000" digitado é R$ 8 mil em pt-BR, não 8 (achado
+    // de code review — type="number" nativo aceitava e interpretava o ponto como decimal).
+    const value = parseCurrencyPtBR(draft)
     if (Number.isFinite(value) && value > 0) onChange?.(role, value)
     setEditing(false)
   }

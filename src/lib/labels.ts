@@ -66,6 +66,21 @@ export function formatNumberPtBR(value: number): string {
 }
 
 /**
+ * Inverso de formatCurrencyBRL: aceita notação pt-BR (ponto = milhar, vírgula = decimal) em vez
+ * de Number() cru. Number("8.000") vira 8 (oito) — achado de code review: um input editável de
+ * custo corrigia silenciosamente pra um valor absurdo porque "8.000" é decimal válido em en-US.
+ */
+export function parseCurrencyPtBR(raw: string): number {
+  const normalized = raw
+    .trim()
+    .replace(/[^\d,.-]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.')
+  const value = Number(normalized)
+  return Number.isFinite(value) ? Math.round(value) : NaN
+}
+
+/**
  * O prazo estimado (pessoa-mês / capacidade) não tem precisão de dia — "2,3 meses" comunica uma
  * exatidão que o modelo não tem. Mostra faixa (piso–teto) em vez de decimal; se a faixa colapsa
  * num inteiro, mostra só o inteiro. Todo derivado do prazo (investimento total, custo por papel

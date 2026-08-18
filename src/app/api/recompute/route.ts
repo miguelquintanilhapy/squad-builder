@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { ProjectInput, ScopeAnalysis } from '@/types'
+import { ProjectInput, ScopeAnalysis, SquadMember } from '@/types'
 import { narrateScenario } from '@/lib/gemini'
 import { suggestInitialSquad } from '@/lib/squadPlanner'
 import { computeScenario } from '@/lib/calculator'
@@ -7,23 +7,29 @@ import { computeScenario } from '@/lib/calculator'
 interface RecomputeRequestBody {
   scopeAnalysis: ScopeAnalysis
   input: ProjectInput
+  /** Squad atual (negociado ou não). Ausente só no primeiro diagnóstico, que ainda não tem
+   * squad — nesse caso gera um novo. Presente, reusa-o: sem isso, qualquer recálculo de premissa
+   * (chip da ReadingGrid, PJ/CLT, custo editável) chamava suggestInitialSquad de novo e descartava
+   * em silêncio um squad que o usuário já tinha negociado por chat (achado de code review). */
+  currentSquad?: SquadMember[]
 }
 
 /**
- * Recalcula squad/custo/prazo/risco a partir de uma leitura de escopo já editada pelo usuário
- * (chips da ReadingGrid), sem rechamar analyzeScope — a IA só é usada aqui pra renarrar o
- * resumo do novo cenário. Endpoint aditivo: não substitui /api/analyze nem /api/negotiate.
+ * Recalcula custo/prazo/risco a partir de uma leitura de escopo já editada pelo usuário (chips
+ * da ReadingGrid) ou de uma premissa corrigida (PJ/CLT, custo por papel) — a IA só é usada aqui
+ * pra renarrar o resumo do novo cenário. Endpoint aditivo: não substitui /api/analyze nem
+ * /api/negotiate.
  */
 export async function POST(request: Request) {
   const body = (await request.json()) as RecomputeRequestBody
-  const { scopeAnalysis, input } = body
+  const { scopeAnalysis, input, currentSquad } = body
 
   if (!scopeAnalysis) {
     return NextResponse.json({ error: 'Leitura de escopo é obrigatória.' }, { status: 400 })
   }
 
   try {
-    const squad = suggestInitialSquad(scopeAnalysis, input)
+    const squad = currentSquad?.length ? currentSquad : suggestInitialSquad(scopeAnalysis, input)
     const scenario = computeScenario(squad, scopeAnalysis, input)
     const { summary, midGroundSuggestion } = await narrateScenario({ scope: scopeAnalysis, input, scenario })
 

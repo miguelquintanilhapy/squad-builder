@@ -163,7 +163,9 @@ export function SquadBuilderApp() {
       const response = await fetch('/api/recompute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scopeAnalysis: nextScope, input: nextInputForRecompute }),
+        // currentSquad preserva o squad negociado (achado de code review): sem isso, o endpoint
+        // regenerava um squad do zero a cada correção de chip/premissa, descartando negociação.
+        body: JSON.stringify({ scopeAnalysis: nextScope, input: nextInputForRecompute, currentSquad: scenario?.squad }),
         signal: controller.signal,
       })
       const data = await parseJsonOrThrow(response)
