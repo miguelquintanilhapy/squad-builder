@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from '@google/genai'
 import { z } from 'zod'
 import { ProjectInput, ProposedSquadChange, Scenario, ScopeAnalysis, SquadMember } from '@/types'
+import { describeContradiction, findNarrativeContradiction, removeContradictingSentences } from './narrativeGuard'
 
 // A LLM nunca calcula custo/prazo/risco: ela só lê texto livre e devolve dados estruturados
 // (extração) ou narra números que o motor determinístico (src/lib/calculator.ts) já calculou.
@@ -421,16 +422,37 @@ Escreva:
 
 Responda em português do Brasil, respeitando estritamente o schema JSON fornecido.`
 
-  const response = await callGemini(() =>
-    getClient().models.generateContent({
-      model: MODEL,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: NARRATION_SCHEMA,
-      },
-    })
-  )
+  async function generate(): Promise<{ summary: string; midGroundSuggestion?: string }> {
+    const response = await callGemini(() =>
+      getClient().models.generateContent({
+        model: MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: NARRATION_SCHEMA,
+        },
+      })
+    )
+    return parseJsonResponse(response.text, 'narrar o cenário') as { summary: string; midGroundSuggestion?: string }
+  }
 
-  return parseJsonResponse(response.text, 'narrar o cenário') as { summary: string; midGroundSuggestion?: string }
+  let result = await generate()
+  let contradiction = findNarrativeContradiction(result.summary, scenario.squad)
+
+  // O pipeline entrega o squad já fechado pro modelo — uma contradição aqui não é erro de dados,
+  // é o modelo se contradizendo. Tenta regenerar uma vez; se persistir, suprime só a frase em vez
+  // de exibir uma afirmação falsa sobre a composição (revisão externa 3.10).
+  if (contradiction) {
+    console.error(
+      `[narrateScenario] texto nega "${describeContradiction(contradiction)}", presente no squad — regenerando.`
+    )
+    result = await generate()
+    contradiction = findNarrativeContradiction(result.summary, scenario.squad)
+  }
+  if (contradiction) {
+    console.error(`[narrateScenario] contradição persistiu — suprimindo a frase em vez de exibir.`)
+    result = { ...result, summary: removeContradictingSentences(result.summary, scenario.squad) }
+  }
+
+  return result
 }
