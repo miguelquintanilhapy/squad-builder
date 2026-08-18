@@ -2,6 +2,15 @@ import { AllocationType, RoleType } from '@/types'
 import { ALLOCATION_CAPACITY_MULTIPLIER } from './rates'
 
 /**
+ * Teto de meses pra gerar/renderizar a curva de alocação. Squad sem nenhum papel de engenharia
+ * faz o prazo estimado degenerar pra "infinito" (999, ver calculator.ts) — sem um teto único
+ * compartilhado entre o motor e o gráfico, os dois divergiam: calculator.ts limitava a array de
+ * percentuais, mas AllocationChart.tsx desenhava o grid/eixo sem limite, gerando ~1000 colunas
+ * com só uma fração preenchida (achado de code review).
+ */
+export const MAX_ALLOCATION_MONTHS = 36
+
+/**
  * Curva de alocação por papel ao longo do prazo (revisão externa 3.7): sem isso, a barra do
  * gráfico é 100% do mês 1 ao fim, retângulo sólido que não comunica nada. É determinística por
  * arquétipo de papel — a IA nunca calcula isso, só o motor determinístico (mesma regra do

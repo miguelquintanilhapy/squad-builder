@@ -1,4 +1,5 @@
 import { Scenario, SquadMember } from '@/types'
+import { MAX_ALLOCATION_MONTHS } from '@/lib/allocationCurve'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
 import { ENGINEERING_ROLES } from '@/lib/rates'
 
@@ -29,7 +30,10 @@ function barBaseColor(member: SquadMember): string {
  */
 export function AllocationChart({ scenario }: { scenario: Scenario }) {
   const { squad, estimatedTimelineMonths } = scenario
-  const monthCount = Math.max(1, Math.round(estimatedTimelineMonths))
+  // Mesmo teto do motor de cálculo (calculator.ts) — sem isso, um prazo degenerado (squad sem
+  // papel de engenharia) desenhava ~1000 colunas de grid com só uma fração preenchida de barras
+  // (achado de code review).
+  const monthCount = Math.min(MAX_ALLOCATION_MONTHS, Math.max(1, Math.round(estimatedTimelineMonths)))
   const trackWidth = CHART_WIDTH - LABEL_GUTTER - RIGHT_MARGIN
   const step = trackWidth / monthCount
   const height = TOP_MARGIN + squad.length * ROW_HEIGHT + BOTTOM_MARGIN

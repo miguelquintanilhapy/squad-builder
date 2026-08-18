@@ -1,5 +1,5 @@
 import { ContractType, ProjectInput, RoleType, Scenario, ScopeAnalysis, SquadMember } from '@/types'
-import { monthlyAllocationPct } from './allocationCurve'
+import { MAX_ALLOCATION_MONTHS, monthlyAllocationPct } from './allocationCurve'
 import { capacityForMember, monthlyCostForMember } from './rates'
 import { assessRisk } from './riskEngine'
 
@@ -50,9 +50,7 @@ export function computeScenario(squad: SquadMember[], scope: ScopeAnalysis, inpu
     cost
   )
   const estimatedTimelineMonths = Math.round(realisticTimelineMonths * 10) / 10
-  // Teto defensivo: capacidade zero (squad sem nenhum papel de engenharia) já cai num prazo de
-  // "infinito" (999) antes daqui — sem isso a curva geraria centenas de meses à toa.
-  const monthCount = Math.min(36, Math.max(1, Math.round(estimatedTimelineMonths)))
+  const monthCount = Math.min(MAX_ALLOCATION_MONTHS, Math.max(1, Math.round(estimatedTimelineMonths)))
 
   return {
     squad: withCosts(squad, contractType, monthCount, rateOverrides),
