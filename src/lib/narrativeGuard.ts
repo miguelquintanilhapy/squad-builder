@@ -49,11 +49,19 @@ export function findNarrativeContradiction(text: string, squad: SquadMember[]): 
   return null
 }
 
-/** Remove só as frases que contradizem a composição, preservando o resto do parágrafo. */
+/**
+ * Remove só as frases que contradizem a composição, preservando o resto do parágrafo. Se TODAS
+ * as frases contradizem (resumo de uma frase só, por exemplo), o pior caso não pode devolver o
+ * texto original intacto — seria exibir de volta exatamente a afirmação falsa que essa função
+ * existe pra suprimir (achado de code review). Nesse caso vira um fallback neutro, sem afirmar
+ * nada sobre o squad.
+ */
 export function removeContradictingSentences(summary: string, squad: SquadMember[]): string {
   const sentences = summary.split(/(?<=[.!?])\s+/).filter(Boolean)
   const kept = sentences.filter((sentence) => !findNarrativeContradiction(sentence, squad))
-  if (!kept.length) return summary
+  if (!kept.length) {
+    return 'Resumo indisponível: o texto gerado contradizia a composição atual do squad.'
+  }
   return kept.join(' ').trim()
 }
 

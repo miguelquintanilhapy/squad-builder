@@ -45,9 +45,8 @@ function RateOverrideRow({
       <li className="flex flex-wrap items-center gap-2">
         <span>{label}:</span>
         <input
-          type="number"
-          min={1}
-          step={100}
+          type="text"
+          inputMode="numeric"
           autoFocus
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
