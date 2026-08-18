@@ -436,8 +436,20 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
     return parseJsonResponse(response.text, 'narrar o cenário') as { summary: string; midGroundSuggestion?: string }
   }
 
+  // midGroundSuggestion é exibido direto ao usuário igual ao summary — checar só o summary
+  // deixava passar uma sugestão do tipo "considere adicionar um QA dedicado" com QA já presente
+  // no squad (achado de code review).
+  function detectContradiction(candidate: { summary: string; midGroundSuggestion?: string }) {
+    return (
+      findNarrativeContradiction(candidate.summary, scenario.squad) ??
+      (candidate.midGroundSuggestion
+        ? findNarrativeContradiction(candidate.midGroundSuggestion, scenario.squad)
+        : null)
+    )
+  }
+
   let result = await generate()
-  let contradiction = findNarrativeContradiction(result.summary, scenario.squad)
+  let contradiction = detectContradiction(result)
 
   // O pipeline entrega o squad já fechado pro modelo — uma contradição aqui não é erro de dados,
   // é o modelo se contradizendo. Tenta regenerar uma vez; se persistir, suprime só a frase em vez
@@ -447,11 +459,17 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
       `[narrateScenario] texto nega "${describeContradiction(contradiction)}", presente no squad — regenerando.`
     )
     result = await generate()
-    contradiction = findNarrativeContradiction(result.summary, scenario.squad)
+    contradiction = detectContradiction(result)
   }
   if (contradiction) {
-    console.error(`[narrateScenario] contradição persistiu — suprimindo a frase em vez de exibir.`)
-    result = { ...result, summary: removeContradictingSentences(result.summary, scenario.squad) }
+    console.error(`[narrateScenario] contradição persistiu — suprimindo em vez de exibir.`)
+    result = {
+      summary: removeContradictingSentences(result.summary, scenario.squad),
+      midGroundSuggestion:
+        result.midGroundSuggestion && findNarrativeContradiction(result.midGroundSuggestion, scenario.squad)
+          ? undefined
+          : result.midGroundSuggestion,
+    }
   }
 
   return result
