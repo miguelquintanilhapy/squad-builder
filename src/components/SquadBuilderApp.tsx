@@ -67,9 +67,16 @@ export function SquadBuilderApp() {
     hidden: {},
     show: { transition: { staggerChildren: reduceMotion ? 0 : 0.18, delayChildren: 0.1 } },
   }
+  // Esquerda pra direita, não baixo pra cima (pedido do usuário) — combina com o texto agora
+  // alinhado à esquerda, numa coluna ao lado do preview.
   const heroItemVariants = {
-    hidden: { opacity: 0, y: reduceMotion ? 0 : 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
+    hidden: { opacity: 0, x: reduceMotion ? 0 : -20 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
+  }
+  // O preview converge do lado oposto (direita) — as duas colunas se encontram no centro.
+  const heroPreviewVariants = {
+    hidden: { opacity: 0, x: reduceMotion ? 0 : 20 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
   }
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
   // Lazy initializer (não efeito): roda só na primeira renderização, então não dispara o lint de
@@ -429,31 +436,41 @@ export function SquadBuilderApp() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="show"
-          className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center"
+          className="wrap flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24"
         >
-          <motion.h1
-            variants={heroItemVariants}
-            className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
-          >
-            Descreva seu projeto.
-            <br />Monte o <span className="text-petrol">squad</span> ideal.
-          </motion.h1>
-          <motion.p variants={heroItemVariants} className="mt-4 max-w-[56ch] text-lg text-ink-2">
-            Conte o que você quer construir. O SquadBuilder estima equipe, custo e prazo.
-          </motion.p>
-          <motion.div variants={heroItemVariants} className="mt-6">
-            <PrimaryButton onClick={scrollToScopeForm} type="button">
-              Descrever meu projeto
-              <ArrowRight className="size-4" />
-            </PrimaryButton>
-          </motion.div>
-          {/* Preview real do dashboard, não tela vazia (CRITICA-UI §1.2) — mesmo componente
-              KpiStrip usado no resultado de verdade, com um escopo de exemplo fixo. */}
-          <div className="mt-10 w-full max-w-[480px] rounded-[7px] bg-paper-3 p-4 text-left shadow-[var(--shadow-raised)]">
-            <p className="mb-2.5 text-[12px] font-medium text-ink-3">Exemplo de resultado</p>
-            {/* compact: números menores, sempre 2 colunas — os valores "saíam pro lado" com o
-                grid de 4 colunas do KpiStrip normal apertado num card estreito. */}
-            <KpiStrip scenario={heroPreviewScenario} compact />
+          {/* Duas colunas: texto à esquerda, preview à direita — o card embaixo do texto
+              empurrava o hero inteiro pra cima (feedback do usuário). Empilha em telas estreitas. */}
+          <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_460px] lg:gap-14">
+            <div className="text-left">
+              <motion.h1
+                variants={heroItemVariants}
+                className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
+              >
+                Descreva seu projeto.
+                <br />Monte o <span className="text-petrol">squad</span> ideal.
+              </motion.h1>
+              <motion.p variants={heroItemVariants} className="mt-4 max-w-[56ch] text-lg text-ink-2">
+                Conte o que você quer construir. O SquadBuilder estima equipe, custo e prazo.
+              </motion.p>
+              <motion.div variants={heroItemVariants} className="mt-6">
+                <PrimaryButton onClick={scrollToScopeForm} type="button">
+                  Descrever meu projeto
+                  <ArrowRight className="size-4" />
+                </PrimaryButton>
+              </motion.div>
+            </div>
+            {/* Preview real do dashboard, não tela vazia (CRITICA-UI §1.2) — mesmo componente
+                KpiStrip usado no resultado de verdade, com um escopo de exemplo fixo. Entra da
+                direita, convergindo com o texto que entra da esquerda. */}
+            <motion.div
+              variants={heroPreviewVariants}
+              className="w-full rounded-[7px] bg-paper-3 p-4 text-left shadow-[var(--shadow-raised)]"
+            >
+              <p className="mb-2.5 text-[12px] font-medium text-ink-3">Exemplo de resultado</p>
+              {/* compact: números menores, sempre 2 colunas — os valores "saíam pro lado" com o
+                  grid de 4 colunas do KpiStrip normal apertado num card estreito. */}
+              <KpiStrip scenario={heroPreviewScenario} compact />
+            </motion.div>
           </div>
         </motion.section>
 
