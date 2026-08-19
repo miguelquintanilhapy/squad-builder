@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ContractType, RiskLevel, RoleType, Scenario } from '@/types'
 import { RISK_LEVEL_LABELS, ROLE_LABELS, formatCurrencyBRL, parseCurrencyPtBR } from '@/lib/labels'
 import { MONTHLY_RATE_BRL } from '@/lib/rates'
@@ -8,78 +8,59 @@ const CONTRACT_TYPE_LABELS: Record<ContractType, string> = { pj: 'PJ', clt: 'CLT
 /**
  * Custo de referência por papel (revisão externa 3.2) — a assunção que mais gera desconfiança
  * quando fixa: "R$ 8.000 pra Dev Mobile Pleno" varia por região/senioridade real. Editável aqui,
- * junto das outras premissas, em vez de escondida atrás de "custo de mercado".
+ * junto das outras premissas. Um único "Editar premissas" no topo controla a edição de todas as
+ * linhas de uma vez — não um "editar" por papel (AJUSTES-UI §16/17: poluía a lista).
  */
 function RateOverrideRow({
   role,
   effectiveRate,
+  editing,
   onChange,
 }: {
   role: RoleType
   effectiveRate: number
+  editing: boolean
   onChange?: (role: RoleType, monthlyRate: number) => void
 }) {
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(String(effectiveRate))
+  const inputRef = useRef<HTMLInputElement>(null)
 
   function commit() {
     // parseCurrencyPtBR, não Number() cru: "8.000" digitado é R$ 8 mil em pt-BR, não 8 (achado
     // de code review — type="number" nativo aceitava e interpretava o ponto como decimal).
-    const value = parseCurrencyPtBR(draft)
+    const value = parseCurrencyPtBR(inputRef.current?.value ?? '')
     if (Number.isFinite(value) && value > 0) onChange?.(role, value)
-    setEditing(false)
   }
 
-  const label = `Custo de referência (${ROLE_LABELS[role]}, PJ integral)`
-
-  if (!onChange) {
+  if (!editing) {
     return (
-      <li>
-        {label}: {formatCurrencyBRL(effectiveRate)}/mês
-      </li>
-    )
-  }
-
-  if (editing) {
-    return (
-      <li className="flex flex-wrap items-center gap-2">
-        <span>{label}:</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit()
-            if (e.key === 'Escape') {
-              setDraft(String(effectiveRate))
-              setEditing(false)
-            }
-          }}
-          className="w-24 rounded border border-rule-2 bg-paper-3 px-1.5 py-0.5 text-[12.5px] text-ink outline-none focus:border-petrol"
-        />
-        <span>/mês</span>
+      <li className="flex items-baseline justify-between gap-2">
+        <span>{ROLE_LABELS[role]}</span>
+        <span className="tnum text-ink">{formatCurrencyBRL(effectiveRate)}/mês</span>
       </li>
     )
   }
 
   return (
-    <li className="flex flex-wrap items-center gap-2">
-      <span>
-        {label}: {formatCurrencyBRL(effectiveRate)}/mês
+    <li className="flex flex-wrap items-center justify-between gap-2">
+      <span>{ROLE_LABELS[role]}</span>
+      <span className="flex items-center gap-1.5">
+        <input
+          ref={inputRef}
+          key={effectiveRate}
+          type="text"
+          inputMode="numeric"
+          defaultValue={String(effectiveRate)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              commit()
+              e.currentTarget.blur()
+            }
+          }}
+          className="w-24 rounded border border-rule-2 bg-paper-3 px-1.5 py-0.5 text-right text-[12.5px] text-ink outline-none focus:border-petrol"
+        />
+        <span className="text-ink-3">/mês</span>
       </span>
-      <button
-        type="button"
-        onClick={() => {
-          setDraft(String(effectiveRate))
-          setEditing(true)
-        }}
-        className="text-[11px] font-medium text-petrol underline underline-offset-2 hover:text-ink"
-      >
-        editar
-      </button>
     </li>
   )
 }
@@ -91,7 +72,11 @@ const RISK_COLOR: Record<RiskLevel, string> = {
   critical: 'var(--rust)',
 }
 
-function WeightRow({ weight, children }: { weight: number; children: React.ReactNode }) {
+/**
+ * "+N · Título" na frente, explicação curta embaixo (AJUSTES-UI §15) — antes só a descrição
+ * longa aparecia e o título de cada driver (já existente em riskEngine.ts) ficava sem uso.
+ */
+function WeightRow({ weight, title, description }: { weight: number; title: string; description?: string }) {
   // Sem linha entre os drivers — só espaço (briefing §4): a lista já é curta e cada item
   // tem peso numérico próprio, uma borda ali não ajuda a ler, só soma ruído.
   return (
@@ -99,7 +84,10 @@ function WeightRow({ weight, children }: { weight: number; children: React.React
       <span className="tnum w-[30px] shrink-0 pt-[3px] text-right text-[12.5px] text-ink-3">
         +{Math.round(weight)}
       </span>
-      <span className="text-ink-2">{children}</span>
+      <div>
+        <span className="font-medium text-ink">{title}</span>
+        {description && <p className="mt-0.5 text-[12.5px] text-ink-3">{description}</p>}
+      </div>
     </li>
   )
 }
@@ -121,6 +109,8 @@ export function RiskPanel({
   onRateOverrideChange?: (role: RoleType, monthlyRate: number) => void
 }) {
   const color = RISK_COLOR[scenario.riskLevel]
+  const [showRates, setShowRates] = useState(false)
+  const [editingRates, setEditingRates] = useState(false)
 
   // Uma linha por papel distinto no squad — mesma senioridade e taxa pra todas as entradas
   // desse papel, mesmo que o squad tenha, num caso raro, o mesmo papel em duas senioridades.
@@ -156,19 +146,33 @@ export function RiskPanel({
         </div>
       </div>
       <div>
-        <p className="text-[12.5px] font-medium text-ink-2">Por que esse risco?</p>
+        <p className="text-[12.5px] font-medium text-ink-2">O que gera esse risco?</p>
         <ul className="m-0 mt-1.5 list-none p-0">
-          <WeightRow weight={scenario.riskBase}>Base pela complexidade do escopo.</WeightRow>
+          <WeightRow weight={scenario.riskBase} title="Complexidade do escopo" />
           {scenario.drivers.map((driver, index) => (
-            <WeightRow key={index} weight={driver.weight}>
-              {driver.description}
-            </WeightRow>
+            <WeightRow key={index} weight={driver.weight} title={driver.title} description={driver.description} />
           ))}
         </ul>
         {/* Lista de verdade, não parágrafo corrido (revisão externa 3.2) — e o modelo de
             contratação vira um parâmetro editável de fato, não um item de texto perdido no meio. */}
         <div className="mt-[15px]">
-          <p className="text-[12.5px] font-medium text-ink-2">Assumimos</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[12.5px] font-medium text-ink-2">Premissas</p>
+            {/* Um único controle de edição pra todas as premissas (AJUSTES-UI §17) — antes cada
+                papel tinha seu próprio "editar", poluindo a lista. */}
+            {onRateOverrideChange && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingRates((prev) => !prev)
+                  if (!editingRates) setShowRates(true)
+                }}
+                className="text-[11px] font-medium text-petrol underline underline-offset-2 hover:text-ink"
+              >
+                {editingRates ? 'Concluir edição' : 'Editar premissas'}
+              </button>
+            )}
+          </div>
           <ul className="m-0 mt-1.5 list-none space-y-1.5 p-0 text-[12.5px] leading-[1.6] text-ink-3">
             <li className="flex flex-wrap items-center gap-2">
               <span>Modelo de contratação:</span>
@@ -192,18 +196,32 @@ export function RiskPanel({
                 ))}
               </span>
             </li>
-            {distinctRoles.map(([role, seniority]) => (
-              <RateOverrideRow
-                key={role}
-                role={role}
-                effectiveRate={rateOverrides?.[role] ?? MONTHLY_RATE_BRL[role][seniority]}
-                onChange={onRateOverrideChange}
-              />
-            ))}
             {scenario.assumptions.map((assumption, index) => (
               <li key={index}>{assumption}</li>
             ))}
           </ul>
+          {/* Custos por papel escondidos por padrão (AJUSTES-UI §16) — expostos sempre inflava a
+              lista com números que a maioria das negociações não precisa revisitar. */}
+          <button
+            type="button"
+            onClick={() => setShowRates((prev) => !prev)}
+            className="mt-2 text-[11.5px] font-medium text-ink-3 hover:text-ink"
+          >
+            {showRates ? 'Ocultar custos de referência ▴' : 'Ver custos de referência ▾'}
+          </button>
+          {showRates && (
+            <ul className="m-0 mt-1.5 list-none space-y-1.5 p-0 text-[12.5px] leading-[1.6] text-ink-3">
+              {distinctRoles.map(([role, seniority]) => (
+                <RateOverrideRow
+                  key={role}
+                  role={role}
+                  effectiveRate={rateOverrides?.[role] ?? MONTHLY_RATE_BRL[role][seniority]}
+                  editing={editingRates}
+                  onChange={onRateOverrideChange}
+                />
+              ))}
+            </ul>
+          )}
         </div>
         {scenario.midGroundSuggestion && (
           <p className="mt-3 text-[13px] leading-relaxed text-ink-2">

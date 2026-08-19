@@ -1,5 +1,5 @@
 import { Scenario } from '@/types'
-import { formatCurrencyBRL, formatCurrencyRangeBRL, formatMonthsCompact, formatMonthsLabel } from '@/lib/labels'
+import { formatCurrencyBRL, formatCurrencyRangeBRL, formatMonthsCompact } from '@/lib/labels'
 
 function Kpi({
   label,
@@ -82,7 +82,7 @@ export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | n
       <Kpi
         label="Custo acumulado no período"
         value={formatCurrencyRangeBRL(scenario.totalMonthlyCost, scenario.estimatedTimelineMonths)}
-        note={`ao longo de ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
+        note="estimado para o período"
       />
     </div>
   )

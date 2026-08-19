@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { RiskLevel, ScenarioVersion } from '@/types'
 import { formatCurrencyBRL, formatMonthsLabel, formatNumberPtBR } from '@/lib/labels'
+import { describeNegotiationImpact } from '@/lib/negotiationImpact'
 
 const RISK_COLOR: Record<RiskLevel, string> = {
   low: 'var(--moss)',
@@ -15,7 +16,9 @@ type Direction = 'up' | 'down' | 'flat'
 /** Pill de delta: cor e seta dependem só da direção — quem decide se "melhor" é pra cima ou pra
  * baixo é o chamador (custo/prazo: menos é melhor; risco: idem), não este componente. */
 function DeltaPill({ direction, good, children }: { direction: Direction; good: boolean; children: React.ReactNode }) {
-  const color = direction === 'flat' ? 'var(--ink-3)' : good ? 'var(--moss)' : 'var(--rust)'
+  // Âmbar, não vermelho, pra qualquer piora — vermelho fica reservado pra erro de verdade, não
+  // "algo aumentou" (AJUSTES-UI §25/28: "não usar vermelho simplesmente porque algo aumentou").
+  const color = direction === 'flat' ? 'var(--ink-3)' : good ? 'var(--moss)' : 'var(--ochre)'
   const Icon = direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus
 
   return (
@@ -81,9 +84,7 @@ export function ImpactSummary({ active, previous }: { active: ScenarioVersion; p
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="font-display text-[17px] font-bold tracking-[-0.015em] text-petrol">
-        Impacto vs. versão anterior
-      </div>
+      <div className="font-display text-[17px] font-bold tracking-[-0.015em] text-petrol">Impacto do ajuste</div>
       <div className="grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-3">
         <Metric
           label="Custo mensal"
@@ -120,6 +121,11 @@ export function ImpactSummary({ active, previous }: { active: ScenarioVersion; p
           }
         />
       </div>
+      {/* Trade-off em texto, não só números (AJUSTES-UI §26) — é o valor real que o SquadBuilder
+          entrega: mostrar o que se ganha e o que se sacrifica numa decisão. */}
+      <p className="text-[13px] leading-relaxed text-ink-2">
+        {describeNegotiationImpact(active.scenario, previous.scenario)}
+      </p>
     </div>
   )
 }

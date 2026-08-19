@@ -13,6 +13,7 @@ import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
 import { formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
+import { describeNegotiationImpact } from '@/lib/negotiationImpact'
 
 const SHOW_PREVIEW_BUTTON = process.env.NODE_ENV !== 'production'
 
@@ -133,7 +134,7 @@ export function SquadBuilderApp() {
       // um escopo que não existe mais não faz sentido (revisão externa 3.1).
       const v1: ScenarioVersion = {
         id: crypto.randomUUID(),
-        label: 'Diagnóstico inicial',
+        label: 'Squad recomendado inicialmente',
         scopeAnalysis: mergedScope,
         scenario: scenarioData.scenario,
         input: nextInput,
@@ -225,6 +226,7 @@ export function SquadBuilderApp() {
   async function handleNegotiate(message: string) {
     if (!scopeAnalysis || !scenario) return
 
+    const previousScenario = scenario
     const userTurnId = crypto.randomUUID()
     setHistory((prev) => [...prev, { id: userTurnId, role: 'user', message, timestamp: Date.now() }])
     const controller = new AbortController()
@@ -252,7 +254,9 @@ export function SquadBuilderApp() {
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          message: data.scenario.summary,
+          // Consequência curta, não a narração completa (AJUSTES-UI §21/26): o histórico deve
+          // permitir entender a negociação rapidamente, priorizando decisão sobre prosa.
+          message: describeNegotiationImpact(data.scenario, previousScenario),
           scenarioSnapshot: data.scenario,
           timestamp: Date.now(),
         },
@@ -316,7 +320,6 @@ export function SquadBuilderApp() {
   }
 
   const charCount = input.description.trim().length
-  const missingChars = MIN_SCOPE_CHARS - charCount
   const scopeOutOfRange = charCount < MIN_SCOPE_CHARS || charCount > MAX_SCOPE_CHARS
 
   function scrollToScopeForm() {
@@ -347,7 +350,7 @@ export function SquadBuilderApp() {
               {formatCurrencyBRL(scenario.totalMonthlyCost)}/mês · {formatMonthsLabel(scenario.estimatedTimelineMonths)}
             </span>
           ) : (
-            <span className="text-[12.5px] text-ink-3">Copiloto de dimensionamento de squads</span>
+            <span className="text-[12.5px] text-ink-3">Copiloto para dimensionamento de squads</span>
           )}
         </div>
       </header>
@@ -362,10 +365,10 @@ export function SquadBuilderApp() {
             <br />Receba o <span className="text-petrol">squad</span>.
           </h1>
           <p className="mt-4 max-w-[56ch] text-lg text-ink-2">
-            Escreva em texto corrido, sem formulário. O SquadBuilder dimensiona o time, o custo
-            mensal e o prazo — o ponto de equilíbrio antes de qualquer contratação.
+            Descreva o produto em texto livre. O SquadBuilder dimensiona o time, estima o custo e
+            projeta o prazo antes da contratação.
           </p>
-          <div className="mt-8">
+          <div className="mt-6">
             <PrimaryButton onClick={scrollToScopeForm} type="button">
               Montar meu squad
               <ArrowRight className="size-4" />
@@ -375,7 +378,9 @@ export function SquadBuilderApp() {
 
         {/* scroll-mt: compensa o header agora sticky (3.6) — sem isso, scrollIntoView encosta o
             topo da seção embaixo dele. */}
-        <section ref={scopeFormRef} className="wrap scroll-mt-20 py-12 sm:py-16">
+        {/* pb reduzido (AJUSTES-UI §7/29): a passagem formulário → "O que entendemos" tinha espaço
+            demais, lendo como se faltasse uma seção entre as duas. */}
+        <section ref={scopeFormRef} className="wrap scroll-mt-20 pt-12 pb-8 sm:pt-16 sm:pb-10">
           {/* Duas colunas: texto livre + botão à esquerda (posição original), "Ou parta de" e os
               campos numéricos à direita do textarea, cada grupo numa linha só (sem quebrar 2x2)
               — preenche o vazio que sobrava com conteúdo de verdade, não com centralização. Sem
@@ -395,7 +400,7 @@ export function SquadBuilderApp() {
                   onClick={handleRetry}
                   className="shrink-0 font-medium underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
                 >
-                  Tentar de novo
+                  Tentar novamente
                 </button>
               </div>
             )}
@@ -439,7 +444,7 @@ export function SquadBuilderApp() {
                     loading={analyzeLoading}
                   >
                     {analyzeLoading ? (
-                      scenario ? 'Recalculando…' : 'Montando…'
+                      'Calculando squad...'
                     ) : (
                       <>
                         {scenario ? 'Recalcular' : 'Montar squad'}
@@ -459,7 +464,7 @@ export function SquadBuilderApp() {
                   {!analyzeLoading && (
                     <span className={`text-[13px] ${scopeOutOfRange ? 'text-ochre' : 'text-ink-3'}`}>
                       {charCount < MIN_SCOPE_CHARS
-                        ? `Faltam ${missingChars} caracteres pra liberar`
+                        ? 'Adicione mais alguns detalhes para gerar o squad.'
                         : charCount > MAX_SCOPE_CHARS
                           ? `${charCount - MAX_SCOPE_CHARS} caracteres acima do limite — reduza pra liberar`
                           : 'Leitura em texto livre, sem formulário'}
@@ -473,7 +478,7 @@ export function SquadBuilderApp() {
                     onClick={handlePreview}
                     className="mt-3.5 text-[12.5px] text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
                   >
-                    Dev: ver com dados de exemplo (sem chamar a API)
+                    Carregar exemplo
                   </button>
                 )}
               </div>
@@ -492,13 +497,13 @@ export function SquadBuilderApp() {
         </section>
 
         {scopeAnalysis && (
-          <section className="wrap py-12 sm:py-16">
+          <section className="wrap pt-8 pb-12 sm:pt-10 sm:pb-16">
             <Eyebrow>O que entendemos</Eyebrow>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Leitura do escopo
             </h2>
             <p className="mt-1.5 mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">
-              Inferido do seu texto. Clique pra corrigir — o squad recalcula na hora.
+              Inferido do seu texto. Clique para corrigir e recalcular.
             </p>
             <ReadingGrid
               scope={scopeAnalysis}

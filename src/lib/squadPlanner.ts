@@ -43,7 +43,7 @@ function planEngineeringRoles(
   const web = needsWebFrontend(scope)
 
   // Modo enxuto: só uma superfície de UI (ou nenhuma), escopo pequeno e baixa complexidade
-  // -> 1 fullstack cobre front+back em vez de fragmentar o time.
+  // -> 1 fullstack cobre front+back em vez de fragmentar o squad.
   const leanFullstack =
     scope.complexity === 'low' && scope.estimatedEffortPersonMonths <= 5 && !mobile
 
@@ -62,16 +62,13 @@ function planEngineeringRoles(
   const capacityPerShare = requiredCapacityPerMonth / totalShares
   const seniorityMultiplier = SENIORITY_CAPACITY_MULTIPLIER[seniority]
 
-  // Cada justificativa defende por que o papel existe e o que quebra sem ele — não descreve o
-  // óbvio ("cobre a demanda de X"), que é tautologia e não sobrevive ao teste "se eu apagar,
-  // alguma informação se perde?" (revisão externa 3.9).
+  // Curta e escaneável (AJUSTES-UI §13), mas sem virar tautologia ("cobre a demanda de X") —
+  // cada linha ainda defende por que o papel existe, só num clause em vez de um parágrafo
+  // (revisão externa 3.9 + reconciliação com AJUSTES-UI §13).
   const ENGINEERING_JUSTIFICATION: Record<string, string> = {
-    'dev-mobile':
-      'Superfície mobile nativa (iOS/Android): sem um dev dedicado, ela disputa tempo com web/back-end e atrasa a entrega mais visível pro usuário final.',
-    'dev-frontend':
-      'Interface web é onde o usuário decide continuar ou abandonar: sem front-end dedicado, toda mudança de UI compete por tempo com API e dados.',
-    'dev-backend':
-      'Sustenta dados, regras de negócio e integrações de todas as superfícies: sem back-end dedicado, a lógica fica espalhada no cliente e frágil a mudanças.',
+    'dev-mobile': 'Cobre a superfície mobile nativa — a entrega mais visível pro usuário final.',
+    'dev-frontend': 'Interface web é onde o usuário decide continuar ou abandonar.',
+    'dev-backend': 'Sustenta dados e regras de negócio de todas as superfícies do produto.',
   }
 
   return roleShares.map(({ role, share }) => {
@@ -83,7 +80,7 @@ function planEngineeringRoles(
       quantity,
       allocation: 'full-time',
       justification: leanFullstack
-        ? 'Escopo enxuto e baixa complexidade: 1 dev fullstack cobre front-end e back-end sem fragmentar o time.'
+        ? 'Escopo enxuto: 1 dev fullstack cobre front e back sem fragmentar o squad.'
         : ENGINEERING_JUSTIFICATION[role],
     }
   })
@@ -105,7 +102,7 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
       seniority,
       quantity: 1,
       allocation: 'full-time',
-      justification: 'Produto com interface voltada ao usuário final: risco de UX alto sem design dedicado.',
+      justification: 'Sem design dedicado, risco de UX alto na interface do usuário final.',
     })
   }
 
@@ -115,7 +112,7 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
       seniority,
       quantity: 1,
       allocation: 'full-time',
-      justification: 'Garante cobertura de testes e reduz bugs em produção antes do usuário encontrá-los.',
+      justification: 'Reduz bugs em produção antes do usuário encontrá-los.',
     })
   }
 
@@ -125,7 +122,7 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
       seniority: seniority === 'pleno' ? 'senior' : seniority,
       quantity: 1,
       allocation: 'full-time',
-      justification: 'Escala/infraestrutura crítica exige automação de deploy, observabilidade e confiabilidade dedicadas.',
+      justification: 'Escala crítica exige automação de deploy e observabilidade dedicadas.',
     })
   }
 
@@ -139,8 +136,8 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
       allocation: 'full-time',
       justification:
         complexity === 'enterprise'
-          ? 'Time grande e escopo complexo precisam de liderança técnica dedicada para coordenar arquitetura.'
-          : `Squad de ${totalHeadcountSoFar}+ pessoas sem liderança técnica dedicada fragmenta decisões de arquitetura entre quem só executa — o primeiro ponto que um comprador experiente aponta.`,
+          ? 'Escopo enterprise precisa de liderança técnica dedicada pra coordenar arquitetura.'
+          : `Squad de ${totalHeadcountSoFar}+ pessoas sem liderança dedicada fragmenta decisões de arquitetura.`,
     })
   }
 
@@ -150,7 +147,7 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
       seniority: 'senior',
       quantity: 1,
       allocation: 'full-time',
-      justification: 'Escopo enterprise com múltiplos stakeholders exige gestão de produto dedicada.',
+      justification: 'Múltiplos stakeholders exigem gestão de produto dedicada.',
     })
     if (scope.requiredCapabilities.includes('payments') || scope.requiredCapabilities.includes('compliance')) {
       support.push({
@@ -158,7 +155,7 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
         seniority: 'senior',
         quantity: 1,
         allocation: 'full-time',
-        justification: 'Integrações financeiras/compliance em escala exigem revisão de segurança dedicada.',
+        justification: 'Integrações financeiras/compliance exigem revisão de segurança dedicada.',
       })
     }
     if (scope.requiredCapabilities.includes('ai-ml') || scope.requiredCapabilities.includes('high-scale')) {
@@ -167,7 +164,7 @@ function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, eng
         seniority: 'senior',
         quantity: 1,
         allocation: 'full-time',
-        justification: 'Volume de dados/IA em escala exige pipelines e infraestrutura de dados dedicados.',
+        justification: 'Volume de dados/IA exige pipelines e infraestrutura dedicados.',
       })
     }
   }

@@ -39,7 +39,7 @@ export function ScopeField({
         }}
         disabled={disabled}
         spellCheck={false}
-        placeholder="Um app de entregas locais com motos. O cliente pede pelo celular, paga no app e acompanha o motoboy no mapa em tempo real. Precisa de um painel pro lojista e repasse automático pros entregadores."
+        placeholder="Ex.: Quero criar um app de entregas locais com cadastro de clientes e entregadores, pagamentos online, rastreamento em tempo real e um painel administrativo. O MVP deve estar pronto em até 4 meses."
         rows={7}
         className="block w-full resize-y border-0 bg-transparent px-4 py-3.5 text-base leading-[26px] text-ink outline-none placeholder:text-ink-3"
       />
@@ -50,7 +50,7 @@ export function ScopeField({
         <span className={overMax ? 'font-medium text-rust' : 'text-ink-3'}>
           {overMax
             ? `${(count - MAX_SCOPE_CHARS).toLocaleString('pt-BR')} acima do limite de ${MAX_SCOPE_CHARS.toLocaleString('pt-BR')} — reduza pra continuar`
-            : 'Quanto mais concreto, menos chute'}
+            : 'Quanto mais contexto, mais precisa a estimativa.'}
         </span>
       </div>
     </div>

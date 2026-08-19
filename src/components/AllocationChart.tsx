@@ -60,6 +60,12 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
   return (
     <div className="overflow-x-auto px-[15px] py-[15px]">
+      {/* Legenda adaptada à curva contínua (AJUSTES-UI §12 pedia 3 categorias fixas; aqui a
+          alocação varia por mês de verdade — ver allocationCurve.ts — então a legenda descreve
+          intensidade gradual em vez de estados discretos). */}
+      <p className="mb-2.5 text-[11.5px] text-ink-3">
+        Intensidade da cor = % de envolvimento naquele mês — mais escuro, mais alocado.
+      </p>
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${height}`}
         role="img"

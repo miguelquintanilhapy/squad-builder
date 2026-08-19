@@ -20,7 +20,7 @@ export function ConstraintFields({
     <div className="flex flex-nowrap items-end gap-2.5">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="prazo" className="text-[13.5px] text-ink-2">
-          Prazo alvo
+          Prazo alvo <span className="text-ink-3">(opcional)</span>
         </label>
         <div className={inputShellClasses}>
           <input
@@ -33,8 +33,8 @@ export function ConstraintFields({
               onChange({ targetTimelineMonths: e.target.value ? Number(e.target.value) : undefined })
             }
             disabled={disabled}
-            placeholder="—"
-            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none tnum"
+            placeholder="Ex.: 4"
+            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none tnum placeholder:text-ink-3/60"
           />
           <span className={`${affixClasses} border-l border-rule-2`}>meses</span>
         </div>
@@ -42,7 +42,7 @@ export function ConstraintFields({
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="budget" className="text-[13.5px] text-ink-2">
-          Teto mensal
+          Teto mensal <span className="text-ink-3">(opcional)</span>
         </label>
         <div className={inputShellClasses}>
           <span className={`${affixClasses} border-r border-rule-2`}>R$</span>
@@ -54,8 +54,8 @@ export function ConstraintFields({
             value={monthlyBudget ?? ''}
             onChange={(e) => onChange({ monthlyBudget: e.target.value ? Number(e.target.value) : undefined })}
             disabled={disabled}
-            placeholder="—"
-            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none tnum"
+            placeholder="Ex.: 35000"
+            className="w-24 border-0 bg-transparent px-[11px] text-[15px] text-ink outline-none tnum placeholder:text-ink-3/60"
           />
         </div>
       </div>

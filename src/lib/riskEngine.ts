@@ -1,5 +1,5 @@
 import { PLATFORM_LABELS, formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
-import { BudgetAlert, ProjectInput, RiskAlert, RiskLevel, ScopeAnalysis, SquadMember } from '@/types'
+import { BudgetAlert, Platform, ProjectInput, RiskAlert, RiskLevel, ScopeAnalysis, SquadMember } from '@/types'
 
 const BASE_RISK_BY_COMPLEXITY = { low: 5, medium: 15, enterprise: 25 } as const
 
@@ -121,7 +121,7 @@ export function assessRisk(
         category: 'timeline',
         severity: ratio > 1.5 ? 'critical' : 'warning',
         title: 'Prazo alvo incompatível com o squad',
-        description: `Com o squad atual, o prazo realista estimado é de ${formatMonthsLabel(realisticTimelineMonths)}, acima dos ${input.targetTimelineMonths} meses desejados.`,
+        description: `Com o squad atual, o prazo estimado é de ${formatMonthsLabel(realisticTimelineMonths)}, acima dos ${input.targetTimelineMonths} meses desejados.`,
         weight,
       })
     }
@@ -136,7 +136,7 @@ export function assessRisk(
     score += clamp((ratio - 1) * 20, 0, 20)
     budgetAlert = {
       overageAmount,
-      suggestion: `Squad atual custa ${formatCurrencyBRL(totalMonthlyCost)}/mês, ${formatCurrencyBRL(overageAmount)} acima do teto de ${formatCurrencyBRL(input.monthlyBudget)}. Renegocie o prazo ou tire um papel de suporte pra caber — use o chat de negociação abaixo.`,
+      suggestion: `O squad está ${formatCurrencyBRL(overageAmount)}/mês acima do teto definido. Ajuste a composição ou negocie o escopo abaixo.`,
     }
   }
 
@@ -149,18 +149,23 @@ export function assessRisk(
   return { riskScore, riskLevel, alerts, drivers, riskBase, budgetAlert, assumptions: buildAssumptions(squad, scope) }
 }
 
+// Só nesta frase (AJUSTES-UI §19): "Web" em vez de "Web Browser". PLATFORM_LABELS continua
+// "Web Browser" nos chips — CLAUDE.md fixa esse rótulo pra seleção de plataforma — a forma curta
+// vale só pra esta linha de premissa, não pro vocabulário de seleção.
+const ASSUMPTION_PLATFORM_LABEL: Partial<Record<Platform, string>> = { web: 'Web' }
+
 /** Premissas assumidas no cálculo — geradas a partir do squad/escopo reais, não texto fixo. */
 function buildAssumptions(squad: SquadMember[], scope: ScopeAnalysis): string[] {
   const platformLabel = scope.platforms.length
-    ? scope.platforms.map((p) => PLATFORM_LABELS[p]).join(' + ')
+    ? scope.platforms.map((p) => ASSUMPTION_PLATFORM_LABEL[p] ?? PLATFORM_LABELS[p]).join(' + ')
     : 'plataforma não informada'
 
   const assumptions = [
-    // Não "custo de referência de mercado" — é estimativa interna, sem fonte de mercado citável.
-    // O modelo de contratação (PJ/CLT) virou parâmetro editável de verdade, não texto solto aqui
-    // (revisão externa 3.2/3.3) — ver Scenario.contractType e o toggle no RiskPanel.
-    'Valores de custo por cargo são estimativas internas de referência, não uma cotação de mercado — ajuste na negociação se não valerem pro seu contexto.',
-    `Plataforma considerada: ${platformLabel}.`,
+    // Não "custo de referência de mercado" — é estimativa interna, sem fonte de mercado citável
+    // (revisão externa 3.3). Curta (AJUSTES-UI §18) — contexto extra viraria tooltip, não texto
+    // sempre exposto.
+    'Custos são referências internas, não cotações de mercado.',
+    `Plataformas consideradas: ${platformLabel}.`,
     'Sem orçamento de infraestrutura, licenças ou ferramentas adicionais.',
   ]
 

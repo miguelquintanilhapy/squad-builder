@@ -39,7 +39,7 @@ function minimo() {
     squad,
     scope,
     input,
-    'Escopo pequeno e bem contido: um painel administrativo simples, sem integrações externas. 2 devs fullstack cobrem front e back sem fragmentar o time.'
+    'Escopo pequeno e bem contido: um painel administrativo simples, sem integrações externas. 2 devs fullstack cobrem front e back sem fragmentar o squad.'
   )
 }
 
@@ -117,7 +117,7 @@ function estouroOrcamento() {
     squad,
     scope,
     input,
-    'Squad completo (dev front, back, design e QA) cobre bem o escopo, mas o custo mensal passa longe do teto informado — o orçamento é a principal restrição aqui, não a composição do time.',
+    'Squad completo (dev front, back, design e QA) cobre bem o escopo, mas o custo mensal passa longe do teto informado — o orçamento é a principal restrição aqui, não a composição do squad.',
     'Se o teto de R$15.000/mês for rígido, o ajuste mais direto é reduzir design ou QA pra meio período, ou renegociar o teto — o squad em si já está no tamanho certo pro escopo.'
   )
 }
@@ -174,7 +174,7 @@ function alocacaoVariavel() {
     estimatedEffortPersonMonths: 6,
     requiredCapabilities: ['admin-panel'],
     keyRisksNoted: [],
-    summary: 'Plataforma web de médio porte, começando com parte do time em meio período pra validar antes de escalar.',
+    summary: 'Plataforma web de médio porte, começando com parte do squad em meio período pra validar antes de escalar.',
   }
   const input: ProjectInput = {
     productTypes: scope.productTypes,

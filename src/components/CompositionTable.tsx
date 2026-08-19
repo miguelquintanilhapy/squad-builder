@@ -137,6 +137,9 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
           </tfoot>
         </table>
       </div>
+
+      {/* Observação discreta (AJUSTES-UI §14) — contextualiza os números sem repetir o rodapé. */}
+      <p className="mt-2.5 px-[15px] text-[12px] text-ink-3 sm:px-0">Estimativa baseada nas premissas atuais.</p>
     </>
   )
 }

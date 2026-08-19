@@ -82,25 +82,31 @@ export function NegotiationChat({
                       handleSend()
                     }
                   }}
-                  placeholder='Ex: "Achei caro. Quero tirar o QA e colocar só 1 Dev Fullstack em 3 meses." (Ctrl/Cmd+Enter envia)'
+                  placeholder='Ex.: "Tire o QA e reduza o custo mantendo o prazo."'
                   rows={3}
                   disabled={loading}
                   className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50"
                 />
-                <div className="flex justify-end gap-3.5">
-                  {loading && onCancel && (
-                    <button
-                      type="button"
-                      onClick={onCancel}
-                      className="text-[13px] font-medium text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                  <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading}>
-                    {!loading && <Send className="size-3.5" />}
-                    {loading ? 'Recalculando...' : 'Enviar'}
-                  </PrimaryButton>
+                <div className="flex items-center justify-between gap-3.5">
+                  {/* Atalho como linha separada, não embutido no placeholder (AJUSTES-UI §23). */}
+                  <span className="text-[12px] text-ink-3">Ctrl/Cmd + Enter para enviar</span>
+                  <div className="flex items-center gap-3.5">
+                    {loading && onCancel && (
+                      <button
+                        type="button"
+                        onClick={onCancel}
+                        className="text-[13px] font-medium text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                    <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading}>
+                      {!loading && <Send className="size-3.5" />}
+                      {/* Não "Recalculando..." aqui — é um ajuste/negociação, não um recálculo de
+                          premissa (AJUSTES-UI §24). */}
+                      {loading ? 'Ajustando...' : 'Enviar'}
+                    </PrimaryButton>
+                  </div>
                 </div>
               </div>
             </div>
