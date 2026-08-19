@@ -30,10 +30,10 @@ export const COMPLEXITY_LABELS: Record<ComplexityLevel, string> = {
 }
 
 export const ROLE_LABELS: Record<RoleType, string> = {
-  'dev-frontend': 'Dev Front-end',
-  'dev-backend': 'Dev Back-end',
-  'dev-fullstack': 'Dev Fullstack',
-  'dev-mobile': 'Dev Mobile',
+  'dev-frontend': 'Desenvolvedor Front-end',
+  'dev-backend': 'Desenvolvedor Back-end',
+  'dev-fullstack': 'Desenvolvedor Fullstack',
+  'dev-mobile': 'Desenvolvedor Mobile',
   'designer-uxui': 'Designer UX/UI',
   qa: 'QA',
   devops: 'DevOps',
@@ -93,7 +93,7 @@ export function monthsRange(months: number): { lower: number; upper: number } {
 export function formatMonthsLabel(months: number): string {
   const { lower, upper } = monthsRange(months)
   if (lower === upper) return `${lower} ${lower === 1 ? 'mês' : 'meses'}`
-  return `${lower} a ${upper} meses`
+  return `${lower}-${upper} meses`
 }
 
 /** Só os dígitos da faixa, sem "meses" — pra usar como valor grande de KPI com o sufixo separado. */

@@ -471,7 +471,7 @@ export function SquadBuilderApp() {
                   {!analyzeLoading && (
                     <span className={`text-[13px] ${scopeOutOfRange ? 'text-ochre' : 'text-ink-3'}`}>
                       {charCount < MIN_SCOPE_CHARS
-                        ? 'Adicione mais alguns detalhes para gerar o squad.'
+                        ? 'Descreva o produto, funcionalidades principais, tecnologias utilizadas e prazo desejado.'
                         : charCount > MAX_SCOPE_CHARS
                           ? `${charCount - MAX_SCOPE_CHARS} caracteres acima do limite — reduza pra liberar`
                           : 'Leitura em texto livre, sem formulário'}

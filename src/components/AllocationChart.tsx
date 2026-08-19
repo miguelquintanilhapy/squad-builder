@@ -103,7 +103,7 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
             monthCount
           )
           const baseColor = barBaseColor(member)
-          const tooltip = `${roleLabel(member)} ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${describeAllocationCurve(pcts)}`
+          const tooltip = `${roleLabel(member)} — ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${describeAllocationCurve(pcts)}`
           return (
             // group + rect de fundo: hover contextual só com CSS, sem estado novo em React.
             <g key={`${member.role}-${index}`} className="group">
@@ -118,7 +118,8 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                 className="transition-opacity duration-150 group-hover:opacity-60"
               />
               <text x={0} y={y + 12} fontSize={11.5} fill="var(--ink-2)">
-                {roleLabel(member)}{' '}
+                {roleLabel(member)}
+                {' — '}
                 <tspan fontSize={10} fill="var(--ink-3)">
                   {SENIORITY_LABELS[member.seniority]}
                 </tspan>

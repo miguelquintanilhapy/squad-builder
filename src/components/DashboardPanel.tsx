@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import { Info, Loader2 } from 'lucide-react'
 import { ContractType, RoleType, Scenario } from '@/types'
 import { formatMonthsLabel } from '@/lib/labels'
+import { describeSquadRationale } from '@/lib/squadRationale'
 import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
 import { CompositionTable } from '@/components/CompositionTable'
@@ -14,7 +15,7 @@ function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-[7px] bg-rule-2 ${className}`} />
 }
 
-const SKELETON_PANEL_TITLES = ['Curva de alocação', 'Composição do Squad', 'Índice de risco']
+const SKELETON_PANEL_TITLES = ['Curva de alocação', 'Composição do Squad', 'Por que este squad?', 'Índice de risco']
 
 /**
  * Reusa KpiStrip (em modo loading) e Panel/PanelTitle reais em vez de copiar a estrutura à mão —
@@ -136,6 +137,15 @@ export function DashboardPanel({
           <PanelTitle title="Composição do Squad" />
           <Panel>
             <CompositionTable scenario={scenario} />
+          </Panel>
+        </motion.div>
+        {/* Explica o squad como consequência do escopo, não só o resultado — o sistema dava a
+            resposta mas explicava pouco o raciocínio por trás dela (feedback do usuário).
+            Determinístico (squadRationale.ts), não a IA: mesma regra de todo o resto do cálculo. */}
+        <motion.div variants={groupVariants}>
+          <PanelTitle title="Por que este squad?" />
+          <Panel>
+            <p className="p-4 text-[14px] leading-relaxed text-ink-2">{describeSquadRationale(scenario.squad)}</p>
           </Panel>
         </motion.div>
         <motion.div variants={groupVariants}>
