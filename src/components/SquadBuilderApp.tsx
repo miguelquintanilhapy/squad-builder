@@ -369,16 +369,15 @@ export function SquadBuilderApp() {
             altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
         <section className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center">
           <h1 className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
-            Descreva o projeto.
-            <br />Receba o <span className="text-petrol">Squad</span>.
+            Descreva seu projeto.
+            <br />Monte o <span className="text-petrol">squad</span> ideal.
           </h1>
           <p className="mt-4 max-w-[56ch] text-lg text-ink-2">
-            Descreva o produto em texto livre. O SquadBuilder dimensiona o time, estima o custo e
-            projeta o prazo antes da contratação.
+            Conte o que você quer construir. O SquadBuilder estima equipe, custo e prazo.
           </p>
           <div className="mt-6">
             <PrimaryButton onClick={scrollToScopeForm} type="button">
-              Montar meu squad
+              Descrever meu projeto
               <ArrowRight className="size-4" />
             </PrimaryButton>
           </div>
@@ -395,7 +394,7 @@ export function SquadBuilderApp() {
               teto de largura própria: usa o wrap inteiro, como as seções de baixo, porque agora a
               coluna direita (auto, do tamanho do conteúdo) precisa de espaço real ao lado do texto. */}
           <div>
-            <Eyebrow>O que você está construindo?</Eyebrow>
+            <Eyebrow>Descreva seu projeto</Eyebrow>
 
             {error && (
               <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[7px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
@@ -455,7 +454,7 @@ export function SquadBuilderApp() {
                       'Calculando squad...'
                     ) : (
                       <>
-                        {scenario ? 'Recalcular' : 'Montar squad'}
+                        {scenario ? 'Atualizar estimativa' : 'Montar squad'}
                         <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" />
                       </>
                     )}
@@ -508,10 +507,11 @@ export function SquadBuilderApp() {
           <section className="wrap pt-8 pb-12 sm:pt-10 sm:pb-16">
             <Eyebrow>O que entendemos do seu projeto</Eyebrow>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
-              Leitura do escopo
+              Entendimento do projeto
             </h2>
             <p className="mt-1.5 mb-4.5 max-w-[60ch] text-[14.5px] text-ink-2">
-              Inferido do seu texto. Clique para corrigir e recalcular.
+              Com base na sua descrição, identificamos os seguintes requisitos. Revise qualquer item antes de gerar
+              novamente.
             </p>
             <ReadingGrid
               scope={scopeAnalysis}
@@ -533,10 +533,16 @@ export function SquadBuilderApp() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
-              className="mb-8 text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink"
+              className="text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink"
             >
               <span className="text-petrol">Squad</span> recomendado
             </motion.h2>
+            {/* Sempre renderizado (mesmo vazio durante o skeleton) — a margem não pode depender
+                do conteúdo, senão o espaço antes do dashboard pisca de tamanho ao carregar. */}
+            <p className="mx-auto mb-8 mt-3 max-w-[60ch] text-center text-[14.5px] text-ink-2">
+              {scenario &&
+                'Com base no escopo identificado, esta é a composição de equipe estimada para entregar o projeto dentro do prazo informado.'}
+            </p>
             <DashboardPanel
               scenario={scenario}
               loading={analyzeLoading}

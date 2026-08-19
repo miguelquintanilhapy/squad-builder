@@ -62,7 +62,7 @@ export function NegotiationChat({
                         className="border-l-2 border-rule-2 pl-3.5"
                       >
                         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-3">
-                          {turn.role === 'user' ? 'Você' : 'SquadBuilder'}
+                          {turn.role === 'user' ? 'Ajuste solicitado' : 'Impacto da alteração'}
                         </p>
                         <p className="text-[13px] leading-relaxed text-ink-3">{turn.message}</p>
                       </motion.div>

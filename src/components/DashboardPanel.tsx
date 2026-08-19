@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { Info, Loader2 } from 'lucide-react'
 import { ContractType, RoleType, Scenario } from '@/types'
 import { formatMonthsLabel } from '@/lib/labels'
 import { KpiStrip } from '@/components/KpiStrip'
@@ -107,17 +107,22 @@ export function DashboardPanel({
         animate="show"
         className={`flex flex-col gap-12 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}
       >
+        {/* Números primeiro, nota depois: o alerta de teto era o primeiro elemento da seção — a
+            primeira coisa que a pessoa via ao chegar no resultado era um banner ambar, lido como
+            erro do sistema, não como aviso (feedback do usuário). Ícone Info, não AlertTriangle —
+            triângulo de alerta é vocabulário visual de erro/perigo, e isso é uma nota, não uma
+            falha. */}
+        <motion.div variants={groupVariants}>
+          <KpiStrip scenario={scenario} />
+        </motion.div>
         {scenario.budgetAlert && (
           <motion.div variants={groupVariants}>
             <div className="flex items-start gap-3 rounded-[7px] border border-ochre/30 bg-ochre/5 px-4 py-3 text-sm text-ink">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-ochre" strokeWidth={2} />
+              <Info className="mt-0.5 size-4 shrink-0 text-ochre" strokeWidth={2} />
               <p>{scenario.budgetAlert.suggestion}</p>
             </div>
           </motion.div>
         )}
-        <motion.div variants={groupVariants}>
-          <KpiStrip scenario={scenario} />
-        </motion.div>
         <motion.div variants={groupVariants}>
           <PanelTitle
             title="Curva de alocação"

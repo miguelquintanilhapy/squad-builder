@@ -29,7 +29,7 @@ function Kpi({
   )
 }
 
-const KPI_LABELS = ['Squad sugerido', 'Custo mensal', 'Prazo estimado', 'Custo acumulado no período']
+const KPI_LABELS = ['Squad sugerido', 'Custo mensal', 'Prazo estimado', 'Investimento estimado']
 
 /**
  * O skeleton do dashboard (DashboardPanel) renderiza este mesmo componente em modo `loading`, em
@@ -80,7 +80,7 @@ export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | n
         }
       />
       <Kpi
-        label="Custo acumulado no período"
+        label="Investimento estimado"
         value={formatCurrencyRangeBRL(scenario.totalMonthlyCost, scenario.estimatedTimelineMonths)}
         note="estimado para o período"
       />

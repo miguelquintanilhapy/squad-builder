@@ -225,7 +225,7 @@ export function RiskPanel({
         </div>
         {scenario.midGroundSuggestion && (
           <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
-            <b className="font-medium text-ink">Sugestão de meio-termo:</b> {scenario.midGroundSuggestion}
+            <b className="font-medium text-ink">Como reduzir o risco:</b> {scenario.midGroundSuggestion}
           </p>
         )}
       </div>
