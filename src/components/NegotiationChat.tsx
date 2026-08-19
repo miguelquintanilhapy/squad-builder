@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Send } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { NegotiationTurn, ScenarioVersion } from '@/types'
 import { Panel, PanelTitle, PrimaryButton, SectionLabel } from '@/components/ui/primitives'
 import { VersionList } from '@/components/VersionList'
@@ -61,7 +61,9 @@ export function NegotiationChat({
                         transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
                         className="border-l-2 border-rule-2 pl-3.5"
                       >
-                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-3">
+                        {/* Sem uppercase (CRITICA-UI §1.8) — caps fica reservado só pro badge de
+                            status "· Atual" da trilha; aqui é rótulo de categoria, title case. */}
+                        <p className="mb-1 text-[11px] font-semibold tracking-wide text-ink-3">
                           {turn.role === 'user' ? 'Ajuste solicitado' : 'Impacto da alteração'}
                         </p>
                         <p className="text-[13px] leading-relaxed text-ink-3">{turn.message}</p>
@@ -89,7 +91,9 @@ export function NegotiationChat({
                 />
                 <div className="flex items-center justify-between gap-3.5">
                   {/* Atalho como linha separada, não embutido no placeholder (AJUSTES-UI §23). */}
-                  <span className="text-[12px] text-ink-3">Ctrl/Cmd + Enter para enviar</span>
+                  {/* Contraste/tamanho maiores (CRITICA-UI §5.11) — ink-2 + 12.5px, ainda claramente
+                      secundário mas não mais fácil de ignorar que o corpo do texto. */}
+                  <span className="text-[12.5px] text-ink-2">Ctrl/Cmd + Enter para enviar</span>
                   <div className="flex items-center gap-3.5">
                     {loading && onCancel && (
                       <button
@@ -101,7 +105,10 @@ export function NegotiationChat({
                       </button>
                     )}
                     <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading}>
-                      {!loading && <Send className="size-3.5" />}
+                      {/* Seta, não avião de papel (CRITICA-UI §1.4) — mesma linguagem de ícone
+                          das outras CTAs primárias do app (Montar squad, Atualizar estimativa),
+                          não o ícone genérico de qualquer chatbot. */}
+                      {!loading && <ArrowRight className="size-3.5" />}
                       {/* Não "Recalculando..." aqui — é um ajuste/negociação, não um recálculo de
                           premissa (AJUSTES-UI §24). */}
                       {loading ? 'Ajustando...' : 'Enviar'}

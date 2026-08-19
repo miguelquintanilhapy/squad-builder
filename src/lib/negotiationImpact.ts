@@ -32,3 +32,22 @@ export function describeNegotiationImpact(current: Scenario, previous: Scenario)
 
   return `${costPart}, com ${riskPart}. ${timelinePart}`
 }
+
+/**
+ * Versão compacta pro histórico de negociação (formato de auditoria, CRITICA-UI §4.3): a frase
+ * completa já aparece no painel de Impacto — repeti-la no histórico era redundância na mesma
+ * tela. Aqui é só o delta em uma linha.
+ */
+export function describeNegotiationImpactCompact(current: Scenario, previous: Scenario): string {
+  const costDelta = current.totalMonthlyCost - previous.totalMonthlyCost
+  const riskDelta = current.riskScore - previous.riskScore
+  const timelineDelta = current.estimatedTimelineMonths - previous.estimatedTimelineMonths
+
+  const costPart =
+    costDelta === 0 ? 'custo sem alteração' : `${costDelta > 0 ? '+' : '−'} ${formatCurrencyBRL(Math.abs(costDelta))}/mês`
+  const riskPart = riskDelta === 0 ? 'risco sem alteração' : `${riskDelta > 0 ? '+' : '−'}${Math.abs(riskDelta)} risco`
+  const timelinePart =
+    timelineDelta === 0 ? 'prazo sem alteração' : `prazo ${formatMonthsLabel(current.estimatedTimelineMonths)}`
+
+  return `${costPart} · ${riskPart} · ${timelinePart}`
+}

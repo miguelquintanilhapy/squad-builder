@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { ScenarioVersion } from '@/types'
 
 /**
@@ -59,11 +60,9 @@ export function VersionList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`text-[10.5px] font-semibold uppercase tracking-wide ${
-                      isActive ? 'text-petrol' : 'text-ink-3'
-                    }`}
-                  >
+                  {/* Caps reservado só pro badge de status "· Atual" (CRITICA-UI §1.8) — o rótulo
+                      de categoria vira title case, um tique visual de "enterprise SaaS" a menos. */}
+                  <span className={`text-[10.5px] font-semibold tracking-wide ${isActive ? 'text-petrol' : 'text-ink-3'}`}>
                     {isFirst ? 'Ponto de partida' : 'Ajuste solicitado'}
                   </span>
                   {isActive && (
@@ -78,6 +77,14 @@ export function VersionList({
                   {isFirst ? version.label : `"${version.label}"`}
                 </p>
               </div>
+              {/* Chevron só no hover — sem isso os nós pareciam texto estático, sem affordance
+                  nenhuma de que são clicáveis (CRITICA-UI §5.10). */}
+              {!isActive && (
+                <ChevronRight
+                  aria-hidden="true"
+                  className="mt-1 size-3.5 shrink-0 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100"
+                />
+              )}
             </button>
           )
         })}

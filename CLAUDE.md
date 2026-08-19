@@ -41,28 +41,68 @@ Faça perguntas inteligentes,para irmos afunilando a ideia até termos um plano 
 
 ## Diretrizes Globais de Interface & UI (Design System)
 
-* **Estilo Visual:** SaaS B2B moderno, limpo e profissional (Inspirado em interfaces executivas como Linear.app, Vercel e Stripe).
-* **Tema Visual:** **Dark Mode exclusivo** (Fundo escuro profundo em tons de Zinc/Slate `#09090b` e `#18181b`, com containers e cards usando bordas finas e sutis em `#27272a`).
-* **Cor de Destaque:** **Azul Corporativo sólido** (`#2563EB` / `#1D4ED8`) usado de forma pontual e sóbria apenas em botões de ação primários, seleções de foco e badges de destaque.
-* **RESTRIÇÃO SEVERA:** Não utilize gradientes coloridos chamativos, brilhos neon (glow), nem "glassmorphism" exagerado (evitar visual clichê de IA).
+> Esta seção reflete o estado real da interface implementada (`src/app/globals.css`,
+> `src/components/`), não o mockup original de planejamento — atualizada após o redesign
+> completo e as rodadas de ajuste de UI/UX.
 
-### Estrutura do Layout (Grid de 2 Colunas):
-* **Coluna Esquerda (Inputs Híbridos & Interação):**
-  * **Campos Selecionáveis (Chips / Dropdowns de Acesso Rápido):**
-    * *Tipo de Produto:* Web App, Mobile App, Desktop, API/Backend, SaaS B2B, Marketplace.
-    * *Plataforma Alvo:* iOS, Android, Web Browser, Multi-plataforma.
-    * *Estágio do Projeto:* Ideia no Papel, Protótipo/Figma, MVP rodando, Produto Legado.
-    * *Nível de Complexidade Esperado:* Baixo, Médio, Enterprise.
-  * **Campo de Texto Livre (O Elemento Principal):** `textarea` amplo e expansível com a label *"Descrição do Projeto / Escopo"* para detalhamento de regras de negócio, diferenciais e integrações.
-  * **Filtros Numéricos Opcionais:** Prazo Alvo (meses) e Orçamento Mensal Estimado (R$/$).
-  * **Botão de Ação Primária:** Botão grande em Azul Corporativo *"Analisar Projeto com IA"*.
-  * **Chat de Negociação / Histórico:** Campo de texto secundário para envio de ajustes e réplicas durante a simulação.
+* **Estilo Visual:** SaaS B2B moderno, limpo e profissional (ferramenta de planejamento, não
+  landing page editorial).
+* **Tema Visual:** **Light mode exclusivo**, paleta neutra e fria (não bege/creme, que lê como
+  "landing gerada por IA"). Tokens reais (`globals.css`):
+  * Fundo da página (`--paper`): `#f7f8fa`
+  * Superfície recuada / cabeçalho de painel (`--paper-2`): `#e4e7eb`
+  * Superfície elevada — cards, tabela, inputs (`--paper-3`): `#ffffff`
+  * Texto primário (`--ink`): `#18212a`
+  * Texto secundário — labels, premissas, hints (`--ink-2`/`--ink-3`): `#636d78`
+  * Hairline / divisores (`--rule`/`--rule-2`): `#c6cdd4` / `#e3e6ea`
+* **Cor de Destaque:** **Verde petróleo sólido** (`--petrol`, `#14584a`) — não azul. Usado com
+  parcimônia: número-chave, chip/estado selecionado, barra da curva de alocação, botão primário.
+* **Cores semânticas de estado** (nunca só a cor sozinha comunica o estado — sempre com um
+  segundo canal: ícone, texto, ou formato):
+  * **Verde** (`--moss` `#2c7458` / `--petrol`): seleção, resultado positivo, economia, risco baixo.
+  * **Âmbar** (`--ochre` `#965d0a`): atenção, aumento de risco, estouro de teto, trade-off. **Nunca
+    vermelho só porque um número aumentou** — vermelho é só para erro real.
+  * **Vermelho** (`--rust` `#9c3a21`): reservado a erro genuíno (falha de API, validação bloqueante).
+* **Elevação, não borda:** hierarquia visual vem de sombra leve (`--shadow-raised`) e espaço, não
+  de linhas/bordas por toda parte.
+* **RESTRIÇÃO SEVERA:** sem gradientes chamativos, brilho neon (glow), glassmorphism, dark mode,
+  ou qualquer visual clichê de "produto gerado por IA".
 
-* **Coluna Direita (Dashboard Dinâmico de Resultados):**
-  * **Cards de Métricas Superiores:** Custo Total Mensal, Prazo Real Estimado e Total de Devs Sugeridos.
-  * **Header de Resumo da Análise:** Card com a síntese do entendimento da IA e badge visual de **Risk Score** (`0/100` a `100/100`).
-  * **Visualização da Equipe Recomendada (Squad):** Grid de cards mostrando Cargo, Quantidade, Senioridade, Custo Individual e Justificativa Técnica.
-  * **Painel de Alertas de Risco & Recomendações:** Bloco de notas técnicas e alertas dinâmicos de impacto.
+### Estrutura do Layout (Fluxo Vertical de Seções, não grid de 2 colunas)
+
+O layout evoluiu de um grid de 2 colunas (mockup original) para um **fluxo vertical único**, uma
+seção por etapa da jornada, cada uma ocupando a largura do container (`.wrap`, até 1680px):
+
+1. **Hero:** headline de impacto ("Descreva seu projeto. Monte o squad ideal.") + subtítulo +
+   botão primário ("Descrever meu projeto →"). Sem segunda frase de impacto, bastante espaço em
+   branco.
+2. **Entrada** ("Descreva seu projeto"): `textarea` livre e amplo (campo principal) + coluna
+   lateral com chips de classificação rápida (Tipo de Produto, Plataforma, Estágio,
+   Complexidade — via `ReadingGrid`/`ConstraintFields`) e os campos opcionais de Prazo
+   alvo/Teto mensal.
+3. **Entendimento do projeto:** leitura de escopo inferida pela IA, editável por chip
+   (`ReadingGrid`) — corrigir nunca reverte em silêncio, sempre com indicador de campo editado e
+   opção de restaurar.
+4. **Squad recomendado:** KPIs (Squad sugerido, Custo mensal, Prazo estimado, Investimento
+   estimado), curva de alocação por papel/mês, Composição do Squad (nome do papel clicável →
+   modal com a justificativa), "Por que este squad?" (explicação determinística da composição) e
+   Índice de risco (fatores com peso, premissas editáveis colapsadas).
+5. **Negociação:** histórico de ajustes + trilha de decisões comparável (versionamento) + impacto
+   do ajuste (custo/prazo/risco com trade-off explicado em texto).
+
+* **Header sticky:** logo + tagline até haver resultado; depois vira resumo dinâmico
+  ("Squad de N pessoas · R$X/mês · Y meses") que acompanha o scroll.
+* **Modais:** overlay com backdrop (fade) + card (fade + leve scale/subida via Motion), fecha por
+  clique fora, Esc ou botão fechar — usado pra detalhe pontual (ex: justificativa de um papel),
+  não pra navegação estrutural.
+
+### Nomenclatura padrão (consistência de copy)
+
+* Sempre **"squad"** — nunca alternar com "time" ou "equipe" pro squad recomendado.
+* Sempre **"projeto"** (não "produto") ao se referir ao que o usuário está descrevendo/construindo.
+* **"custo mensal"**, **"R$ X/mês"**, **"prazo estimado"**, **"teto mensal"** como termos fixos.
+* Nomes de cargo por extenso: "Desenvolvedor Mobile", "Desenvolvedor Front-end" etc. (não "Dev"),
+  formato `Cargo — Senioridade` com travessão.
 
 ---
 
@@ -71,17 +111,17 @@ Faça perguntas inteligentes,para irmos afunilando a ideia até termos um plano 
 * **Usuário (Entrada Inicial Híbrida):** * *Campos:* Mobile App + Web | Estágio: Ideia | Complexidade: Média.
   * *Texto Livre:* *"Quero criar um aplicativo estilo Uber de entregas locais com motos."*
 * **SquadBuilder (Diagnóstico Inicial):**
-  * **Squad Sugerido:** 1 Dev Mobile, 1 Dev Backend, 1 Designer UX/UI, 1 QA.
-  * **Custo/Mês:** R$ 32.000 | **Prazo:** 4 meses | **Risk Score:** 25/100 (Baixo).
+  * **Squad Sugerido:** 1 Desenvolvedor Mobile, 1 Desenvolvedor Backend, 1 Designer UX/UI, 1 QA.
+  * **Custo mensal:** R$ 32.000 | **Prazo:** 4 meses | **Índice de risco:** 25/100 (Baixo).
 
-* **Usuário (Interação/Alteração):** *"Achei caro. Quero tirar o QA e o Designer, e colocar só 1 Dev Fullstack para fazer tudo em 3 meses."*
+* **Usuário (Interação/Alteração):** *"Achei caro. Quero tirar o QA e o Designer, e colocar só 1 Desenvolvedor Fullstack para fazer tudo em 3 meses."*
 * **SquadBuilder (Retorno de Consequências):**
-  *  **Risk Score disparou:** 85/100 (Crítico).
+  *  **Índice de risco disparou:** 85/100 (Crítico).
   * **Alertas de Impacto:**
     * **Gargalo de UX:** Sem designer, a usabilidade do app do entregador pode causar alto abandono.
     * **Bugs em Produção:** Sem QA, falhas no pagamento ou no GPS serão descobertas diretamente pelos clientes.
-    * **Risco de Atraso:** A carga de trabalho para 1 único Dev cobrir Mobile + API + Painel Admin excede 3 meses. Prazo real estimado subiu para 7 meses.
-  *  **Sugestão de Meio-Termo:** *"Mantenha 1 Dev Fullstack + 1 Designer em meio período para garantir a experiência sem estourar o orçamento."*
+    * **Risco de Atraso:** A carga de trabalho para 1 único Desenvolvedor cobrir Mobile + API + Painel Admin excede 3 meses. Prazo real estimado subiu para 7 meses.
+  *  **Como reduzir o risco:** *"Mantenha 1 Desenvolvedor Fullstack + 1 Designer em meio período para garantir a experiência sem estourar o orçamento."*
 
 ---
 
@@ -90,7 +130,7 @@ Faça perguntas inteligentes,para irmos afunilando a ideia até termos um plano 
 ### Caso 1: MVP de Startup Enxuta
 * **Inputs:** Web App | Ideia | Complexidade Baixa.
 * **Texto:** *"Plataforma B2B simples de agendamento online para barbearias. Orçamento R$ 10k/mês."*
-* **Objetivo:** Validar se a IA sugere um time minimalista sem inflar custos.
+* **Objetivo:** Validar se a IA sugere um squad minimalista sem inflar custos.
 
 ### Caso 2: Plataforma Enterprise / IA
 * **Inputs:** SaaS B2B + API | Produto em Tração | Complexidade Enterprise.

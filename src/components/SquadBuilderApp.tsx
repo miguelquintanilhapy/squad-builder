@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { useMemo, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { AlertCircle, ArrowRight, HelpCircle } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
@@ -10,11 +10,12 @@ import { ConstraintFields } from '@/components/ConstraintFields'
 import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
+import { KpiStrip } from '@/components/KpiStrip'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
 import { formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
-import { describeNegotiationImpact } from '@/lib/negotiationImpact'
+import { describeNegotiationImpactCompact } from '@/lib/negotiationImpact'
 
 const SHOW_PREVIEW_BUTTON = process.env.NODE_ENV !== 'production'
 
@@ -52,6 +53,24 @@ export function SquadBuilderApp() {
   /** Assim que o squad calculado chega, rola até aqui — sem isso, o resultado aparecia fora da
    * tela sem nenhum aviso de que a análise tinha terminado. */
   const resultsRef = useRef<HTMLDivElement>(null)
+  /** Nav do header (CRITICA-UI §5.9) — pula direto pra negociação sem precisar rolar a página
+   * inteira, que é a distância que o próprio doc apontou como o maior problema de proposta. */
+  const negotiationRef = useRef<HTMLDivElement>(null)
+  // Preview real do dashboard no hero (CRITICA-UI §1.2), não mockup gráfico solto — reusa
+  // buildPreviewScenario (mesmo motor da fixture de dev) e o componente KpiStrip real.
+  const heroPreviewScenario = useMemo(() => buildPreviewScenario().scenario, [])
+  // Entrada do hero anima no mount, não no scroll (script §8) — é a primeira coisa que a pessoa
+  // vê, antes de rolar qualquer coisa. Único bloco do app com animate="show" em vez de
+  // whileInView; o resto (DashboardPanel) já converteu pra scroll-reveal.
+  const reduceMotion = useReducedMotion()
+  const heroContainerVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduceMotion ? 0 : 0.18, delayChildren: 0.1 } },
+  }
+  const heroItemVariants = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 16 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
+  }
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
   // Lazy initializer (não efeito): roda só na primeira renderização, então não dispara o lint de
   // "setState em effect" nem faz o dashboard piscar do vazio pro fixture depois do mount.
@@ -262,9 +281,10 @@ export function SquadBuilderApp() {
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          // Consequência curta, não a narração completa (AJUSTES-UI §21/26): o histórico deve
-          // permitir entender a negociação rapidamente, priorizando decisão sobre prosa.
-          message: describeNegotiationImpact(data.scenario, previousScenario),
+          // Consequência curta, não a narração completa (AJUSTES-UI §21/26). Versão compacta, não
+          // a frase inteira — ela já aparece no painel de Impacto; repetir na mesma tela era
+          // redundância (CRITICA-UI §4.3).
+          message: describeNegotiationImpactCompact(data.scenario, previousScenario),
           scenarioSnapshot: data.scenario,
           timestamp: Date.now(),
         },
@@ -334,6 +354,18 @@ export function SquadBuilderApp() {
     scopeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  function scrollToHero() {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function scrollToResults() {
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function scrollToNegotiation() {
+    negotiationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
       {/* Contexto ("SquadBuilder <projeto>") só quando já existe uma análise — orientação visual
@@ -342,19 +374,45 @@ export function SquadBuilderApp() {
       <header className="app-header">
         <div className="wrap flex items-center justify-between gap-3.5 py-5">
           <div className="flex items-baseline gap-[11px]">
-            <BrandMark />
-            <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
-              SquadBuilder
-            </span>
+            {/* Clicar no wordmark volta pro hero (CRITICA-UI §5.9) — mesmo padrão de qualquer
+                site: logo é sempre "voltar ao início". */}
+            <button
+              type="button"
+              onClick={scrollToHero}
+              className="flex items-baseline gap-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+            >
+              <BrandMark />
+              <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
+                SquadBuilder
+              </span>
+            </button>
             {scenario && (
               <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
             )}
           </div>
+          {/* Nav de etapas (CRITICA-UI §5.9/5.7): substitui a ideia de um stepper passivo por
+              navegação de verdade — a distância entre negociação e resultado era o maior problema
+              apontado ("ver a consequência em tempo real" exige rolagem longa hoje). */}
+          <nav className="hidden items-center gap-5 text-[13px] font-medium text-ink-3 md:flex">
+            <button type="button" onClick={scrollToScopeForm} className="hover:text-ink">
+              Formulário
+            </button>
+            {(analyzeLoading || scenario) && (
+              <button type="button" onClick={scrollToResults} className="hover:text-ink">
+                Resultado
+              </button>
+            )}
+            {scenario && (
+              <button type="button" onClick={scrollToNegotiation} className="hover:text-ink">
+                Negociação
+              </button>
+            )}
+          </nav>
           {/* Resumo sticky (revisão externa 3.6): os números-chave continuam visíveis rolando a
               página, mesmo depois que o KpiStrip já saiu da tela. */}
           {scenario ? (
             <span className="tnum text-[12.5px] font-medium text-ink">
-              {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
+              Squad de {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
               {formatCurrencyBRL(scenario.totalMonthlyCost)}/mês · {formatMonthsLabel(scenario.estimatedTimelineMonths)}
             </span>
           ) : (
@@ -367,21 +425,37 @@ export function SquadBuilderApp() {
         {/* Primeira coisa que a pessoa vê: frase de impacto centralizada, não o formulário direto
             — abrir já em campo de texto/inputs lia como pouco profissional. min-h-screen (mais a
             altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
-        <section className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center">
-          <h1 className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
+        <motion.section
+          variants={heroContainerVariants}
+          initial="hidden"
+          animate="show"
+          className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center"
+        >
+          <motion.h1
+            variants={heroItemVariants}
+            className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
+          >
             Descreva seu projeto.
             <br />Monte o <span className="text-petrol">squad</span> ideal.
-          </h1>
-          <p className="mt-4 max-w-[56ch] text-lg text-ink-2">
+          </motion.h1>
+          <motion.p variants={heroItemVariants} className="mt-4 max-w-[56ch] text-lg text-ink-2">
             Conte o que você quer construir. O SquadBuilder estima equipe, custo e prazo.
-          </p>
-          <div className="mt-6">
+          </motion.p>
+          <motion.div variants={heroItemVariants} className="mt-6">
             <PrimaryButton onClick={scrollToScopeForm} type="button">
               Descrever meu projeto
               <ArrowRight className="size-4" />
             </PrimaryButton>
+          </motion.div>
+          {/* Preview real do dashboard, não tela vazia (CRITICA-UI §1.2) — mesmo componente
+              KpiStrip usado no resultado de verdade, com um escopo de exemplo fixo. */}
+          <div className="mt-10 w-full max-w-[480px] rounded-[7px] bg-paper-3 p-4 text-left shadow-[var(--shadow-raised)]">
+            <p className="mb-2.5 text-[12px] font-medium text-ink-3">Exemplo de resultado</p>
+            {/* compact: números menores, sempre 2 colunas — os valores "saíam pro lado" com o
+                grid de 4 colunas do KpiStrip normal apertado num card estreito. */}
+            <KpiStrip scenario={heroPreviewScenario} compact />
           </div>
-        </section>
+        </motion.section>
 
         {/* scroll-mt: compensa o header agora sticky (3.6) — sem isso, scrollIntoView encosta o
             topo da seção embaixo dele. */}
@@ -483,7 +557,9 @@ export function SquadBuilderApp() {
                   <button
                     type="button"
                     onClick={handlePreview}
-                    className="mt-3.5 text-[12.5px] text-ink-3 underline underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+                    // Sublinhado tracejado, não sólido (CRITICA-UI §3.2) — sinaliza que isso é
+                    // ferramenta de dev/debug, categoria diferente de "Editar premissas" etc.
+                    className="mt-3.5 text-[12.5px] text-ink-3 underline decoration-dashed underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
                   >
                     Carregar exemplo
                   </button>
@@ -505,7 +581,8 @@ export function SquadBuilderApp() {
 
         {scopeAnalysis && (
           <section className="wrap pt-8 pb-12 sm:pt-10 sm:pb-16">
-            <Eyebrow>O que entendemos do seu projeto</Eyebrow>
+            {/* Eyebrow removido (CRITICA-UI §4.1) — "O que entendemos do seu projeto" e
+                "Entendimento do projeto" diziam a mesma coisa duas vezes seguidas. */}
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Entendimento do projeto
             </h2>
@@ -527,7 +604,9 @@ export function SquadBuilderApp() {
           <section ref={resultsRef} className="wrap scroll-mt-20 py-12 sm:py-16">
             {/* O ápice da experiência (o squad é o "produto" que a pessoa veio buscar) — título no
                 mesmo peso visual do h1, não mais um Eyebrow pequeno como as outras seções. Entra
-                com motion assim que o resultado chega, reforçando o scroll automático até aqui. */}
+                com motion assim que o resultado chega, reforçando o scroll automático até aqui.
+                Sem cor no meio do heading (CRITICA-UI §1.3) — esse recurso já é usado no hero;
+                repetir aqui é o mesmo truque 2x. Hierarquia vem só de peso/tamanho. */}
             <motion.h2
               key={scenario ? 'ready' : 'loading'}
               initial={{ opacity: 0, y: 10 }}
@@ -535,7 +614,7 @@ export function SquadBuilderApp() {
               transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
               className="text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink"
             >
-              <span className="text-petrol">Squad</span> recomendado
+              Squad recomendado
             </motion.h2>
             {/* Sempre renderizado (mesmo vazio durante o skeleton) — a margem não pode depender
                 do conteúdo, senão o espaço antes do dashboard pisca de tamanho ao carregar. */}
@@ -553,7 +632,7 @@ export function SquadBuilderApp() {
               onRateOverrideChange={handleRateOverrideChange}
             />
             {scenario && (
-              <div className="mt-12">
+              <div ref={negotiationRef} className="scroll-mt-20 mt-12">
                 <NegotiationChat
                   history={history}
                   onSend={handleNegotiate}

@@ -39,10 +39,12 @@ function handleActivateKey(onActivate: () => void) {
 function RoleCard({
   member,
   timelineMonths,
+  showDedicacao,
   onSelect,
 }: {
   member: Scenario['squad'][number]
   timelineMonths: number
+  showDedicacao: boolean
   onSelect: () => void
 }) {
   const allocationPct = Math.round(ALLOCATION_CAPACITY_MULTIPLIER[member.allocation] * 100)
@@ -58,11 +60,13 @@ function RoleCard({
       className="cursor-pointer rounded-[7px] border border-rule-2 bg-paper-3 p-3.5 transition-colors hover:border-ink-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
     >
       <RoleName member={member} />
-      <dl className="mt-2.5 grid grid-cols-3 gap-2 text-[13px]">
-        <div>
-          <dt className="text-[11.5px] text-ink-3">Dedicação</dt>
-          <dd className="tnum mt-0.5 text-ink">{allocationPct}%</dd>
-        </div>
+      <dl className={`mt-2.5 grid gap-2 text-[13px] ${showDedicacao ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        {showDedicacao && (
+          <div>
+            <dt className="text-[11.5px] text-ink-3">Dedicação</dt>
+            <dd className="tnum mt-0.5 text-ink">{allocationPct}%</dd>
+          </div>
+        )}
         <div>
           <dt className="text-[11.5px] text-ink-3">Custo mensal</dt>
           <dd className="tnum mt-0.5 text-ink">{formatCurrencyBRL(monthlyCost)}</dd>
@@ -139,6 +143,9 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
   const totalHeadcount = scenario.squad.reduce((sum, m) => sum + m.quantity, 0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const selectedMember = selectedIndex !== null ? scenario.squad[selectedIndex] ?? null : null
+  // Coluna sem uso real quando todo mundo é full-time (CRITICA-UI §5.2) — 100% em toda linha não
+  // carrega informação nenhuma, só ocupa espaço.
+  const showDedicacao = scenario.squad.some((m) => m.allocation === 'part-time')
 
   return (
     <>
@@ -150,6 +157,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
             key={`${member.role}-${index}`}
             member={member}
             timelineMonths={scenario.estimatedTimelineMonths}
+            showDedicacao={showDedicacao}
             onSelect={() => setSelectedIndex(index)}
           />
         ))}
@@ -181,9 +189,11 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
               <th scope="col" className="px-[15px] py-[9px] text-left text-[12.5px] font-medium text-ink-3">
                 Profissional
               </th>
-              <th scope="col" className={numHeadClasses}>
-                Dedicação
-              </th>
+              {showDedicacao && (
+                <th scope="col" className={numHeadClasses}>
+                  Dedicação
+                </th>
+              )}
               <th scope="col" className={numHeadClasses}>
                 Custo mensal
               </th>
@@ -211,7 +221,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
                   <td className="px-[15px] py-3 text-ink">
                     <RoleName member={member} />
                   </td>
-                  <td className={numCellClasses}>{allocationPct}%</td>
+                  {showDedicacao && <td className={numCellClasses}>{allocationPct}%</td>}
                   <td className={numCellClasses}>
                     {member.quantity > 1 ? (
                       <>
@@ -227,10 +237,17 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
               )
             })}
           </tbody>
+          {/* Borda de cima mais forte + fundo (CRITICA-UI §5.3) — antes se misturava visualmente
+              com as linhas normais. */}
           <tfoot>
-            <tr className="border-t border-rule-2 bg-paper font-semibold">
-              <td className="px-[15px] py-3">{totalHeadcount} pessoas no squad</td>
-              <td className={numCellClasses}>{formatMonthsLabel(scenario.estimatedTimelineMonths)}</td>
+            <tr className="border-t-2 border-ink/15 bg-paper-2 font-semibold">
+              <td className="px-[15px] py-3">
+                {totalHeadcount} pessoas no squad
+                {!showDedicacao && ` · ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
+              </td>
+              {showDedicacao && (
+                <td className={numCellClasses}>{formatMonthsLabel(scenario.estimatedTimelineMonths)}</td>
+              )}
               <td className={numCellClasses}>{formatCurrencyBRL(scenario.totalMonthlyCost)}</td>
               <td className={numCellClasses}>
                 {formatCurrencyRangeBRL(scenario.totalMonthlyCost, scenario.estimatedTimelineMonths)}

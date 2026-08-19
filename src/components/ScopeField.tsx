@@ -47,7 +47,9 @@ export function ScopeField({
         <span className={overMax ? 'font-medium text-rust' : nearMax ? 'text-ochre' : 'text-ink-3'}>
           {count.toLocaleString('pt-BR')} caracteres
         </span>
-        <span className={overMax ? 'font-medium text-rust' : 'text-ink-3'}>
+        {/* Contraste maior no hint (CRITICA-UI §5.11) — ink-2, não ink-3, pra não ser fácil demais
+            de ignorar sem deixar de ser secundário. */}
+        <span className={overMax ? 'font-medium text-rust' : 'text-ink-2'}>
           {overMax
             ? `${(count - MAX_SCOPE_CHARS).toLocaleString('pt-BR')} acima do limite de ${MAX_SCOPE_CHARS.toLocaleString('pt-BR')} — reduza pra continuar`
             : 'Quanto mais contexto, mais precisa a estimativa.'}

@@ -71,7 +71,18 @@ function Metric({
  * maiores que os da trilha. A trilha mostra a causa (o pedido); aqui mostra a consequência.
  */
 export function ImpactSummary({ active, previous }: { active: ScenarioVersion; previous?: ScenarioVersion }) {
-  if (!previous) return null
+  // Mensagem, não sumir em silêncio (CRITICA-UI §5.8) — clicar em "Ponto de partida" fazia o
+  // painel inteiro desaparecer sem explicação nenhuma.
+  if (!previous) {
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="font-display text-[17px] font-bold tracking-[-0.015em] text-petrol">Impacto do ajuste</div>
+        <p className="text-[13px] leading-relaxed text-ink-2">
+          Este é o cenário inicial, sem ajustes aplicados ainda.
+        </p>
+      </div>
+    )
+  }
 
   const costDelta = active.scenario.totalMonthlyCost - previous.scenario.totalMonthlyCost
   const costDirection: Direction = costDelta === 0 ? 'flat' : costDelta > 0 ? 'up' : 'down'

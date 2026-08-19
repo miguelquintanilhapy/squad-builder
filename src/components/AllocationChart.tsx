@@ -3,7 +3,9 @@ import { MAX_ALLOCATION_MONTHS } from '@/lib/allocationCurve'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
 import { ENGINEERING_ROLES } from '@/lib/rates'
 
-const LABEL_GUTTER = 170
+// 230, não 170 (CRITICA-UI §5.4) — nomes por extenso ("Desenvolvedor Mobile — Sênior") cortavam
+// contra as barras com a largura antiga, pensada pra "Dev Mobile".
+const LABEL_GUTTER = 230
 const CHART_WIDTH = 1000
 const RIGHT_MARGIN = 22
 const ROW_HEIGHT = 24
@@ -60,11 +62,13 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
   return (
     <div className="overflow-x-auto px-[15px] py-[15px]">
-      {/* Legenda adaptada à curva contínua (AJUSTES-UI §12 pedia 3 categorias fixas; aqui a
-          alocação varia por mês de verdade — ver allocationCurve.ts — então a legenda descreve
-          intensidade gradual em vez de estados discretos). */}
+      {/* Legenda adaptada à curva contínua (AJUSTES-UI §12) e honesta sobre a variação real
+          (CRITICA-UI §5.5): a maioria dos papéis é constante o período inteiro (só designer e QA
+          ramp) — "intensidade da cor" sozinho prometia gradiente em toda barra, o que nem sempre
+          acontece. */}
       <p className="mb-2.5 text-[11.5px] text-ink-3">
-        Intensidade da cor = % de envolvimento naquele mês — mais escuro, mais alocado.
+        Cor mais forte = maior dedicação naquele mês (varia por papel — a maioria é constante no
+        período todo).
       </p>
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${height}`}

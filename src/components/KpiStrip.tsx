@@ -1,30 +1,46 @@
+import { CalendarClock, TrendingUp, Users, Wallet } from 'lucide-react'
 import { Scenario } from '@/types'
 import { formatCurrencyBRL, formatCurrencyRangeBRL, formatMonthsCompact } from '@/lib/labels'
+
+// Um ícone por métrica (CRITICA-UI §1.5) — os 4 cards eram brancos idênticos sem nenhuma
+// diferenciação, o stat-card mais genérico possível. Pequeno e monocromático (ink-3), não
+// ilustração — acento funcional, não decoração.
+const KPI_ICONS = { 'Squad sugerido': Users, 'Custo mensal': Wallet, 'Prazo estimado': CalendarClock, 'Investimento estimado': TrendingUp } as const
 
 function Kpi({
   label,
   value,
   note,
   loading = false,
+  compact = false,
 }: {
   label: string
   value?: React.ReactNode
   note?: string
   loading?: boolean
+  compact?: boolean
 }) {
+  const Icon = KPI_ICONS[label as keyof typeof KPI_ICONS]
   return (
     // Cada KPI é a própria superfície, separada por espaço real (gap), não por hairline —
     // o número precisa dominar sem competir com uma grade de linhas em volta (briefing §10).
-    <div className="rounded-[7px] bg-paper-3 px-[17px] pt-[14px] pb-[13px]">
-      <div className="text-[12.5px] font-medium text-ink-3">{label}</div>
+    <div className={`rounded-[7px] bg-paper-3 ${compact ? 'px-3 pt-2.5 pb-2' : 'px-[17px] pt-[14px] pb-[13px]'}`}>
+      <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-3">
+        <Icon className="size-3.5 shrink-0" strokeWidth={2} />
+        {label}
+      </div>
       {loading ? (
         <div className="mt-2.5 h-9 w-16 animate-pulse rounded-[7px] bg-rule-2" />
       ) : (
-        <div className="tnum mt-1.5 font-display text-[36px] font-extrabold leading-[1.1] tracking-[-0.032em] text-ink">
+        <div
+          className={`tnum truncate font-display font-extrabold leading-[1.1] tracking-[-0.032em] text-ink ${
+            compact ? 'mt-1 text-[20px]' : 'mt-1.5 text-[36px]'
+          }`}
+        >
           {value}
         </div>
       )}
-      {note && !loading && <div className="tnum mt-1 text-[12.5px] text-ink-3">{note}</div>}
+      {note && !loading && <div className="tnum mt-1 truncate text-[12.5px] text-ink-3">{note}</div>}
     </div>
   )
 }
@@ -36,12 +52,25 @@ const KPI_LABELS = ['Squad sugerido', 'Custo mensal', 'Prazo estimado', 'Investi
  * vez de copiar a estrutura à mão — evita divergência silenciosa entre o placeholder e o real a
  * cada mudança de layout (revisão externa 2.8).
  */
-export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | null; loading?: boolean }) {
+export function KpiStrip({
+  scenario,
+  loading = false,
+  compact = false,
+}: {
+  scenario: Scenario | null
+  loading?: boolean
+  /** Preview do hero (CRITICA-UI/feedback do usuário): o card ali é bem mais estreito que o
+   * dashboard real — números menores e sempre 2 colunas (nunca 4, que é o que causava os valores
+   * "saindo pro lado" num container apertado). */
+  compact?: boolean
+}) {
+  const gridClass = compact ? 'grid grid-cols-2 gap-2.5' : 'grid grid-cols-2 gap-3 sm:grid-cols-4'
+
   if (loading || !scenario) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className={gridClass}>
         {KPI_LABELS.map((label) => (
-          <Kpi key={label} label={label} loading />
+          <Kpi key={label} label={label} loading compact={compact} />
         ))}
       </div>
     )
@@ -50,9 +79,10 @@ export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | n
   const totalHeadcount = scenario.squad.reduce((sum, m) => sum + m.quantity, 0)
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className={gridClass}>
       <Kpi
         label="Squad sugerido"
+        compact={compact}
         value={
           <>
             {totalHeadcount}
@@ -63,6 +93,7 @@ export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | n
       />
       <Kpi
         label="Custo mensal"
+        compact={compact}
         value={
           <>
             {formatCurrencyBRL(scenario.totalMonthlyCost)}
@@ -72,6 +103,7 @@ export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | n
       />
       <Kpi
         label="Prazo estimado"
+        compact={compact}
         value={
           <>
             {formatMonthsCompact(scenario.estimatedTimelineMonths)}
@@ -81,6 +113,7 @@ export function KpiStrip({ scenario, loading = false }: { scenario: Scenario | n
       />
       <Kpi
         label="Investimento estimado"
+        compact={compact}
         value={formatCurrencyRangeBRL(scenario.totalMonthlyCost, scenario.estimatedTimelineMonths)}
         note="estimado para o período"
       />

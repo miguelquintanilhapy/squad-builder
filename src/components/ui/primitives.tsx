@@ -18,11 +18,20 @@ export function Panel({ children }: { children: React.ReactNode }) {
 /**
  * Título de card, fora da caixa — mesma ideia visual do h2 de "Leitura do escopo": título solto
  * acima do conteúdo em vez de dentro de uma faixa/cabeçalho embutido no painel.
+ * `emphasis` (CRITICA-UI §1.6): todo painel usava o mesmo peso visual, sem diferenciar as seções
+ * principais (Squad recomendado, Índice de risco) das de apoio — um pouco maior/mais escuro é
+ * suficiente, não precisa de caixa própria nem cor nova.
  */
-export function PanelTitle({ title, note }: { title: string; note?: string }) {
+export function PanelTitle({ title, note, emphasis = false }: { title: string; note?: string; emphasis?: boolean }) {
   return (
     <div className="mb-3 flex items-baseline justify-between gap-3.5">
-      <h3 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">{title}</h3>
+      <h3
+        className={`font-display font-bold leading-none tracking-[-0.025em] text-ink ${
+          emphasis ? 'text-[30px]' : 'text-[26px]'
+        }`}
+      >
+        {title}
+      </h3>
       {note && <span className="tnum text-[12.5px] text-ink-3">{note}</span>}
     </div>
   )

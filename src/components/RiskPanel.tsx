@@ -43,7 +43,10 @@ function RateOverrideRow({
   return (
     <li className="flex flex-wrap items-center justify-between gap-2">
       <span>{ROLE_LABELS[role]}</span>
-      <span className="flex items-center gap-1.5">
+      {/* Prefixo "R$", mesma máscara visual do resto do app (ConstraintFields) — antes o campo
+          mostrava só dígitos crus enquanto editava (CRITICA-UI §5.1). */}
+      <span className="flex items-center overflow-hidden rounded border border-rule-2 bg-paper-3 focus-within:border-petrol">
+        <span className="bg-paper px-1.5 py-0.5 text-[11.5px] text-ink-3">R$</span>
         <input
           ref={inputRef}
           key={effectiveRate}
@@ -57,9 +60,9 @@ function RateOverrideRow({
               e.currentTarget.blur()
             }
           }}
-          className="w-24 rounded border border-rule-2 bg-paper-3 px-1.5 py-0.5 text-right text-[12.5px] text-ink outline-none focus:border-petrol"
+          className="w-20 border-0 bg-transparent px-1.5 py-0.5 text-right text-[12.5px] text-ink outline-none"
         />
-        <span className="text-ink-3">/mês</span>
+        <span className="bg-paper px-1.5 py-0.5 text-[11.5px] text-ink-3">/mês</span>
       </span>
     </li>
   )
@@ -134,10 +137,19 @@ export function RiskPanel({
           <span aria-hidden="true" className="inline-block size-[7px] rounded-full" style={{ background: color }} />
           Risco {RISK_LEVEL_LABELS[scenario.riskLevel].toLowerCase()}
         </div>
-        <div className="mt-[13px] h-1.5 overflow-hidden rounded-full bg-rule-2">
+        {/* Trilha segmentada por faixa de risco, não barra única (CRITICA-UI §1.9) — a métrica
+            mais importante do produto merece mais que uma barra de progresso genérica. Mesmos
+            tokens moss/ochre/rust já usados no resto do app, nenhuma cor nova. */}
+        <div className="relative mt-[13px] h-1.5 overflow-hidden rounded-full">
+          <div className="flex h-full w-full">
+            <div className="h-full" style={{ width: '25%', background: 'var(--moss)' }} />
+            <div className="h-full" style={{ width: '25%', background: 'var(--ochre)' }} />
+            <div className="h-full" style={{ width: '50%', background: 'var(--rust)' }} />
+          </div>
           <div
-            className="h-full rounded-full transition-[width] duration-500"
-            style={{ width: `${scenario.riskScore}%`, background: color }}
+            aria-hidden="true"
+            className="absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-paper-3 bg-ink shadow-[var(--shadow-focus)] transition-[left] duration-500"
+            style={{ left: `${scenario.riskScore}%` }}
           />
         </div>
         <div className="mt-1.5 flex justify-between text-[11px] text-ink-3">
@@ -169,7 +181,7 @@ export function RiskPanel({
                 }}
                 className="text-[11px] font-medium text-petrol underline underline-offset-2 hover:text-ink"
               >
-                {editingRates ? 'Concluir edição' : 'Editar premissas'}
+                {editingRates ? 'Salvar premissas' : 'Editar premissas'}
               </button>
             )}
           </div>

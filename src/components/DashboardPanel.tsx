@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Info, Loader2 } from 'lucide-react'
 import { ContractType, RoleType, Scenario } from '@/types'
 import { formatMonthsLabel } from '@/lib/labels'
@@ -43,14 +43,21 @@ function DashboardSkeleton() {
   )
 }
 
-const containerVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.09 } },
-}
-
-const groupVariants = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.23, 1, 0.32, 1] as const } },
+function useDashboardVariants() {
+  // prefers-reduced-motion (script §5/6): só opacity, sem translateY, quando reduzido — o CSS
+  // global já neutraliza transition/scroll-behavior, mas Motion anima via WAAPI/rAF própria, não
+  // pela propriedade CSS `transition`, então precisa do hook da própria lib.
+  const reduceMotion = useReducedMotion()
+  return {
+    containerVariants: {
+      hidden: {},
+      show: { transition: { staggerChildren: reduceMotion ? 0 : 0.09 } },
+    },
+    groupVariants: {
+      hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
+      show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] as const } },
+    },
+  }
 }
 
 export function DashboardPanel({
@@ -72,6 +79,8 @@ export function DashboardPanel({
   rateOverrides?: Partial<Record<RoleType, number>>
   onRateOverrideChange?: (role: RoleType, monthlyRate: number) => void
 }) {
+  const { containerVariants, groupVariants } = useDashboardVariants()
+
   if (loading) {
     return <DashboardSkeleton />
   }
@@ -99,13 +108,17 @@ export function DashboardPanel({
           )}
         </div>
       )}
-      {/* Entrada orquestrada uma única vez, na primeira revelação (scenario passa de null a
-          populado): stagger real via Motion, não CSS solto. Atualizações de negociação seguintes
-          reusam esta mesma árvore. */}
+      {/* Scroll-reveal, não mount (script §1-3): o auto-scroll pro resultado já traz esse bloco
+          pra dentro do viewport logo que monta, então whileInView dispara junto — mas a troca em
+          si é o que corrige o problema real: coluna única longa, sem isso tudo já tinha terminado
+          de animar antes do usuário rolar até aqui. `once` — nunca replay ao rolar pra cima e
+          descer de novo. Atualizações de negociação seguintes reusam esta mesma árvore (já
+          revelada), não retrigger. */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
-        animate="show"
+        whileInView="show"
+        viewport={{ once: true, margin: '-80px' }}
         className={`flex flex-col gap-12 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}
       >
         {/* Números primeiro, nota depois: o alerta de teto era o primeiro elemento da seção — a
@@ -149,7 +162,7 @@ export function DashboardPanel({
           </Panel>
         </motion.div>
         <motion.div variants={groupVariants}>
-          <PanelTitle title="Índice de risco" />
+          <PanelTitle title="Índice de risco" emphasis />
           <Panel>
             <RiskPanel
               scenario={scenario}
