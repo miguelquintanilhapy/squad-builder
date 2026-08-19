@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { motion } from 'motion/react'
 import { AlertCircle, ArrowRight, HelpCircle } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
@@ -48,6 +49,9 @@ type ScopeOverrides = Partial<Pick<ScopeAnalysis, EditableScopeField>>
 
 export function SquadBuilderApp() {
   const scopeFormRef = useRef<HTMLDivElement>(null)
+  /** Assim que o squad calculado chega, rola até aqui — sem isso, o resultado aparecia fora da
+   * tela sem nenhum aviso de que a análise tinha terminado. */
+  const resultsRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
   // Lazy initializer (não efeito): roda só na primeira renderização, então não dispara o lint de
   // "setState em effect" nem faz o dashboard piscar do vazio pro fixture depois do mount.
@@ -130,6 +134,10 @@ export function SquadBuilderApp() {
       })
       const scenarioData = await parseJsonOrThrow(scenarioResponse)
       setScenario(scenarioData.scenario)
+      // Sem isso, o squad calculado aparecia fora da tela sem nenhum aviso de que a análise
+      // tinha terminado. rAF espera o React trocar o skeleton pelo conteúdo real antes de medir
+      // a posição de scroll.
+      requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
       // Novo diagnóstico do zero: a lista de versões reinicia — comparar contra negociações de
       // um escopo que não existe mais não faz sentido (revisão externa 3.1).
       const v1: ScenarioVersion = {
@@ -361,8 +369,8 @@ export function SquadBuilderApp() {
             altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
         <section className="wrap flex min-h-[calc(100vh-72px)] flex-col items-center justify-center pt-10 pb-24 text-center">
           <h1 className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink">
-            Descreva o produto.
-            <br />Receba o <span className="text-petrol">squad</span>.
+            Descreva o projeto.
+            <br />Receba o <span className="text-petrol">Squad</span>.
           </h1>
           <p className="mt-4 max-w-[56ch] text-lg text-ink-2">
             Descreva o produto em texto livre. O SquadBuilder dimensiona o time, estima o custo e
@@ -516,12 +524,19 @@ export function SquadBuilderApp() {
         )}
 
         {(analyzeLoading || scenario) && (
-          <section className="wrap py-12 sm:py-16">
+          <section ref={resultsRef} className="wrap scroll-mt-20 py-12 sm:py-16">
             {/* O ápice da experiência (o squad é o "produto" que a pessoa veio buscar) — título no
-                mesmo peso visual do h1, não mais um Eyebrow pequeno como as outras seções. */}
-            <h2 className="mb-8 text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink">
+                mesmo peso visual do h1, não mais um Eyebrow pequeno como as outras seções. Entra
+                com motion assim que o resultado chega, reforçando o scroll automático até aqui. */}
+            <motion.h2
+              key={scenario ? 'ready' : 'loading'}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
+              className="mb-8 text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink"
+            >
               <span className="text-petrol">Squad</span> recomendado
-            </h2>
+            </motion.h2>
             <DashboardPanel
               scenario={scenario}
               loading={analyzeLoading}
