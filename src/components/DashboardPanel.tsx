@@ -14,7 +14,7 @@ function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-[7px] bg-rule-2 ${className}`} />
 }
 
-const SKELETON_PANEL_TITLES = ['Curva de alocação', 'Composição', 'Risk score']
+const SKELETON_PANEL_TITLES = ['Curva de alocação', 'Composição do Squad', 'Índice de risco']
 
 /**
  * Reusa KpiStrip (em modo loading) e Panel/PanelTitle reais em vez de copiar a estrutura à mão —
@@ -128,13 +128,13 @@ export function DashboardPanel({
           </Panel>
         </motion.div>
         <motion.div variants={groupVariants}>
-          <PanelTitle title="Composição" />
+          <PanelTitle title="Composição do Squad" />
           <Panel>
             <CompositionTable scenario={scenario} />
           </Panel>
         </motion.div>
         <motion.div variants={groupVariants}>
-          <PanelTitle title="Risk score" />
+          <PanelTitle title="Índice de risco" />
           <Panel>
             <RiskPanel
               scenario={scenario}

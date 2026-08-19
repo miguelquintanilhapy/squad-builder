@@ -506,7 +506,7 @@ export function SquadBuilderApp() {
 
         {scopeAnalysis && (
           <section className="wrap pt-8 pb-12 sm:pt-10 sm:pb-16">
-            <Eyebrow>O que entendemos</Eyebrow>
+            <Eyebrow>O que entendemos do seu projeto</Eyebrow>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Leitura do escopo
             </h2>

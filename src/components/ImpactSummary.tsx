@@ -109,7 +109,7 @@ export function ImpactSummary({ active, previous }: { active: ScenarioVersion; p
           }
         />
         <Metric
-          label="Risk score"
+          label="Índice de risco"
           previousValue={`${previous.scenario.riskScore}/100`}
           activeValue={
             <span style={{ color: RISK_COLOR[active.scenario.riskLevel] }}>{active.scenario.riskScore}/100</span>
