@@ -6,10 +6,10 @@ import { MONTHLY_RATE_BRL } from '@/lib/rates'
 const CONTRACT_TYPE_LABELS: Record<ContractType, string> = { pj: 'PJ', clt: 'CLT' }
 
 /**
- * Custo de referência por papel (revisão externa 3.2) — a assunção que mais gera desconfiança
- * quando fixa: "R$ 8.000 pra Dev Mobile Pleno" varia por região/senioridade real. Editável aqui,
- * junto das outras premissas. Um único "Editar premissas" no topo controla a edição de todas as
- * linhas de uma vez — não um "editar" por papel (AJUSTES-UI §16/17: poluía a lista).
+ * Custo de referência por papel — a assunção que mais gera desconfiança quando fixa: "R$ 8.000
+ * pra Dev Mobile Pleno" varia por região/senioridade real. Editável aqui, junto das outras
+ * premissas. Um único "Editar premissas" no topo controla a edição de todas as linhas de uma vez,
+ * não um "editar" por papel, que poluiria a lista.
  */
 function RateOverrideRow({
   role,
@@ -25,8 +25,8 @@ function RateOverrideRow({
   const inputRef = useRef<HTMLInputElement>(null)
 
   function commit() {
-    // parseCurrencyPtBR, não Number() cru: "8.000" digitado é R$ 8 mil em pt-BR, não 8 (achado
-    // de code review — type="number" nativo aceitava e interpretava o ponto como decimal).
+    // parseCurrencyPtBR, não Number() cru: "8.000" digitado é R$ 8 mil em pt-BR, não 8 — um
+    // input type="number" nativo interpretaria o ponto como decimal.
     const value = parseCurrencyPtBR(inputRef.current?.value ?? '')
     if (Number.isFinite(value) && value > 0) onChange?.(role, value)
   }
@@ -43,8 +43,7 @@ function RateOverrideRow({
   return (
     <li className="flex flex-wrap items-center justify-between gap-2">
       <span>{ROLE_LABELS[role]}</span>
-      {/* Prefixo "R$", mesma máscara visual do resto do app (ConstraintFields) — antes o campo
-          mostrava só dígitos crus enquanto editava (CRITICA-UI §5.1). */}
+      {/* Prefixo "R$", mesma máscara visual do resto do app (ConstraintFields). */}
       <span className="flex items-center overflow-hidden rounded border border-rule-2 bg-paper-3 focus-within:border-petrol">
         <span className="bg-paper px-1.5 py-0.5 text-[11.5px] text-ink-3">R$</span>
         <input
@@ -75,13 +74,11 @@ const RISK_COLOR: Record<RiskLevel, string> = {
   critical: 'var(--rust)',
 }
 
-/**
- * "+N · Título" na frente, explicação curta embaixo (AJUSTES-UI §15) — antes só a descrição
- * longa aparecia e o título de cada driver (já existente em riskEngine.ts) ficava sem uso.
- */
+/** "+N · Título" na frente, explicação curta embaixo — usa o título de cada driver (já existente
+ * em riskEngine.ts), não só a descrição longa. */
 function WeightRow({ weight, title, description }: { weight: number; title: string; description?: string }) {
-  // Sem linha entre os drivers — só espaço (briefing §4): a lista já é curta e cada item
-  // tem peso numérico próprio, uma borda ali não ajuda a ler, só soma ruído.
+  // Sem linha entre os drivers, só espaço — a lista já é curta e cada item tem peso numérico
+  // próprio, uma borda ali não ajuda a ler, só soma ruído.
   return (
     <li className="flex gap-3 py-[7px] text-[14.5px]">
       <span className="tnum w-[30px] shrink-0 pt-[3px] text-right text-[12.5px] text-ink-3">
@@ -97,7 +94,7 @@ function WeightRow({ weight, title, description }: { weight: number; title: stri
 
 /**
  * Base + todos os drivers, sem corte em top-3: a soma exibida tem que fechar com o score exibido
- * (ver revisão externa 1.4/3.12 — um número que não fecha é pior que nenhum número).
+ * — um número que não fecha é pior que nenhum número.
  */
 export function RiskPanel({
   scenario,
@@ -137,9 +134,9 @@ export function RiskPanel({
           <span aria-hidden="true" className="inline-block size-[7px] rounded-full" style={{ background: color }} />
           Risco {RISK_LEVEL_LABELS[scenario.riskLevel].toLowerCase()}
         </div>
-        {/* Trilha segmentada por faixa de risco, não barra única (CRITICA-UI §1.9) — a métrica
-            mais importante do produto merece mais que uma barra de progresso genérica. Mesmos
-            tokens moss/ochre/rust já usados no resto do app, nenhuma cor nova. */}
+        {/* Trilha segmentada por faixa de risco, não barra única — a métrica mais importante do
+            produto merece mais que uma barra de progresso genérica. Mesmos tokens moss/ochre/rust
+            já usados no resto do app, nenhuma cor nova. */}
         <div className="relative mt-[13px] h-1.5 overflow-hidden rounded-full">
           <div className="flex h-full w-full">
             <div className="h-full" style={{ width: '25%', background: 'var(--moss)' }} />
@@ -165,13 +162,13 @@ export function RiskPanel({
             <WeightRow key={index} weight={driver.weight} title={driver.title} description={driver.description} />
           ))}
         </ul>
-        {/* Lista de verdade, não parágrafo corrido (revisão externa 3.2) — e o modelo de
-            contratação vira um parâmetro editável de fato, não um item de texto perdido no meio. */}
+        {/* Lista de verdade, não parágrafo corrido — o modelo de contratação é um parâmetro
+            editável de fato, não um item de texto perdido no meio. */}
         <div className="mt-[15px]">
           <div className="flex items-center justify-between gap-2">
             <p className="text-[12.5px] font-medium text-ink-2">Premissas</p>
-            {/* Um único controle de edição pra todas as premissas (AJUSTES-UI §17) — antes cada
-                papel tinha seu próprio "editar", poluindo a lista. */}
+            {/* Um único controle de edição pra todas as premissas, em vez de um "editar" por
+                papel, que poluiria a lista. */}
             {onRateOverrideChange && (
               <button
                 type="button"
@@ -212,8 +209,8 @@ export function RiskPanel({
               <li key={index}>{assumption}</li>
             ))}
           </ul>
-          {/* Custos por papel escondidos por padrão (AJUSTES-UI §16) — expostos sempre inflava a
-              lista com números que a maioria das negociações não precisa revisitar. */}
+          {/* Custos por papel escondidos por padrão — expostos sempre inflaria a lista com
+              números que a maioria das negociações não precisa revisitar. */}
           <button
             type="button"
             onClick={() => setShowRates((prev) => !prev)}

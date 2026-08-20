@@ -1,11 +1,8 @@
 import { Scenario } from '@/types'
 import { formatCurrencyBRL, formatMonthsLabel } from './labels'
 
-/**
- * Frase curta de trade-off entre duas versões do cenário (AJUSTES-UI §21/26/27) — o histórico de
- * negociação priorizava a narração completa da IA; isso prioriza a consequência (o que o usuário
- * realmente veio buscar ao negociar), auditável em uma linha.
- */
+/** Frase curta de trade-off entre duas versões do cenário — prioriza a consequência da
+ * negociação (custo, risco, prazo) em uma linha auditável, não a narração completa. */
 export function describeNegotiationImpact(current: Scenario, previous: Scenario): string {
   const costDelta = current.totalMonthlyCost - previous.totalMonthlyCost
   const riskDelta = current.riskScore - previous.riskScore
@@ -33,11 +30,8 @@ export function describeNegotiationImpact(current: Scenario, previous: Scenario)
   return `${costPart}, com ${riskPart}. ${timelinePart}`
 }
 
-/**
- * Versão compacta pro histórico de negociação (formato de auditoria, CRITICA-UI §4.3): a frase
- * completa já aparece no painel de Impacto — repeti-la no histórico era redundância na mesma
- * tela. Aqui é só o delta em uma linha.
- */
+/** Versão compacta pro histórico de negociação — a frase completa já aparece no painel de
+ * Impacto, então aqui é só o delta em uma linha. */
 export function describeNegotiationImpactCompact(current: Scenario, previous: Scenario): string {
   const costDelta = current.totalMonthlyCost - previous.totalMonthlyCost
   const riskDelta = current.riskScore - previous.riskScore

@@ -1,15 +1,16 @@
 @import 'tailwindcss';
 
 :root {
-  /* Segunda rodada (briefing UI/UX §17): fundo mais neutro/claro que a Ardósia anterior, pra
-     fugir da leitura de "dashboard admin". Hierarquia bg → subtle (agrupamento recuado, ex.
-     cabeçalho de painel/tabela) → surface (cards, tabelas) — "raised" não é token de cor, é
-     elevação (sombra) aplicada com parcimônia só onde precisa chamar atenção (ver Panel/RiskPanel). */
+  /* Fundo neutro/claro, fugindo da leitura de "dashboard admin". Hierarquia bg → subtle
+     (agrupamento recuado, ex. cabeçalho de painel/tabela) → surface (cards, tabelas) — "raised"
+     não é token de cor, é elevação (sombra) aplicada com parcimônia só onde precisa chamar
+     atenção (ver Panel/RiskPanel). */
   --paper: #f7f8fa;
   --paper-2: #e4e7eb;
   --paper-3: #ffffff;
   --ink: #18212a;
-  /* Só um tom de texto secundário (a revisão não separa 2 níveis como a paleta antiga fazia). */
+  /* Só um tom de texto secundário — sem hierarquia de 2 níveis (ex.: um cinza mais claro pra
+     hints, outro mais escuro pra corpo). */
   --ink-2: #636d78;
   --ink-3: #636d78;
   --rule: #c6cdd4;
@@ -19,11 +20,11 @@
   --rust: #9c3a21;
   --moss: #2c7458;
   --grid: rgba(24, 33, 42, 0.055);
-  /* Elevação única de "superfície levantada" (Panel, header) — um token só, pra não desalinhar
-     as duas sombras se um dia precisar ajustar (já aconteceu, viviam como 2 literais soltos). */
+  /* Elevação única de "superfície levantada" (Panel, header) — um token só, pra as duas sombras
+     não desalinharem se precisar ajustar. */
   --shadow-raised: 0 1px 2px rgba(24, 33, 42, 0.04), 0 2px 8px rgba(24, 33, 42, 0.06);
-  /* Anel de foco petrol — repetia como literal em 3 lugares (scope-shell, prazo/orçamento,
-     textarea de negociação); um token só evita divergir se a cor petrol mudar de novo. */
+  /* Anel de foco petrol, usado em scope-shell, prazo/orçamento e textarea de negociação — um
+     token só evita divergir se a cor petrol mudar. */
   --shadow-focus: 0 0 0 3px rgba(20, 88, 74, 0.13);
 }
 
@@ -42,8 +43,8 @@
   --color-moss: var(--moss);
 
   /* Montserrat pra display (h1/h2, KPIs, risk score, wordmark) — alternativa gratuita à Proxima
-     Nova, que é paga e sem licença aqui. IBM Plex Sans pra tudo mais. Nenhuma mono na UI:
-     removida junto com CompositionTable/KpiStrip, os últimos componentes que usavam font-mono. */
+     Nova, que é paga e sem licença aqui. IBM Plex Sans pra tudo mais. Nenhuma fonte monoespaçada
+     na UI — números tabulares usam .tnum, não font-mono. */
   --font-sans: var(--font-ibm-plex-sans);
   --font-display: var(--font-montserrat);
 }
@@ -61,10 +62,9 @@ button:not(:disabled) {
 /*
  * @layer components garante que as utilities do Tailwind (py-*, pt-*, px-* etc.) sempre
  * vençam essas classes, independente da ordem no arquivo — sem isso, um shorthand como
- * "padding: 0 22px" aqui zera qualquer padding vertical vindo de uma utility no mesmo
- * elemento (foi exatamente esse bug: .wrap "padding: 0 22px" cancelava py-8/pt-12 do header
- * e das seções, porque shorthand-vs-utility com a mesma especificidade decide por ordem no
- * arquivo, e essa classe vinha depois das utilities importadas no topo).
+ * "padding: 0 22px" aqui zeraria qualquer padding vertical vindo de uma utility no mesmo
+ * elemento: shorthand vs. utility com a mesma especificidade decide por ordem no arquivo, e
+ * essas classes vêm depois das utilities importadas no topo.
  */
 @layer components {
   /* Números em tabela e KPI: alinha as casas decimais sem precisar de fonte monoespaçada. */
@@ -73,11 +73,11 @@ button:not(:disabled) {
     font-feature-settings: 'tnum' 1;
   }
 
-  /* Container padrão de seção: largura máxima 1680px (o POC pedia 1300px, mas em monitor largo
-     sobrava vazio demais dos 2 lados — aumentado a pedido), padding lateral 22px (15px abaixo de
-     640px). Só padding horizontal — o vertical é decidido por utility (py-*) em cada uso, nunca
-     aqui. Colunas de texto corrido continuam travadas em ~56-60ch mesmo com o container mais
-     largo — só o conteúdo tabular/numérico ganha mais respiro horizontal. */
+  /* Container padrão de seção: largura máxima 1680px, generosa o bastante pra não deixar vazio
+     demais dos 2 lados em monitor largo, com padding lateral 22px (15px abaixo de 640px). Só
+     padding horizontal — o vertical é decidido por utility (py-*) em cada uso, nunca aqui.
+     Colunas de texto corrido continuam travadas em ~56-60ch mesmo com o container mais largo —
+     só o conteúdo tabular/numérico ganha mais respiro horizontal. */
   .wrap {
     max-width: 1680px;
     margin-left: auto;
@@ -92,10 +92,10 @@ button:not(:disabled) {
     }
   }
 
-  /* Cor lisa (era gradiente) — briefing §11/§29 evita gradiente decorativo. Superfície branca
-     lisa + sombra bem leve, mesma elevação do Panel, em vez de borda embaixo. */
-  /* Sticky: vira o resumo de números-chave (revisão externa 3.6) assim que a página rola além
-     do KpiStrip — sem isso, ler a tabela de Composição já perde de vista squad/custo/prazo. */
+  /* Superfície branca lisa (sem gradiente decorativo) + sombra bem leve, mesma elevação do
+     Panel, em vez de borda embaixo. Sticky: vira o resumo de números-chave assim que a página
+     rola além do KpiStrip — sem isso, ler a tabela de Composição já perde de vista
+     squad/custo/prazo. */
   .app-header {
     position: sticky;
     top: 0;

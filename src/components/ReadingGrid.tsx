@@ -26,10 +26,9 @@ function togglePlatform(current: Platform[], platform: Platform): Platform[] {
 }
 
 const chipBase =
-  // Chip/badge é o único lugar com raio total (briefing §12: "pills apenas para badges/chips") —
-  // cards/inputs/botões ficam em 7px, isso os diferencia visualmente como uma categoria própria.
-  // Mesmo hover-lift + press dos chips "Ou parta de" (ScopeField) — mesma família de controle,
-  // mesma animação.
+  // Chip/badge é o único lugar com raio total — cards/inputs/botões ficam em 7px, isso os
+  // diferencia visualmente como uma categoria própria. Mesmo hover-lift + press dos chips "Ou
+  // parta de" (ScopeField) — mesma família de controle, mesma animação.
   'inline-flex items-center gap-1 rounded-full border px-3 py-[5px] text-[13px] font-medium transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60'
 const chipActive = 'border-petrol bg-petrol text-paper-2'
 // border-rule-2 batia só 1,25:1 contra o card branco — quase invisível como contorno de um
@@ -81,7 +80,7 @@ function DimensionBlock({
   label: string
   /** Grupos exclusivos (estágio/complexidade) marcam o wrapper como radiogroup — sem div extra. */
   radioGroup?: boolean
-  /** Campo corrigido à mão — sobrevive a qualquer releitura futura da IA (revisão externa 2.6). */
+  /** Campo corrigido à mão — sobrevive a qualquer releitura futura da IA. */
   edited?: boolean
   onRestore?: () => void
   children: React.ReactNode

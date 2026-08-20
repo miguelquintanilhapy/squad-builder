@@ -27,11 +27,10 @@ function joinWithAnd(items: string[]): string {
 }
 
 /**
- * Explica o squad como consequência do escopo, não só o resultado (feedback do usuário: "o
- * sistema dá a resposta, mas explica pouco o raciocínio"). Derivado do squad já montado, não do
- * escopo separadamente — assim nunca contradiz o que está de fato na composição, mesmo depois de
- * uma negociação que mude os papéis (a IA não decide isso, é regra determinística, mesma lógica
- * de squadPlanner.ts).
+ * Explica o squad como consequência do escopo, não só apresenta o resultado. Derivado do squad
+ * já montado, não do escopo separadamente — assim nunca contradiz o que está de fato na
+ * composição, mesmo depois de uma negociação que mude os papéis (regra determinística, mesma
+ * lógica de squadPlanner.ts, não decisão da IA).
  */
 export function describeSquadRationale(squad: SquadMember[]): string {
   const hasRole = (role: RoleType) => squad.some((m) => m.role === role)

@@ -19,9 +19,9 @@ const SKELETON_PANEL_TITLES = ['Curva de alocação', 'Composição do Squad', '
 
 /**
  * Reusa KpiStrip (em modo loading) e Panel/PanelTitle reais em vez de copiar a estrutura à mão —
- * um shell duplicado sempre diverge do layout real na próxima mudança (revisão externa 2.8). Só
- * o miolo de cada painel continua genérico (linhas), já que o conteúdo varia demais pra valer o
- * espelhamento pixel a pixel.
+ * um shell duplicado tende a divergir do layout real na próxima mudança. Só o miolo de cada
+ * painel continua genérico (linhas), já que o conteúdo varia demais pra valer o espelhamento
+ * pixel a pixel.
  */
 function DashboardSkeleton() {
   return (
@@ -54,7 +54,7 @@ function useDashboardVariants() {
   return {
     groupVariants: {
       hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
-      show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as const } },
+      show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
     },
   }
 }
@@ -71,7 +71,7 @@ export function DashboardPanel({
   scenario: Scenario | null
   loading: boolean
   /** Recálculo por edição de chip: mantém os números antigos visíveis (esmaecidos), nunca volta
-   * pro skeleton — perder o ponto de comparação é o pior momento pra isso (revisão externa 2.5). */
+   * pro skeleton — perder o ponto de comparação nesse momento é o pior cenário possível. */
   recomputing?: boolean
   onCancelRecompute?: () => void
   onContractTypeChange?: (contractType: ContractType) => void
@@ -107,16 +107,15 @@ export function DashboardPanel({
           )}
         </div>
       )}
-      {/* Cada seção revela quando ELA MESMA entra na tela, não quando o topo do dashboard entra
-          (bug reportado pelo usuário: com whileInView só no container pai, o stagger inteiro
-          disparava de uma vez assim que "Squad recomendado" aparecia, e Composição/Índice de
-          risco já estavam animados — e portanto estáticos — muito antes do usuário rolar até
-          eles). `once` em cada uma — nunca replay ao rolar pra cima e descer de novo.
-          Atualizações de negociação seguintes reusam a mesma árvore (já revelada), não retrigger. */}
+      {/* Cada seção revela quando ELA MESMA entra na tela, não quando o topo do dashboard entra —
+          um whileInView só no container pai dispararia o stagger inteiro de uma vez assim que
+          "Squad recomendado" aparecesse, deixando Composição/Índice de risco já animados (e
+          portanto estáticos) muito antes da rolagem chegar até eles. `once` em cada uma — nunca
+          replay ao rolar pra cima e descer de novo. Atualizações de negociação seguintes reusam a
+          mesma árvore (já revelada), não retrigger. */}
       <div className={`flex flex-col gap-12 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}>
-        {/* Números primeiro, nota depois: o alerta de teto era o primeiro elemento da seção — a
-            primeira coisa que a pessoa via ao chegar no resultado era um banner ambar, lido como
-            erro do sistema, não como aviso (feedback do usuário). Ícone Info, não AlertTriangle —
+        {/* Números primeiro, alerta de teto depois: um banner âmbar como primeiro elemento da
+            seção lê como erro do sistema, não como aviso. Ícone Info, não AlertTriangle —
             triângulo de alerta é vocabulário visual de erro/perigo, e isso é uma nota, não uma
             falha. */}
         <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
@@ -135,6 +134,10 @@ export function DashboardPanel({
             title="Curva de alocação"
             note={`${scenario.squad.length} papéis · ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
           />
+          <p className="mb-3 max-w-[60ch] text-[13px] text-ink-2">
+            Cor mais forte = maior dedicação naquele mês (varia por papel — a maioria é constante
+            no período todo).
+          </p>
           <Panel>
             <AllocationChart scenario={scenario} />
           </Panel>
@@ -145,9 +148,9 @@ export function DashboardPanel({
             <CompositionTable scenario={scenario} />
           </Panel>
         </motion.div>
-        {/* Explica o squad como consequência do escopo, não só o resultado — o sistema dava a
-            resposta mas explicava pouco o raciocínio por trás dela (feedback do usuário).
-            Determinístico (squadRationale.ts), não a IA: mesma regra de todo o resto do cálculo. */}
+        {/* Explica o squad como consequência do escopo, não só apresenta o resultado — o
+            raciocínio por trás da composição, não só a resposta. Determinístico
+            (squadRationale.ts), não a IA: mesma regra de todo o resto do cálculo. */}
         <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
           <PanelTitle title="Por que este squad?" />
           <Panel>

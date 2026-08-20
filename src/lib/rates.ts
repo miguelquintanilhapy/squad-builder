@@ -2,8 +2,8 @@ import { AllocationType, ComplexityLevel, ContractType, RoleType, SeniorityLevel
 
 /**
  * Multiplicador de encargos CLT sobre o valor PJ (13º, férias+1/3, FGTS, INSS patronal etc.) —
- * estimativa interna de referência, não uma fonte de mercado citável (revisão externa 3.3/3.2:
- * premissa precisa ficar editável, não escondida atrás de "custo de referência de mercado").
+ * estimativa interna de referência, não uma fonte de mercado citável. Fica editável como
+ * premissa, não escondida atrás de "custo de referência de mercado".
  */
 export const CLT_OVERHEAD_MULTIPLIER = 1.65
 
@@ -64,7 +64,7 @@ export function monthlyCostForMember(
   quantity: number,
   allocation: AllocationType,
   contractType: ContractType = 'pj',
-  /** Premissa editável (revisão externa 3.2): substitui MONTHLY_RATE_BRL[role][seniority]. */
+  /** Premissa editável: substitui MONTHLY_RATE_BRL[role][seniority]. */
   rateOverride?: number
 ): number {
   const referenceRate = rateOverride ?? MONTHLY_RATE_BRL[role][seniority]

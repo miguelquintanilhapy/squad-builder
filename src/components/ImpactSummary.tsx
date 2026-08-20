@@ -17,7 +17,7 @@ type Direction = 'up' | 'down' | 'flat'
  * baixo é o chamador (custo/prazo: menos é melhor; risco: idem), não este componente. */
 function DeltaPill({ direction, good, children }: { direction: Direction; good: boolean; children: React.ReactNode }) {
   // Âmbar, não vermelho, pra qualquer piora — vermelho fica reservado pra erro de verdade, não
-  // "algo aumentou" (AJUSTES-UI §25/28: "não usar vermelho simplesmente porque algo aumentou").
+  // pra "algo aumentou".
   const color = direction === 'flat' ? 'var(--ink-3)' : good ? 'var(--moss)' : 'var(--ochre)'
   const Icon = direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus
 
@@ -71,8 +71,7 @@ function Metric({
  * maiores que os da trilha. A trilha mostra a causa (o pedido); aqui mostra a consequência.
  */
 export function ImpactSummary({ active, previous }: { active: ScenarioVersion; previous?: ScenarioVersion }) {
-  // Mensagem, não sumir em silêncio (CRITICA-UI §5.8) — clicar em "Ponto de partida" fazia o
-  // painel inteiro desaparecer sem explicação nenhuma.
+  // Mensagem explícita em vez de sumir em silêncio quando não há versão anterior pra comparar.
   if (!previous) {
     return (
       <div className="flex flex-col gap-3">
@@ -132,8 +131,8 @@ export function ImpactSummary({ active, previous }: { active: ScenarioVersion; p
           }
         />
       </div>
-      {/* Trade-off em texto, não só números (AJUSTES-UI §26) — é o valor real que o SquadBuilder
-          entrega: mostrar o que se ganha e o que se sacrifica numa decisão. */}
+      {/* Trade-off em texto, não só números — mostra o que se ganha e o que se sacrifica numa
+          decisão. */}
       <p className="text-[13px] leading-relaxed text-ink-2">
         {describeNegotiationImpact(active.scenario, previous.scenario)}
       </p>

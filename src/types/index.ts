@@ -31,10 +31,10 @@ export interface ProjectInput {
   description: string
   targetTimelineMonths?: number
   monthlyBudget?: number
-  /** Premissa editável (revisão externa 3.2) — ausente = 'pj', o padrão dos valores de referência. */
+  /** Premissa editável — ausente = 'pj', o padrão dos valores de referência. */
   contractType?: ContractType
-  /** Premissa editável (revisão externa 3.2): corrige o custo de referência mensal (PJ, tempo
-   * integral) assumido para um papel — sobrescreve MONTHLY_RATE_BRL[role][seniority] só nele. */
+  /** Premissa editável: corrige o custo de referência mensal (PJ, tempo integral) assumido para
+   * um papel — sobrescreve MONTHLY_RATE_BRL[role][seniority] só nele. */
   rateOverrides?: Partial<Record<RoleType, number>>
 }
 
@@ -65,7 +65,7 @@ export interface SquadMember {
   /** Explicação técnica de por que esse cargo/senioridade está no squad. */
   justification?: string
   /** % de envolvimento por mês do prazo, determinístico por arquétipo de papel (não a IA — ver
-   * allocationCurve.ts). Substitui a barra chapada do gráfico (revisão externa 3.7). */
+   * allocationCurve.ts). Dá à barra do gráfico uma curva real em vez de um bloco chapado. */
   monthlyAllocationPct?: number[]
 }
 
@@ -141,7 +141,7 @@ export interface Scenario {
   /** Pontos de partida do score, só pela complexidade — base + soma dos drivers = riskScore. */
   riskBase: number
   budgetAlert?: BudgetAlert
-  /** Premissa editável que efetivamente entrou no cálculo de custo — não só texto (revisão 3.2). */
+  /** Premissa editável que efetivamente entrou no cálculo de custo — não só texto exibido. */
   contractType: ContractType
   /** Premissas assumidas no cálculo (ex: sem verba de infra) — o usuário corrige a leitura acima se algo não valer. */
   assumptions: string[]
@@ -168,8 +168,8 @@ export interface NegotiationState {
 
 /**
  * Um snapshot completo e comparável do cenário — não "chat com histórico", versionamento de
- * verdade (revisão externa 3.1): lista de versões, diff dos números, voltar a uma anterior,
- * pedido em linguagem natural preservado como rótulo.
+ * verdade: lista de versões, diff dos números, voltar a uma anterior, mensagem em linguagem
+ * natural preservada como rótulo.
  */
 export interface ScenarioVersion {
   id: string

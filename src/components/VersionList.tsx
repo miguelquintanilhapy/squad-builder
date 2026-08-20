@@ -4,11 +4,10 @@ import { ScenarioVersion } from '@/types'
 
 /**
  * Trilha de decisões, não lista de cards: cada versão é um nó numa linha do tempo, e a partir da
- * segunda o rótulo é a mensagem literal que o usuário mandou — deixando explícito que aquele
- * pedido foi a causa do cenário, não uma edição de dados qualquer (revisão externa 3.1 pedia
- * comparação entre cenários; esta é a camada visual que faz a causa saltar aos olhos). Os números
- * do cenário resultante ficam só no ImpactSummary — repeti-los aqui competiria com ele por
- * atenção, e a trilha deve ficar leve, só a causa (o pedido), não a consequência.
+ * segunda o rótulo é a mensagem literal enviada na negociação — deixando explícito que aquela
+ * mensagem foi a causa do cenário, não uma edição de dados qualquer. Os números do cenário
+ * resultante ficam só no ImpactSummary — repeti-los aqui competiria com ele por atenção, e a
+ * trilha deve ficar leve, só a causa, não a consequência.
  */
 export function VersionList({
   versions,
@@ -60,8 +59,8 @@ export function VersionList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  {/* Caps reservado só pro badge de status "· Atual" (CRITICA-UI §1.8) — o rótulo
-                      de categoria vira title case, um tique visual de "enterprise SaaS" a menos. */}
+                  {/* Caps reservado só pro badge de status "· Atual" — o rótulo de categoria fica
+                      em title case. */}
                   <span className={`text-[10.5px] font-semibold tracking-wide ${isActive ? 'text-petrol' : 'text-ink-3'}`}>
                     {isFirst ? 'Ponto de partida' : 'Ajuste solicitado'}
                   </span>
@@ -77,8 +76,7 @@ export function VersionList({
                   {isFirst ? version.label : `"${version.label}"`}
                 </p>
               </div>
-              {/* Chevron só no hover — sem isso os nós pareciam texto estático, sem affordance
-                  nenhuma de que são clicáveis (CRITICA-UI §5.10). */}
+              {/* Chevron só no hover — sinaliza que os nós são clicáveis, não texto estático. */}
               {!isActive && (
                 <ChevronRight
                   aria-hidden="true"

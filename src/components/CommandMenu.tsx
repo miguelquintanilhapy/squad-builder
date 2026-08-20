@@ -13,9 +13,8 @@ export interface CommandMenuItem {
 }
 
 /**
- * Command menu (Ctrl/Cmd+K) sem dependência nova (Components.md pedia Radix Dialog + cva +
- * react-scroll-area) — reusa o mesmo padrão de modal já usado no detalhe de papel da Composição
- * (Motion + clique-fora + Esc), só nos tokens do projeto, não nos tokens genéricos do shadcn.
+ * Command menu (Ctrl/Cmd+K), sem dependência nova — reusa o mesmo padrão de modal já usado no
+ * detalhe de papel da Composição (Motion + clique-fora + Esc), nos tokens do projeto.
  */
 export function CommandMenu({ items }: { items: CommandMenuItem[] }) {
   const [open, setOpen] = useState(false)

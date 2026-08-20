@@ -13,6 +13,7 @@ import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
 import { HeroPreview } from '@/components/HeroPreview'
 import { HeroShader } from '@/components/HeroShader'
+import { useToasts, ToastStack } from '@/components/Toast'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
@@ -55,19 +56,19 @@ export function SquadBuilderApp() {
   /** Assim que o squad calculado chega, rola até aqui — sem isso, o resultado aparecia fora da
    * tela sem nenhum aviso de que a análise tinha terminado. */
   const resultsRef = useRef<HTMLDivElement>(null)
-  /** Nav do header (CRITICA-UI §5.9) — pula direto pra negociação sem precisar rolar a página
-   * inteira, que é a distância que o próprio doc apontou como o maior problema de proposta. */
+  /** Referência da seção de negociação — permite pular direto pra ela sem rolar a página inteira. */
   const negotiationRef = useRef<HTMLDivElement>(null)
-  // Entrada do hero anima no mount, não no scroll (script §8) — é a primeira coisa que a pessoa
-  // vê, antes de rolar qualquer coisa. Único bloco do app com animate="show" em vez de
-  // whileInView; o resto (DashboardPanel) já converteu pra scroll-reveal.
+  // A entrada do hero anima no mount, não no scroll — é a primeira coisa visível na página, antes
+  // de qualquer rolagem. É o único bloco que usa animate="show" em vez de whileInView; as demais
+  // seções revelam ao entrar na tela (scroll-reveal).
   const reduceMotion = useReducedMotion()
+  const { toasts, showToast } = useToasts()
   const heroContainerVariants = {
     hidden: {},
     show: { transition: { staggerChildren: reduceMotion ? 0 : 0.18, delayChildren: 0.1 } },
   }
-  // Esquerda pra direita, não baixo pra cima (pedido do usuário) — combina com o texto agora
-  // alinhado à esquerda, numa coluna ao lado do preview.
+  // Anima da esquerda pra direita, não de baixo pra cima — combina com o texto alinhado à
+  // esquerda, numa coluna ao lado do preview.
   const heroItemVariants = {
     hidden: { opacity: 0, x: reduceMotion ? 0 : -20 },
     show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
@@ -77,14 +78,20 @@ export function SquadBuilderApp() {
     hidden: { opacity: 0, x: reduceMotion ? 0 : 20 },
     show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
   }
+  // Scroll-reveal (mesmo padrão do DashboardPanel): revela quando a seção entra na tela, não no
+  // mount.
+  const groupVariants = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] as const } },
+  }
   const [input, setInput] = useState<ProjectInput>(INITIAL_INPUT)
   // Lazy initializer (não efeito): roda só na primeira renderização, então não dispara o lint de
   // "setState em effect" nem faz o dashboard piscar do vazio pro fixture depois do mount.
   const [initialMock] = useState(getMockFixtureFromUrl)
-  // aiScope é sempre a última leitura da IA, intacta. manualOverrides guarda só os campos que o
-  // usuário corrigiu na ReadingGrid — sobrevivem a um "Recalcular" que traga uma leitura nova,
-  // em vez de serem sobrescritos por ela (revisão externa 2.6: "recálculo nunca reverte escolha
-  // manual"). scopeAnalysis é sempre a junção dos dois, nunca guardado direto.
+  // aiScope é sempre a última leitura da IA, intacta. manualOverrides guarda só os campos
+  // corrigidos manualmente na ReadingGrid — sobrevivem a um "Recalcular" que traga uma leitura
+  // nova, em vez de serem sobrescritos por ela. scopeAnalysis é sempre a junção dos dois, nunca
+  // guardado direto.
   const [aiScope, setAiScope] = useState<ScopeAnalysis | null>(initialMock?.scopeAnalysis ?? null)
   const [manualOverrides, setManualOverrides] = useState<ScopeOverrides>({})
   const scopeAnalysis = aiScope ? { ...aiScope, ...manualOverrides } : null
@@ -98,8 +105,8 @@ export function SquadBuilderApp() {
   const [negotiateLoading, setNegotiateLoading] = useState(false)
   const [recomputeLoading, setRecomputeLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // Escopo vago ou fora de domínio: perguntas em vez de squad fabricado sobre nada (revisão
-  // externa 2.2/2.3). Não some com scopeAnalysis/scenario anteriores — só some se nunca existiu.
+  // Escopo vago ou fora de domínio: perguntas em vez de um squad fabricado sobre nada. Não
+  // substitui scopeAnalysis/scenario anteriores — só existe se nunca houve uma análise concluída.
   const [clarification, setClarification] = useState<{
     reason: 'insufficient' | 'out-of-domain'
     questions: string[]
@@ -107,8 +114,8 @@ export function SquadBuilderApp() {
   // A ação que falhou por último — "tentar de novo" reexecuta exatamente ela, em vez de sempre
   // reanalisar do zero (o erro pode ter vindo do chat de negociação ou de um recálculo de chip).
   const [lastFailedAction, setLastFailedAction] = useState<(() => void) | null>(null)
-  // Um controller por tipo de ação — cancelar uma não deve abortar as outras se, por algum
-  // motivo, mais de uma estiver em voo (revisão externa 2.1: cancelar durante o loading).
+  // Um controller por tipo de ação — cancelar uma não deve abortar as outras se mais de uma
+  // estiver em voo.
   const analyzeAbortRef = useRef<AbortController | null>(null)
   const recomputeAbortRef = useRef<AbortController | null>(null)
   const negotiateAbortRef = useRef<AbortController | null>(null)
@@ -126,9 +133,9 @@ export function SquadBuilderApp() {
     setAnalyzeLoading(true)
     setError(null)
     setClarification(null)
-    // Duas chamadas em sequência, não uma: a leitura de escopo já aparece na tela (chips
-    // preenchidos) enquanto o squad ainda está sendo calculado — progresso real, não spinner
-    // opaco de 10-30s (ver revisão externa 2.7).
+    // Duas chamadas em sequência, não uma: a leitura de escopo aparece na tela (chips
+    // preenchidos) enquanto o squad ainda está sendo calculado — progresso real, não um spinner
+    // opaco por 10-30s.
     try {
       const scopeResponse = await fetch('/api/analyze', {
         method: 'POST',
@@ -143,13 +150,13 @@ export function SquadBuilderApp() {
       }
       const freshScope: ScopeAnalysis = scopeData.scopeAnalysis
       setAiScope(freshScope)
-      // Não semeia o chat com o resumo — ele já aparece na seção 03. O histórico de negociação
-      // começa vazio e só recebe turnos de ajustes reais (ver revisão externa 1.13).
+      // O histórico de negociação começa vazio e só recebe turnos de ajustes reais — o resumo do
+      // escopo já aparece na seção de entendimento do projeto, não precisa ser repetido no chat.
       setHistory([])
 
-      // manualOverrides continua valendo por cima da leitura nova — se o usuário corrigiu
-      // "Complexidade" pra Enterprise, reescrever a descrição e recalcular não deve voltar isso
-      // pra Médio nas costas dele.
+      // manualOverrides continua valendo por cima da leitura nova — uma correção manual de campo
+      // (ex.: Complexidade para Enterprise) não deve ser revertida silenciosamente por um novo
+      // recálculo.
       const mergedScope = { ...freshScope, ...manualOverrides }
       const scenarioResponse = await fetch('/api/recompute', {
         method: 'POST',
@@ -164,7 +171,7 @@ export function SquadBuilderApp() {
       // a posição de scroll.
       requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
       // Novo diagnóstico do zero: a lista de versões reinicia — comparar contra negociações de
-      // um escopo que não existe mais não faz sentido (revisão externa 3.1).
+      // um escopo que não existe mais não faz sentido.
       const v1: ScenarioVersion = {
         id: crypto.randomUUID(),
         label: 'Squad recomendado inicialmente',
@@ -188,7 +195,11 @@ export function SquadBuilderApp() {
   /** Só a parte de rede do recálculo — usada por edição de chip, "restaurar" e premissa editável.
    * Aceita um input explícito porque setInput não reflete no `input` fechado nesta função antes
    * do próximo render — passar direto evita recalcular com o valor antigo. */
-  async function runRecompute(nextScope: ScopeAnalysis, nextInputForRecompute: ProjectInput = input) {
+  async function runRecompute(
+    nextScope: ScopeAnalysis,
+    nextInputForRecompute: ProjectInput = input,
+    successMessage = 'Squad recalculado'
+  ) {
     const controller = new AbortController()
     recomputeAbortRef.current = controller
     setRecomputeLoading(true)
@@ -197,15 +208,15 @@ export function SquadBuilderApp() {
       const response = await fetch('/api/recompute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // currentSquad preserva o squad negociado (achado de code review): sem isso, o endpoint
-        // regenerava um squad do zero a cada correção de chip/premissa, descartando negociação.
+        // currentSquad preserva o squad já negociado — sem isso, o endpoint regeneraria um squad
+        // do zero a cada correção de chip/premissa, descartando a negociação em andamento.
         body: JSON.stringify({ scopeAnalysis: nextScope, input: nextInputForRecompute, currentSquad: scenario?.squad }),
         signal: controller.signal,
       })
       const data = await parseJsonOrThrow(response)
       setScenario(data.scenario)
       // Correção de leitura, restauração ou premissa editável atualizam a versão ativa no
-      // lugar — não é um pedido de negociação novo, não merece virar uma versão à parte.
+      // lugar — não é uma negociação nova, não gera uma versão separada.
       setVersions((prev) =>
         prev.map((v) =>
           v.id === activeVersionId
@@ -214,10 +225,11 @@ export function SquadBuilderApp() {
         )
       )
       setLastFailedAction(null)
+      showToast(successMessage)
     } catch (err) {
       if (!isAbortError(err)) {
         setError(err instanceof Error ? err.message : 'Erro ao recalcular o squad.')
-        setLastFailedAction(() => () => runRecompute(nextScope, nextInputForRecompute))
+        setLastFailedAction(() => () => runRecompute(nextScope, nextInputForRecompute, successMessage))
       }
     } finally {
       setRecomputeLoading(false)
@@ -225,27 +237,27 @@ export function SquadBuilderApp() {
   }
 
   /** Clique num chip da ReadingGrid: o campo tocado passa a ser "editado à mão" — sobrevive a
-   * qualquer leitura futura da IA até o usuário mesmo restaurar (ver handleRestoreField). */
+   * qualquer leitura futura da IA até ser restaurado explicitamente (ver handleRestoreField). */
   function handleRecompute(nextScope: ScopeAnalysis, changedField: EditableScopeField) {
     setManualOverrides((prev) => ({ ...prev, [changedField]: nextScope[changedField] }))
-    void runRecompute(nextScope)
+    void runRecompute(nextScope, input, 'Escopo atualizado')
   }
 
-  /** Premissa editável (revisão externa 3.2): trocar PJ/CLT recalcula de verdade, não só o texto. */
+  /** Trocar o tipo de contrato (PJ/CLT) recalcula o cenário de verdade, não só atualiza o texto. */
   function handleContractTypeChange(contractType: ContractType) {
     if (!scopeAnalysis) return
     const nextInput = { ...input, contractType }
     setInput(nextInput)
-    void runRecompute(scopeAnalysis, nextInput)
+    void runRecompute(scopeAnalysis, nextInput, 'Modelo de contratação atualizado')
   }
 
-  /** Premissa editável (revisão externa 3.2): corrigir o custo de referência de um papel recalcula
-   * de verdade — é o que separa calculadora de adivinhação. */
+  /** Corrigir o custo de referência de um papel recalcula o cenário de verdade — é o que separa
+   * calculadora de adivinhação. */
   function handleRateOverrideChange(role: RoleType, monthlyRate: number) {
     if (!scopeAnalysis) return
     const nextInput = { ...input, rateOverrides: { ...input.rateOverrides, [role]: monthlyRate } }
     setInput(nextInput)
-    void runRecompute(scopeAnalysis, nextInput)
+    void runRecompute(scopeAnalysis, nextInput, 'Premissa salva')
   }
 
   function handleRestoreField(field: EditableScopeField) {
@@ -253,7 +265,7 @@ export function SquadBuilderApp() {
     const remainingOverrides = { ...manualOverrides }
     delete remainingOverrides[field]
     setManualOverrides(remainingOverrides)
-    void runRecompute({ ...aiScope, ...remainingOverrides })
+    void runRecompute({ ...aiScope, ...remainingOverrides }, input, 'Campo restaurado')
   }
 
   async function handleNegotiate(message: string) {
@@ -287,16 +299,15 @@ export function SquadBuilderApp() {
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          // Consequência curta, não a narração completa (AJUSTES-UI §21/26). Versão compacta, não
-          // a frase inteira — ela já aparece no painel de Impacto; repetir na mesma tela era
-          // redundância (CRITICA-UI §4.3).
+          // Consequência curta no histórico do chat, não a narração completa — essa já aparece no
+          // painel de Impacto, então repetir a frase inteira aqui seria redundante.
           message: describeNegotiationImpactCompact(data.scenario, previousScenario),
           scenarioSnapshot: data.scenario,
           timestamp: Date.now(),
         },
       ])
-      // Pedido em linguagem natural vira o rótulo da versão — o que a pessoa está tentando
-      // fazer é comparar cenários, não só ler uma resposta e perder o anterior (revisão 3.1).
+      // A mensagem em linguagem natural vira o rótulo da versão — permite comparar cenários
+      // negociados lado a lado, não só ler a resposta mais recente e perder o histórico.
       const newVersion: ScenarioVersion = {
         id: crypto.randomUUID(),
         label: message,
@@ -307,10 +318,11 @@ export function SquadBuilderApp() {
       setVersions((prev) => [...prev, newVersion])
       setActiveVersionId(newVersion.id)
       setLastFailedAction(null)
+      showToast('Ajuste aplicado')
     } catch (err) {
       if (isAbortError(err)) {
-        // Cancelado pelo usuário: some com o pedido que ele mesmo desistiu de mandar, em vez de
-        // deixar uma mensagem sem resposta pendurada no histórico.
+        // Cancelamento: remove a mensagem cujo envio foi desistido, em vez de deixá-la pendurada
+        // no histórico sem resposta.
         setHistory((prev) => prev.filter((turn) => turn.id !== userTurnId))
       } else {
         setError(err instanceof Error ? err.message : 'Erro ao renegociar o squad.')
@@ -372,8 +384,8 @@ export function SquadBuilderApp() {
     negotiationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  // Reusa os mesmos handlers do nav do header (CRITICA-UI §5.9) — o command menu é um segundo
-  // jeito de chegar nos mesmos destinos, não uma lista de ações paralela.
+  // Reusa os mesmos handlers do nav do header — o command menu é um segundo caminho pros mesmos
+  // destinos, não uma lista de ações paralela.
   const commandItems: CommandMenuItem[] = [
     { id: 'hero', label: 'Início', icon: <Home className="size-3.5 text-ink-3" />, onSelect: scrollToHero },
     { id: 'form', label: 'Formulário', icon: <FileText className="size-3.5 text-ink-3" />, onSelect: scrollToScopeForm },
@@ -401,28 +413,29 @@ export function SquadBuilderApp() {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
-      {/* Grade/ruído SVG/pontinhos, nenhum convenceu (feedback do usuário) — shader WebGL
-          monocromático no lugar. Fixed, atrás de toda a interface (não só do hero), acompanha o
-          scroll sem repintar, nunca captura clique (pointer-events-none). z-index negativo tem
-          casos extremos entre navegadores/compositor — em vez disso o canvas fica em z-0 e todo o
-          conteúdo abaixo ganha "relative z-10", que é uma garantia CSS bem mais simples e direta
-          de que ele sempre pinta por cima. */}
+      {/* Shader WebGL monocromático de fundo, fixed atrás de toda a interface (não só do hero) —
+          acompanha o scroll sem repintar e nunca captura clique (pointer-events-none). Fica em
+          z-0; todo o conteúdo abaixo usa "relative z-10" por cima dele, mais confiável entre
+          navegadores do que dar z-index negativo ao próprio canvas. */}
       <HeroShader />
       <div className="relative z-10 flex min-h-screen flex-1 flex-col">
-        {/* Contexto ("SquadBuilder <projeto>") só quando já existe uma análise — orientação visual
-            (onde estou, em qual projeto), não funcionalidade nova: é a mesma descrição que o
-            usuário já escreveu, só truncada. Sem borda embaixo (briefing §4/§8). */}
+        {/* Contexto ("SquadBuilder <projeto>") só aparece quando já existe uma análise — mostra a
+            descrição já digitada, truncada, como orientação de em qual projeto/etapa a pessoa
+            está. Sem borda embaixo. */}
         <header className="app-header">
         <div className="wrap flex items-center justify-between gap-3.5 py-5">
           <div className="flex items-baseline gap-[11px]">
-            {/* Clicar no wordmark volta pro hero (CRITICA-UI §5.9) — mesmo padrão de qualquer
-                site: logo é sempre "voltar ao início". */}
+            {/* Clicar no wordmark volta pro hero — mesmo padrão de qualquer site: logo é sempre
+                "voltar ao início". */}
             <button
               type="button"
               onClick={scrollToHero}
               className="flex items-baseline gap-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
             >
-              <BrandMark />
+              {/* translate-y: o SVG usa items-baseline (alinha pela borda inferior da própria
+                  caixa), mas o desenho do medidor termina bem antes dessa borda — sem o nudge, o
+                  ícone parece "flutuar" acima da base do S. */}
+              <BrandMark className="translate-y-2" />
               <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
                 SquadBuilder
               </span>
@@ -431,9 +444,8 @@ export function SquadBuilderApp() {
               <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
             )}
           </div>
-          {/* Nav de etapas (CRITICA-UI §5.9/5.7): substitui a ideia de um stepper passivo por
-              navegação de verdade — a distância entre negociação e resultado era o maior problema
-              apontado ("ver a consequência em tempo real" exige rolagem longa hoje). */}
+          {/* Nav de etapas: navegação real entre seções, não um stepper passivo — encurta a
+              distância de rolagem entre a negociação e o resultado. */}
           <nav className="hidden items-center gap-5 text-[13px] font-medium text-ink-3 md:flex">
             <button type="button" onClick={scrollToScopeForm} className="hover:text-ink">
               Formulário
@@ -449,8 +461,8 @@ export function SquadBuilderApp() {
               </button>
             )}
           </nav>
-          {/* Resumo sticky (revisão externa 3.6): os números-chave continuam visíveis rolando a
-              página, mesmo depois que o KpiStrip já saiu da tela. */}
+          {/* Resumo sticky: os números-chave continuam visíveis rolando a página, mesmo depois
+              que o KpiStrip já saiu da tela. */}
           {scenario ? (
             <span className="tnum text-[12.5px] font-medium text-ink">
               Squad de {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
@@ -472,8 +484,8 @@ export function SquadBuilderApp() {
           animate="show"
           className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24"
         >
-          {/* Duas colunas: texto à esquerda, preview à direita — o card embaixo do texto
-              empurrava o hero inteiro pra cima (feedback do usuário). Empilha em telas estreitas. */}
+          {/* Duas colunas: texto à esquerda, preview à direita — evita empurrar o hero pra baixo
+              com um card abaixo do texto. Empilha em telas estreitas. */}
           <div className="wrap grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_540px] lg:gap-14">
             <div className="text-left">
               <motion.h1
@@ -494,25 +506,23 @@ export function SquadBuilderApp() {
               </motion.div>
             </div>
             {/* Preview que mostra o mecanismo do produto (texto → chips → números), não um
-                resultado congelado — "product is the demo" (pesquisa de referência) em vez de
-                card estático de qualquer SaaS. Entra da direita, convergindo com o texto. */}
+                resultado congelado — segue o padrão "o produto é a demo" em vez de um card
+                estático genérico. Entra da direita, convergindo com o texto. */}
             <motion.div variants={heroPreviewVariants} className="w-full">
               <HeroPreview />
             </motion.div>
           </div>
         </motion.section>
 
-        {/* scroll-mt: compensa o header agora sticky (3.6) — sem isso, scrollIntoView encosta o
-            topo da seção embaixo dele. */}
-        {/* pb reduzido (AJUSTES-UI §7/29): a passagem formulário → "O que entendemos" tinha espaço
-            demais, lendo como se faltasse uma seção entre as duas. */}
+        {/* scroll-mt: compensa o header sticky — sem isso, scrollIntoView encosta o topo da seção
+            embaixo dele. pb reduzido: espaço grande demais entre o formulário e "Entendimento do
+            projeto" lia como se faltasse uma seção entre as duas. */}
         <section ref={scopeFormRef} className="wrap scroll-mt-20 pt-12 pb-8 sm:pt-16 sm:pb-10">
-          {/* Duas colunas: texto livre + botão à esquerda (posição original), "Ou parta de" e os
-              campos numéricos à direita do textarea, cada grupo numa linha só (sem quebrar 2x2)
-              — preenche o vazio que sobrava com conteúdo de verdade, não com centralização. Sem
-              teto de largura própria: usa o wrap inteiro, como as seções de baixo, porque agora a
-              coluna direita (auto, do tamanho do conteúdo) precisa de espaço real ao lado do texto. */}
-          <div>
+          {/* Duas colunas: texto livre + botão à esquerda, "Ou parta de" e os campos numéricos à
+              direita do textarea, cada grupo numa linha só. Sem teto de largura própria: usa o
+              wrap inteiro, como as seções abaixo, já que a coluna direita (largura automática)
+              precisa de espaço real ao lado do texto. */}
+          <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
             <Eyebrow>Descreva seu projeto</Eyebrow>
 
             {error && (
@@ -602,8 +612,8 @@ export function SquadBuilderApp() {
                   <button
                     type="button"
                     onClick={handlePreview}
-                    // Sublinhado tracejado, não sólido (CRITICA-UI §3.2) — sinaliza que isso é
-                    // ferramenta de dev/debug, categoria diferente de "Editar premissas" etc.
+                    // Sublinhado tracejado, não sólido — sinaliza que isso é ferramenta de
+                    // dev/debug, categoria diferente de "Editar premissas" etc.
                     className="mt-3.5 text-[12.5px] text-ink-3 underline decoration-dashed underline-offset-[3px] hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
                   >
                     Carregar exemplo
@@ -621,13 +631,11 @@ export function SquadBuilderApp() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {scopeAnalysis && (
           <section className="wrap pt-8 pb-12 sm:pt-10 sm:pb-16">
-            {/* Eyebrow removido (CRITICA-UI §4.1) — "O que entendemos do seu projeto" e
-                "Entendimento do projeto" diziam a mesma coisa duas vezes seguidas. */}
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Entendimento do projeto
             </h2>
@@ -647,11 +655,9 @@ export function SquadBuilderApp() {
 
         {(analyzeLoading || scenario) && (
           <section ref={resultsRef} className="wrap scroll-mt-20 py-12 sm:py-16">
-            {/* O ápice da experiência (o squad é o "produto" que a pessoa veio buscar) — título no
-                mesmo peso visual do h1, não mais um Eyebrow pequeno como as outras seções. Entra
-                com motion assim que o resultado chega, reforçando o scroll automático até aqui.
-                Sem cor no meio do heading (CRITICA-UI §1.3) — esse recurso já é usado no hero;
-                repetir aqui é o mesmo truque 2x. Hierarquia vem só de peso/tamanho. */}
+            {/* O squad é o "produto" que a pessoa veio buscar — título no mesmo peso visual do h1,
+                maior que o Eyebrow das outras seções. Anima assim que o resultado chega,
+                reforçando o scroll automático até aqui. */}
             <motion.h2
               key={scenario ? 'ready' : 'loading'}
               initial={{ opacity: 0, y: 10 }}
@@ -659,7 +665,7 @@ export function SquadBuilderApp() {
               transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
               className="text-center font-display text-[clamp(34px,4.5vw,52px)] font-bold leading-[1.05] tracking-[-0.03em] text-ink"
             >
-              Squad recomendado
+              <span className="text-petrol">Squad</span> recomendado
             </motion.h2>
             {/* Sempre renderizado (mesmo vazio durante o skeleton) — a margem não pode depender
                 do conteúdo, senão o espaço antes do dashboard pisca de tamanho ao carregar. */}
@@ -694,6 +700,7 @@ export function SquadBuilderApp() {
       </main>
       </div>
       <CommandMenu items={commandItems} />
+      <ToastStack toasts={toasts} />
     </div>
   )
 }

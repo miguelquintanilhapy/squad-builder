@@ -128,7 +128,7 @@ export function assessRisk(
   }
 
   // Estouro de teto não entra em "alerts"/"drivers" — vira budgetAlert, sempre visível, pra não
-  // competir por espaço de exibição com fatores de peso maior (ver 1.5/3.12 da revisão externa).
+  // competir por espaço de exibição com fatores de peso maior.
   let budgetAlert: BudgetAlert | undefined
   if (input.monthlyBudget && totalMonthlyCost > input.monthlyBudget) {
     const overageAmount = totalMonthlyCost - input.monthlyBudget
@@ -149,9 +149,9 @@ export function assessRisk(
   return { riskScore, riskLevel, alerts, drivers, riskBase, budgetAlert, assumptions: buildAssumptions(squad, scope) }
 }
 
-// Só nesta frase (AJUSTES-UI §19): "Web" em vez de "Web Browser". PLATFORM_LABELS continua
-// "Web Browser" nos chips — CLAUDE.md fixa esse rótulo pra seleção de plataforma — a forma curta
-// vale só pra esta linha de premissa, não pro vocabulário de seleção.
+// Só nesta frase: "Web" em vez de "Web Browser". PLATFORM_LABELS continua "Web Browser" nos
+// chips (rótulo fixo de seleção de plataforma) — a forma curta vale só pra esta linha de
+// premissa, não pro vocabulário de seleção.
 const ASSUMPTION_PLATFORM_LABEL: Partial<Record<Platform, string>> = { web: 'Web' }
 
 /** Premissas assumidas no cálculo — geradas a partir do squad/escopo reais, não texto fixo. */
@@ -161,9 +161,8 @@ function buildAssumptions(squad: SquadMember[], scope: ScopeAnalysis): string[] 
     : 'plataforma não informada'
 
   const assumptions = [
-    // Não "custo de referência de mercado" — é estimativa interna, sem fonte de mercado citável
-    // (revisão externa 3.3). Curta (AJUSTES-UI §18) — contexto extra viraria tooltip, não texto
-    // sempre exposto.
+    // Não "custo de referência de mercado" — é estimativa interna, sem fonte de mercado citável.
+    // Curta de propósito — contexto extra viraria tooltip, não texto sempre exposto.
     'Custos são referências internas, não cotações de mercado.',
     `Plataformas consideradas: ${platformLabel}.`,
     'Sem orçamento de infraestrutura, licenças ou ferramentas adicionais.',

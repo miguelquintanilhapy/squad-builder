@@ -2,9 +2,8 @@ import { CalendarClock, TrendingUp, Users, Wallet } from 'lucide-react'
 import { Scenario } from '@/types'
 import { formatCurrencyBRL, formatCurrencyRangeBRL, formatMonthsCompact } from '@/lib/labels'
 
-// Um ícone por métrica (CRITICA-UI §1.5) — os 4 cards eram brancos idênticos sem nenhuma
-// diferenciação, o stat-card mais genérico possível. Pequeno e monocromático (ink-3), não
-// ilustração — acento funcional, não decoração.
+// Um ícone por métrica, pequeno e monocromático (ink-3), não ilustração — acento funcional que
+// diferencia os 4 cards, não decoração.
 const KPI_ICONS = { 'Squad sugerido': Users, 'Custo mensal': Wallet, 'Prazo estimado': CalendarClock, 'Investimento estimado': TrendingUp } as const
 
 function Kpi({
@@ -20,14 +19,14 @@ function Kpi({
   note?: string
   loading?: boolean
   compact?: boolean
-  /** Destaque cíclico do preview do hero (pedido do usuário) — um anel petrol sutil passa de
-   * card em card, dando sensação de "isso está sendo calculado" sem inventar interatividade. */
+  /** Destaque cíclico do preview do hero — um anel petrol sutil passa de card em card, dando
+   * sensação de "isso está sendo calculado" sem inventar interatividade. */
   active?: boolean
 }) {
   const Icon = KPI_ICONS[label as keyof typeof KPI_ICONS]
   return (
     // Cada KPI é a própria superfície, separada por espaço real (gap), não por hairline —
-    // o número precisa dominar sem competir com uma grade de linhas em volta (briefing §10).
+    // o número precisa dominar sem competir com uma grade de linhas em volta.
     <div
       className={`rounded-[7px] bg-paper-3 transition-shadow duration-500 ${compact ? 'px-3 pt-2.5 pb-2' : 'px-[17px] pt-[14px] pb-[13px]'} ${
         active ? 'shadow-[0_0_0_1.5px_var(--petrol)]' : ''
@@ -60,7 +59,7 @@ const KPI_LABELS = ['Squad sugerido', 'Custo mensal', 'Prazo estimado', 'Investi
 /**
  * O skeleton do dashboard (DashboardPanel) renderiza este mesmo componente em modo `loading`, em
  * vez de copiar a estrutura à mão — evita divergência silenciosa entre o placeholder e o real a
- * cada mudança de layout (revisão externa 2.8).
+ * cada mudança de layout.
  */
 export function KpiStrip({
   scenario,
@@ -70,9 +69,9 @@ export function KpiStrip({
 }: {
   scenario: Scenario | null
   loading?: boolean
-  /** Preview do hero (CRITICA-UI/feedback do usuário): o card ali é bem mais estreito que o
-   * dashboard real — números menores e sempre 2 colunas (nunca 4, que é o que causava os valores
-   * "saindo pro lado" num container apertado). */
+  /** Modo compacto (preview do hero): o card ali é bem mais estreito que o dashboard real —
+   * números menores e sempre 2 colunas, nunca 4, que num container apertado faz os valores
+   * saírem pro lado. */
   compact?: boolean
   /** Índice (0-3) do card com destaque cíclico — só o preview do hero usa isso. */
   activeIndex?: number

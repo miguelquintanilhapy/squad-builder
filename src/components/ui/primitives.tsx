@@ -7,9 +7,9 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
 /**
  * Superfície compartilhada por composição, risco e alocação — sem cabeçalho embutido, o título
  * fica fora (ver PanelTitle), no mesmo padrão do h2 de "Leitura do escopo". Sem borda: a
- * elevação (sombra) bem leve define o limite, não uma linha (briefing §4/§11 — "raised" é
- * elevação com parcimônia, não borda em tudo). Sem padding: tabela, SVG e o grid do RiskPanel já
- * levam o próprio espaçamento interno; quem precisar de respiro (ex: NegotiationChat) adiciona.
+ * elevação (sombra) bem leve define o limite, com parcimônia, em vez de uma linha. Sem padding:
+ * tabela, SVG e o grid do RiskPanel já levam o próprio espaçamento interno; quem precisar de
+ * respiro (ex: NegotiationChat) adiciona.
  */
 export function Panel({ children }: { children: React.ReactNode }) {
   return <div className="overflow-hidden rounded-[7px] bg-paper-3 shadow-[var(--shadow-raised)]">{children}</div>
@@ -18,9 +18,8 @@ export function Panel({ children }: { children: React.ReactNode }) {
 /**
  * Título de card, fora da caixa — mesma ideia visual do h2 de "Leitura do escopo": título solto
  * acima do conteúdo em vez de dentro de uma faixa/cabeçalho embutido no painel.
- * `emphasis` (CRITICA-UI §1.6): todo painel usava o mesmo peso visual, sem diferenciar as seções
- * principais (Squad recomendado, Índice de risco) das de apoio — um pouco maior/mais escuro é
- * suficiente, não precisa de caixa própria nem cor nova.
+ * `emphasis` diferencia as seções principais (Squad recomendado, Índice de risco) das de apoio —
+ * um pouco maior/mais escuro é suficiente, não precisa de caixa própria nem cor nova.
  */
 export function PanelTitle({ title, note, emphasis = false }: { title: string; note?: string; emphasis?: boolean }) {
   return (
@@ -37,10 +36,7 @@ export function PanelTitle({ title, note, emphasis = false }: { title: string; n
   )
 }
 
-/**
- * Cabeçalho de seção: só o rótulo, no lugar e no estilo onde antes ficava o número (display,
- * petrol) — sem numeração decorativa, sem traço de preenchimento.
- */
+/** Cabeçalho de seção: só o rótulo, sem numeração decorativa nem traço de preenchimento. */
 export function Eyebrow({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`mb-5 font-display text-[19px] font-bold tracking-[-0.015em] text-petrol ${className}`}>

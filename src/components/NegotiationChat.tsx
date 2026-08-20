@@ -61,8 +61,8 @@ export function NegotiationChat({
                         transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
                         className="border-l-2 border-rule-2 pl-3.5"
                       >
-                        {/* Sem uppercase (CRITICA-UI §1.8) — caps fica reservado só pro badge de
-                            status "· Atual" da trilha; aqui é rótulo de categoria, title case. */}
+                        {/* Sem uppercase — caps fica reservado só pro badge de status "· Atual"
+                            da trilha; aqui é rótulo de categoria, title case. */}
                         <p className="mb-1 text-[11px] font-semibold tracking-wide text-ink-3">
                           {turn.role === 'user' ? 'Ajuste solicitado' : 'Impacto da alteração'}
                         </p>
@@ -90,9 +90,8 @@ export function NegotiationChat({
                   className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50"
                 />
                 <div className="flex items-center justify-between gap-3.5">
-                  {/* Atalho como linha separada, não embutido no placeholder (AJUSTES-UI §23). */}
-                  {/* Contraste/tamanho maiores (CRITICA-UI §5.11) — ink-2 + 12.5px, ainda claramente
-                      secundário mas não mais fácil de ignorar que o corpo do texto. */}
+                  {/* Atalho como linha separada, não embutido no placeholder. ink-2 + 12.5px:
+                      claramente secundário, mas não mais fácil de ignorar que o corpo do texto. */}
                   <span className="text-[12.5px] text-ink-2">Ctrl/Cmd + Enter para enviar</span>
                   <div className="flex items-center gap-3.5">
                     {loading && onCancel && (
@@ -105,12 +104,11 @@ export function NegotiationChat({
                       </button>
                     )}
                     <PrimaryButton onClick={handleSend} disabled={loading || !message.trim()} loading={loading}>
-                      {/* Seta, não avião de papel (CRITICA-UI §1.4) — mesma linguagem de ícone
-                          das outras CTAs primárias do app (Montar squad, Atualizar estimativa),
-                          não o ícone genérico de qualquer chatbot. */}
+                      {/* Seta, mesma linguagem de ícone das outras CTAs primárias do app (Montar
+                          squad, Atualizar estimativa), não o ícone genérico de um chatbot. */}
                       {!loading && <ArrowRight className="size-3.5" />}
                       {/* Não "Recalculando..." aqui — é um ajuste/negociação, não um recálculo de
-                          premissa (AJUSTES-UI §24). */}
+                          premissa. */}
                       {loading ? 'Ajustando...' : 'Enviar'}
                     </PrimaryButton>
                   </div>

@@ -1,10 +1,11 @@
+import { MouseEvent, useRef, useState } from 'react'
 import { Scenario, SquadMember } from '@/types'
 import { MAX_ALLOCATION_MONTHS } from '@/lib/allocationCurve'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
 import { ENGINEERING_ROLES } from '@/lib/rates'
 
-// 230, não 170 (CRITICA-UI §5.4) — nomes por extenso ("Desenvolvedor Mobile — Sênior") cortavam
-// contra as barras com a largura antiga, pensada pra "Dev Mobile".
+// Largura suficiente pra nomes por extenso ("Desenvolvedor Mobile — Sênior") sem cortar contra as
+// barras.
 const LABEL_GUTTER = 230
 const CHART_WIDTH = 1000
 const RIGHT_MARGIN = 22
@@ -27,8 +28,8 @@ function barBaseColor(member: SquadMember): string {
 
 /**
  * Texto equivalente à curva visual (ex: "100% (M1–M3), 35% (M4–M6)") — opacidade sozinha não pode
- * ser o único canal pra comunicar intensidade (mesmo princípio usado pra corrigir os chips em
- * 1.10; achado de code review). Agrupa meses consecutivos com o mesmo percentual em faixas.
+ * ser o único canal pra comunicar intensidade. Agrupa meses consecutivos com o mesmo percentual
+ * em faixas.
  */
 function describeAllocationCurve(pcts: number[]): string {
   const ranges: { pct: number; start: number; end: number }[] = []
@@ -46,30 +47,36 @@ function describeAllocationCurve(pcts: number[]): string {
 }
 
 /**
- * Um segmento por mês, opacidade = intensidade de envolvimento naquele mês (revisão externa
- * 3.7): a curva vem de allocationCurve.ts (designer concentra no início, QA na segunda metade,
- * o resto é constante) — não é mais uma barra chapada cobrindo o prazo inteiro sem dizer nada.
+ * Um segmento por mês, opacidade = intensidade de envolvimento naquele mês. A curva vem de
+ * allocationCurve.ts (designer concentra no início, QA na segunda metade, o resto é constante).
  */
+interface TooltipState {
+  x: number
+  y: number
+  text: string
+}
+
 export function AllocationChart({ scenario }: { scenario: Scenario }) {
   const { squad, estimatedTimelineMonths } = scenario
   // Mesmo teto do motor de cálculo (calculator.ts) — sem isso, um prazo degenerado (squad sem
-  // papel de engenharia) desenhava ~1000 colunas de grid com só uma fração preenchida de barras
-  // (achado de code review).
+  // papel de engenharia) desenharia ~1000 colunas de grid com só uma fração preenchida de barras.
   const monthCount = Math.min(MAX_ALLOCATION_MONTHS, Math.max(1, Math.round(estimatedTimelineMonths)))
   const trackWidth = CHART_WIDTH - LABEL_GUTTER - RIGHT_MARGIN
   const step = trackWidth / monthCount
   const height = TOP_MARGIN + squad.length * ROW_HEIGHT + BOTTOM_MARGIN
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
+
+  function showTooltip(event: MouseEvent, text: string) {
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    setTooltip({ x: event.clientX - rect.left + container.scrollLeft, y: event.clientY - rect.top, text })
+  }
+
   return (
-    <div className="overflow-x-auto px-[15px] py-[15px]">
-      {/* Legenda adaptada à curva contínua (AJUSTES-UI §12) e honesta sobre a variação real
-          (CRITICA-UI §5.5): a maioria dos papéis é constante o período inteiro (só designer e QA
-          ramp) — "intensidade da cor" sozinho prometia gradiente em toda barra, o que nem sempre
-          acontece. */}
-      <p className="mb-2.5 text-[11.5px] text-ink-3">
-        Cor mais forte = maior dedicação naquele mês (varia por papel — a maioria é constante no
-        período todo).
-      </p>
+    <div ref={containerRef} className="relative overflow-x-auto px-[15px] py-[15px]">
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${height}`}
         role="img"
@@ -77,6 +84,9 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
         className="block h-auto min-w-[660px] w-full"
       >
         {/* Grid temporal discreto: linha mais leve (opacidade baixa) em vez de hairline cheio. */}
+        <text x={LABEL_GUTTER - 8} y={14} fontSize={10.5} fill="var(--ink-3)" textAnchor="end">
+          Mês
+        </text>
         {Array.from({ length: monthCount + 1 }, (_, m) => {
           const x = LABEL_GUTTER + m * step
           return (
@@ -92,7 +102,7 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
               />
               {m < monthCount && (
                 <text x={x + step / 2} y={14} fontSize={10.5} fill="var(--ink-3)" textAnchor="middle">
-                  M{m + 1}
+                  {m + 1}
                 </text>
               )}
             </g>
@@ -107,11 +117,9 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
             monthCount
           )
           const baseColor = barBaseColor(member)
-          const tooltip = `${roleLabel(member)} — ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${describeAllocationCurve(pcts)}`
+          const rowTooltip = `${roleLabel(member)} — ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${describeAllocationCurve(pcts)}`
           return (
-            // group + rect de fundo: hover contextual só com CSS, sem estado novo em React.
             <g key={`${member.role}-${index}`} className="group">
-              <title>{tooltip}</title>
               <rect
                 x={0}
                 y={y}
@@ -120,6 +128,8 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                 fill="var(--paper-2)"
                 opacity={0}
                 className="transition-opacity duration-150 group-hover:opacity-60"
+                onMouseMove={(e) => showTooltip(e, rowTooltip)}
+                onMouseLeave={() => setTooltip(null)}
               />
               <text x={0} y={y + 12} fontSize={11.5} fill="var(--ink-2)">
                 {roleLabel(member)}
@@ -137,16 +147,23 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
                   height={14}
                   rx={2}
                   fill={`rgba(${baseColor}, ${Math.max(pct / 100, 0.14).toFixed(2)})`}
-                >
-                  {/* Título por segmento: hover num mês específico dá o percentual exato — a
-                      opacidade sozinha não é o único jeito de saber a intensidade daquele mês. */}
-                  <title>{`M${m + 1}: ${pct}%`}</title>
-                </rect>
+                  onMouseMove={(e) => showTooltip(e, `Mês ${m + 1}: ${pct}%`)}
+                  onMouseLeave={() => setTooltip(null)}
+                />
               ))}
             </g>
           )
         })}
       </svg>
+      {tooltip && (
+        <div
+          role="tooltip"
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-[7px] bg-paper-3 px-2.5 py-1.5 text-[12px] font-medium text-ink shadow-[var(--shadow-raised)]"
+          style={{ left: tooltip.x, top: tooltip.y - 10 }}
+        >
+          {tooltip.text}
+        </div>
+      )}
     </div>
   )
 }

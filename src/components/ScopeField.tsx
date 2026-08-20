@@ -7,7 +7,7 @@ import { SCOPE_SEEDS } from '@/lib/seeds'
 export const MIN_SCOPE_CHARS = 20
 
 // Alto o suficiente pra um PRD colado por engano ainda caber — mas sem truncar silenciosamente:
-// acima disso o envio bloqueia e o motivo aparece (revisão externa 2.4).
+// acima disso o envio bloqueia e o motivo aparece.
 export const MAX_SCOPE_CHARS = 6000
 
 export function ScopeField({
@@ -47,8 +47,8 @@ export function ScopeField({
         <span className={overMax ? 'font-medium text-rust' : nearMax ? 'text-ochre' : 'text-ink-3'}>
           {count.toLocaleString('pt-BR')} caracteres
         </span>
-        {/* Contraste maior no hint (CRITICA-UI §5.11) — ink-2, não ink-3, pra não ser fácil demais
-            de ignorar sem deixar de ser secundário. */}
+        {/* ink-2, não ink-3 — contraste suficiente pra não ser fácil demais de ignorar, sem
+            deixar de ser secundário. */}
         <span className={overMax ? 'font-medium text-rust' : 'text-ink-2'}>
           {overMax
             ? `${(count - MAX_SCOPE_CHARS).toLocaleString('pt-BR')} acima do limite de ${MAX_SCOPE_CHARS.toLocaleString('pt-BR')} — reduza pra continuar`

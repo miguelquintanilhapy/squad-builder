@@ -81,8 +81,8 @@ function RoleCard({
 }
 
 /**
- * Modal suave, não painel expandido no mesmo lugar (feedback do usuário) — backdrop + card
- * entram com fade/scale via Motion. Fecha por clique fora, Esc ou botão de fechar.
+ * Modal suave, não painel expandido no mesmo lugar — backdrop + card entram com fade/scale via
+ * Motion. Fecha por clique fora, Esc ou botão de fechar.
  */
 function RoleDetailModal({ member, onClose }: { member: Scenario['squad'][number] | null; onClose: () => void }) {
   useEffect(() => {
@@ -143,8 +143,8 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
   const totalHeadcount = scenario.squad.reduce((sum, m) => sum + m.quantity, 0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const selectedMember = selectedIndex !== null ? scenario.squad[selectedIndex] ?? null : null
-  // Coluna sem uso real quando todo mundo é full-time (CRITICA-UI §5.2) — 100% em toda linha não
-  // carrega informação nenhuma, só ocupa espaço.
+  // Coluna sem uso real quando todo mundo é full-time — 100% em toda linha não carrega
+  // informação nenhuma, só ocupa espaço.
   const showDedicacao = scenario.squad.some((m) => m.allocation === 'part-time')
 
   return (
@@ -209,8 +209,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
               const monthlyCost = perPerson * member.quantity
               return (
                 // Sem linha por papel — a separação vem do padding generoso e do hover, não de
-                // borda (briefing §4/§18: reduzir bordas pesadas e linhas excessivas em tabela).
-                // A linha inteira abre o modal da justificativa, não só o nome do papel.
+                // borda. A linha inteira abre o modal da justificativa, não só o nome do papel.
                 <tr
                   key={`${member.role}-${index}`}
                   tabIndex={0}
@@ -237,8 +236,8 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
               )
             })}
           </tbody>
-          {/* Borda de cima mais forte + fundo (CRITICA-UI §5.3) — antes se misturava visualmente
-              com as linhas normais. */}
+          {/* Borda de cima mais forte + fundo — diferencia visualmente o total das linhas
+              normais da tabela. */}
           <tfoot>
             <tr className="border-t-2 border-ink/15 bg-paper-2 font-semibold">
               <td className="px-[15px] py-3">
@@ -257,7 +256,7 @@ export function CompositionTable({ scenario }: { scenario: Scenario }) {
         </table>
       </div>
 
-      {/* Observação discreta (AJUSTES-UI §14) — contextualiza os números sem repetir o rodapé. */}
+      {/* Observação discreta que contextualiza os números sem repetir o rodapé. */}
       <p className="mt-2.5 px-[15px] text-[12px] text-ink-3 sm:px-0">Estimativa baseada nas premissas atuais.</p>
 
       <RoleDetailModal member={selectedMember} onClose={() => setSelectedIndex(null)} />

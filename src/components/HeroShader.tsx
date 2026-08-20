@@ -11,9 +11,7 @@ void main() {
 `
 
 // Value noise + fbm clássico, sem cor — smoothstep afinado pra ficar bem esparso (wisps soltos,
-// não um blob preenchendo tudo). Saída em --ink (#18212a), alpha máximo de 0.32 — valores mais
-// baixos (0.05, 0.14) leram como "liso" na prática (feedback do usuário); esse é o que ele
-// confirmou ver e gostar.
+// não um blob preenchendo tudo). Saída em --ink (#18212a), alpha máximo de 0.32.
 const FRAGMENT_SHADER = `
 precision highp float;
 uniform float uTime;
@@ -72,12 +70,9 @@ function compileShader(gl: WebGLRenderingContext, type: number, source: string):
 }
 
 /**
- * Fundo animado monocromático (pedido do usuário: "shader") — ruído orgânico fluindo bem devagar
- * em tons de --ink, opacidade máxima de 32%. WebGL puro (sem Three.js/lib — seria
- * dependência nova pra um efeito que cabe em ~80 linhas). Fica dentro da restrição
- * anti-gradiente/glow do projeto: sem cor, sem brilho, só textura em movimento.
- * Renderizado uma única vez no root do app (fixed, atrás de tudo) — cobre a interface inteira,
- * não só o hero (pedido do usuário).
+ * Fundo animado monocromático: ruído orgânico fluindo bem devagar em tons de --ink, opacidade
+ * máxima de 32%. WebGL puro (sem Three.js/lib). Renderizado uma única vez no root do app (fixed,
+ * atrás de tudo), cobrindo a interface inteira.
  */
 export function HeroShader() {
   const canvasRef = useRef<HTMLCanvasElement>(null)

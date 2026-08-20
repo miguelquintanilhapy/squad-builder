@@ -2,8 +2,8 @@ import { RoleType, SquadMember } from '@/types'
 import { ROLE_LABELS } from './labels'
 
 // Palavras-chave por papel pra casar contra o texto livre da narração — não é NLP de verdade,
-// é a heurística mínima que a revisão externa pede (3.10): detectar "sem X"/"falta X" quando X
-// já está na composição, sem depender do modelo se autocorrigir.
+// é a heurística mínima pra detectar "sem X"/"falta X" quando X já está na composição, sem
+// depender do modelo se autocorrigir.
 const ROLE_KEYWORDS: Record<RoleType, string[]> = {
   'dev-frontend': ['front-end', 'frontend', 'front end'],
   'dev-backend': ['back-end', 'backend', 'back end'],
@@ -31,7 +31,7 @@ function normalize(text: string): string {
  * Verifica se `text` afirma a ausência de um papel que está presente em `squad` — ex: a
  * narração diz "sem QA dedicado" enquanto a composição já inclui 1x QA. O pipeline está correto
  * (a narração recebe o scenario fechado), então isso é o modelo contradizendo o próprio contexto,
- * não erro de dados — a única defesa hoje é essa checagem pós-geração (revisão externa 3.10).
+ * não erro de dados — a defesa é essa checagem pós-geração.
  */
 export function findNarrativeContradiction(text: string, squad: SquadMember[]): RoleType | null {
   const normalizedText = normalize(text)
@@ -53,8 +53,7 @@ export function findNarrativeContradiction(text: string, squad: SquadMember[]): 
  * Remove só as frases que contradizem a composição, preservando o resto do parágrafo. Se TODAS
  * as frases contradizem (resumo de uma frase só, por exemplo), o pior caso não pode devolver o
  * texto original intacto — seria exibir de volta exatamente a afirmação falsa que essa função
- * existe pra suprimir (achado de code review). Nesse caso vira um fallback neutro, sem afirmar
- * nada sobre o squad.
+ * existe pra suprimir. Nesse caso vira um fallback neutro, sem afirmar nada sobre o squad.
  */
 export function removeContradictingSentences(summary: string, squad: SquadMember[]): string {
   const sentences = summary.split(/(?<=[.!?])\s+/).filter(Boolean)

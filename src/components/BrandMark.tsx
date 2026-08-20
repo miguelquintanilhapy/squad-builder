@@ -1,19 +1,16 @@
 /**
- * Agulha de índice de risco (0–100) — a métrica central do produto (RiskPanel.tsx), sem
- * redesenhar o painel em si. Substitui o monograma "S" anterior.
- *
- * strokeWidth calibrado pra não cair abaixo de 1.5px renderizado no menor tamanho de uso
- * (favicon, 16px): viewBox de 24 unidades → escala 16/24 ≈ 0,667 nesse tamanho.
- * Arco: 2.4 × 0,667 ≈ 1,6px. Ponteiro: 2.8 × 0,667 ≈ 1,87px. Em 20px (header) e 32px (ampliado)
- * a mesma proporção só fica mais grossa, nunca mais fina.
+ * Ícone da marca: um medidor de risco (arco + ponteiro + eixo), ecoando a métrica central do
+ * produto (RiskPanel.tsx). strokeWidth calibrado pra não cair abaixo de 1.5px renderizado no
+ * menor tamanho de uso (favicon, 16px): viewBox de 24 unidades → escala 16/24 ≈ 0,667 nesse
+ * tamanho. Arco: 2.4 × 0,667 ≈ 1,6px. Ponteiro: 2.8 × 0,667 ≈ 1,87px.
  */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
+      width="32"
+      height="34"
+      viewBox="0 0 21.5 24"
       fill="none"
       stroke="var(--ink)"
       strokeWidth={2.4}

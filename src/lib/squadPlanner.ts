@@ -62,9 +62,8 @@ function planEngineeringRoles(
   const capacityPerShare = requiredCapacityPerMonth / totalShares
   const seniorityMultiplier = SENIORITY_CAPACITY_MULTIPLIER[seniority]
 
-  // Curta e escaneável (AJUSTES-UI §13), mas sem virar tautologia ("cobre a demanda de X") —
-  // cada linha ainda defende por que o papel existe, só num clause em vez de um parágrafo
-  // (revisão externa 3.9 + reconciliação com AJUSTES-UI §13).
+  // Curta e escaneável, mas sem virar tautologia ("cobre a demanda de X") — cada linha ainda
+  // defende por que o papel existe, só num clause em vez de um parágrafo.
   const ENGINEERING_JUSTIFICATION: Record<string, string> = {
     'dev-mobile': 'Cobre a superfície mobile nativa — a entrega mais visível pro usuário final.',
     'dev-frontend': 'Interface web é onde o usuário decide continuar ou abandonar.',
@@ -87,8 +86,7 @@ function planEngineeringRoles(
 }
 
 /** A partir de quantas pessoas no squad a falta de liderança técnica dedicada vira o primeiro
- * ponto que um comprador experiente aponta — independente da complexidade formal do projeto
- * (revisão externa 3.8: squad de 8, todo Pleno, sem tech lead é a falha óbvia do fixture atual). */
+ * ponto que um comprador experiente aponta — independente da complexidade formal do projeto. */
 const TECH_LEAD_HEADCOUNT_THRESHOLD = 5
 
 function planSupportRoles(scope: ScopeAnalysis, complexity: ComplexityLevel, engineeringHeadcount: number): SquadMember[] {

@@ -9,8 +9,8 @@ interface RecomputeRequestBody {
   input: ProjectInput
   /** Squad atual (negociado ou não). Ausente só no primeiro diagnóstico, que ainda não tem
    * squad — nesse caso gera um novo. Presente, reusa-o: sem isso, qualquer recálculo de premissa
-   * (chip da ReadingGrid, PJ/CLT, custo editável) chamava suggestInitialSquad de novo e descartava
-   * em silêncio um squad que o usuário já tinha negociado por chat (achado de code review). */
+   * (chip da ReadingGrid, PJ/CLT, custo editável) chamaria suggestInitialSquad de novo e
+   * descartaria em silêncio um squad já negociado por chat. */
   currentSquad?: SquadMember[]
 }
 

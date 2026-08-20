@@ -67,8 +67,8 @@ export function formatNumberPtBR(value: number): string {
 
 /**
  * Inverso de formatCurrencyBRL: aceita notação pt-BR (ponto = milhar, vírgula = decimal) em vez
- * de Number() cru. Number("8.000") vira 8 (oito) — achado de code review: um input editável de
- * custo corrigia silenciosamente pra um valor absurdo porque "8.000" é decimal válido em en-US.
+ * de Number() cru. Number("8.000") vira 8 (oito), já que "8.000" é decimal válido em en-US — um
+ * input editável de custo corrigiria silenciosamente pra um valor absurdo sem esse parse.
  */
 export function parseCurrencyPtBR(raw: string): number {
   const normalized = raw

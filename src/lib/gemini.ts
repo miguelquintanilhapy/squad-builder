@@ -27,7 +27,7 @@ const RETRYABLE_STATUSES = new Set(['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'INTERN
 const RETRY_DELAYS_MS = [600, 1500]
 
 // Sem isso, uma chamada travada fica pendente indefinidamente e a UI não tem como saber a
-// diferença entre "ainda processando" e "nunca vai responder" (revisão externa 2.1).
+// diferença entre "ainda processando" e "nunca vai responder".
 const REQUEST_TIMEOUT_MS = 30_000
 
 function withTimeout<T>(promise: Promise<T>): Promise<T> {
@@ -142,8 +142,8 @@ const ALLOCATIONS = ['full-time', 'part-time'] as const
 const SCOPE_ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
   properties: {
-    // Triagem antes da estimativa: sem isso, um escopo vago ou fora de domínio ainda produz
-    // squad + risco baixo — confiança fabricada sobre nada (revisão externa 2.2/2.3).
+    // Triagem antes da estimativa: sem isso, um escopo vago ou fora de domínio ainda produziria
+    // squad + risco baixo — confiança fabricada sobre nada.
     inDomain: { type: Type.BOOLEAN },
     sufficientForEstimate: { type: Type.BOOLEAN },
     clarifyingQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -316,9 +316,9 @@ const PROPOSED_SQUAD_SCHEMA = {
   required: ['squad'],
 }
 
-// ProposedSquadChange vem de texto livre do usuário e muta custo/prazo/risco direto — é a
-// superfície mais perigosa da negociação e, ao contrário de ScopeAnalysis, não tinha nenhuma
-// validação (revisão externa 3.11). Campo malformado aqui não pode virar número na tela.
+// ProposedSquadChange vem de texto livre e muta custo/prazo/risco direto — é a superfície mais
+// perigosa da negociação, então precisa de validação estrita: um campo malformado aqui não pode
+// virar número na tela.
 const PROPOSED_SQUAD_CHANGE_SCHEMA = z.object({
   squad: z
     .array(
@@ -438,9 +438,9 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
 
   /**
    * Regeneração por contradição (não por erro transitório) — uma única tentativa sem a escada de
-   * retry do callGemini. Sem isso, o pior caso dobrava o orçamento inteiro de timeout+retries
-   * (até ~91s) em vez de somar só mais um timeout simples (achado de code review). Falha aqui não
-   * propaga: segue com o resultado original, que a suspensão de frase abaixo ainda protege.
+   * retry do callGemini, senão o pior caso dobraria o orçamento inteiro de timeout+retries
+   * (até ~91s) em vez de somar só mais um timeout simples. Falha aqui não propaga: segue com o
+   * resultado original, que a suspensão de frase abaixo ainda protege.
    */
   async function regenerateOnce(): Promise<{ summary: string; midGroundSuggestion?: string } | null> {
     try {
@@ -454,9 +454,8 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
     }
   }
 
-  // midGroundSuggestion é exibido direto ao usuário igual ao summary — checar só o summary
-  // deixava passar uma sugestão do tipo "considere adicionar um QA dedicado" com QA já presente
-  // no squad (achado de code review).
+  // midGroundSuggestion é exibido direto igual ao summary — checar só o summary deixaria passar
+  // uma sugestão do tipo "considere adicionar um QA dedicado" com QA já presente no squad.
   function detectContradiction(candidate: { summary: string; midGroundSuggestion?: string }) {
     return (
       findNarrativeContradiction(candidate.summary, scenario.squad) ??
@@ -471,7 +470,7 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
 
   // O pipeline entrega o squad já fechado pro modelo — uma contradição aqui não é erro de dados,
   // é o modelo se contradizendo. Tenta regenerar uma vez; se persistir, suprime só a frase em vez
-  // de exibir uma afirmação falsa sobre a composição (revisão externa 3.10).
+  // de exibir uma afirmação falsa sobre a composição.
   if (contradiction) {
     console.error(
       `[narrateScenario] texto nega "${describeContradiction(contradiction)}", presente no squad — regenerando.`
