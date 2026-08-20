@@ -13,18 +13,26 @@ function Kpi({
   note,
   loading = false,
   compact = false,
+  active = false,
 }: {
   label: string
   value?: React.ReactNode
   note?: string
   loading?: boolean
   compact?: boolean
+  /** Destaque cíclico do preview do hero (pedido do usuário) — um anel petrol sutil passa de
+   * card em card, dando sensação de "isso está sendo calculado" sem inventar interatividade. */
+  active?: boolean
 }) {
   const Icon = KPI_ICONS[label as keyof typeof KPI_ICONS]
   return (
     // Cada KPI é a própria superfície, separada por espaço real (gap), não por hairline —
     // o número precisa dominar sem competir com uma grade de linhas em volta (briefing §10).
-    <div className={`rounded-[7px] bg-paper-3 ${compact ? 'px-3 pt-2.5 pb-2' : 'px-[17px] pt-[14px] pb-[13px]'}`}>
+    <div
+      className={`rounded-[7px] bg-paper-3 transition-shadow duration-500 ${compact ? 'px-3 pt-2.5 pb-2' : 'px-[17px] pt-[14px] pb-[13px]'} ${
+        active ? 'shadow-[0_0_0_1.5px_var(--petrol)]' : ''
+      }`}
+    >
       <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-3">
         <Icon className="size-3.5 shrink-0" strokeWidth={2} />
         {label}
@@ -58,6 +66,7 @@ export function KpiStrip({
   scenario,
   loading = false,
   compact = false,
+  activeIndex,
 }: {
   scenario: Scenario | null
   loading?: boolean
@@ -65,6 +74,8 @@ export function KpiStrip({
    * dashboard real — números menores e sempre 2 colunas (nunca 4, que é o que causava os valores
    * "saindo pro lado" num container apertado). */
   compact?: boolean
+  /** Índice (0-3) do card com destaque cíclico — só o preview do hero usa isso. */
+  activeIndex?: number
 }) {
   const gridClass = compact ? 'grid grid-cols-2 gap-2.5' : 'grid grid-cols-2 gap-3 sm:grid-cols-4'
 
@@ -85,6 +96,7 @@ export function KpiStrip({
       <Kpi
         label="Squad sugerido"
         compact={compact}
+        active={activeIndex === 0}
         value={
           <>
             {totalHeadcount}
@@ -96,6 +108,7 @@ export function KpiStrip({
       <Kpi
         label="Custo mensal"
         compact={compact}
+        active={activeIndex === 1}
         value={
           <>
             {formatCurrencyBRL(scenario.totalMonthlyCost)}
@@ -106,6 +119,7 @@ export function KpiStrip({
       <Kpi
         label="Prazo estimado"
         compact={compact}
+        active={activeIndex === 2}
         value={
           <>
             {formatMonthsCompact(scenario.estimatedTimelineMonths)}
@@ -116,6 +130,7 @@ export function KpiStrip({
       <Kpi
         label="Investimento estimado"
         compact={compact}
+        active={activeIndex === 3}
         value={formatCurrencyRangeBRL(scenario.totalMonthlyCost, scenario.estimatedTimelineMonths)}
         note="estimado para o período"
       />

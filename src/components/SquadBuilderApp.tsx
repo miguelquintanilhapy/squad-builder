@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { AlertCircle, ArrowRight, FileText, Handshake, HelpCircle, Home, LayoutDashboard } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
@@ -11,7 +11,7 @@ import { ConstraintFields } from '@/components/ConstraintFields'
 import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
-import { KpiStrip } from '@/components/KpiStrip'
+import { HeroPreview } from '@/components/HeroPreview'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
@@ -57,9 +57,6 @@ export function SquadBuilderApp() {
   /** Nav do header (CRITICA-UI §5.9) — pula direto pra negociação sem precisar rolar a página
    * inteira, que é a distância que o próprio doc apontou como o maior problema de proposta. */
   const negotiationRef = useRef<HTMLDivElement>(null)
-  // Preview real do dashboard no hero (CRITICA-UI §1.2), não mockup gráfico solto — reusa
-  // buildPreviewScenario (mesmo motor da fixture de dev) e o componente KpiStrip real.
-  const heroPreviewScenario = useMemo(() => buildPreviewScenario().scenario, [])
   // Entrada do hero anima no mount, não no scroll (script §8) — é a primeira coisa que a pessoa
   // vê, antes de rolar qualquer coisa. Único bloco do app com animate="show" em vez de
   // whileInView; o resto (DashboardPanel) já converteu pra scroll-reveal.
@@ -464,11 +461,14 @@ export function SquadBuilderApp() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="show"
+          // Sem textura/padrão de fundo — grade de linhas, ruído SVG e pontinhos, nenhum
+          // convenceu (feedback do usuário). O resto do hero (demo animada, exemplos
+          // alternáveis, prova concreta) já carrega o trabalho de não parecer genérico.
           className="wrap flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24"
         >
           {/* Duas colunas: texto à esquerda, preview à direita — o card embaixo do texto
               empurrava o hero inteiro pra cima (feedback do usuário). Empilha em telas estreitas. */}
-          <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_460px] lg:gap-14">
+          <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_540px] lg:gap-14">
             <div className="text-left">
               <motion.h1
                 variants={heroItemVariants}
@@ -487,17 +487,11 @@ export function SquadBuilderApp() {
                 </PrimaryButton>
               </motion.div>
             </div>
-            {/* Preview real do dashboard, não tela vazia (CRITICA-UI §1.2) — mesmo componente
-                KpiStrip usado no resultado de verdade, com um escopo de exemplo fixo. Entra da
-                direita, convergindo com o texto que entra da esquerda. */}
-            <motion.div
-              variants={heroPreviewVariants}
-              className="w-full rounded-[7px] bg-paper-3 p-4 text-left shadow-[var(--shadow-raised)]"
-            >
-              <p className="mb-2.5 text-[12px] font-medium text-ink-3">Exemplo de resultado</p>
-              {/* compact: números menores, sempre 2 colunas — os valores "saíam pro lado" com o
-                  grid de 4 colunas do KpiStrip normal apertado num card estreito. */}
-              <KpiStrip scenario={heroPreviewScenario} compact />
+            {/* Preview que mostra o mecanismo do produto (texto → chips → números), não um
+                resultado congelado — "product is the demo" (pesquisa de referência) em vez de
+                card estático de qualquer SaaS. Entra da direita, convergindo com o texto. */}
+            <motion.div variants={heroPreviewVariants} className="w-full">
+              <HeroPreview />
             </motion.div>
           </div>
         </motion.section>
