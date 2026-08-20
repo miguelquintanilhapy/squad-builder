@@ -33,14 +33,16 @@ function Kpi({
         <div className="mt-2.5 h-9 w-16 animate-pulse rounded-[7px] bg-rule-2" />
       ) : (
         <div
-          className={`tnum truncate font-display font-extrabold leading-[1.1] tracking-[-0.032em] text-ink ${
+          // Nunca truncate aqui (nem no compact do hero) — é o número que a pessoa usa pra
+          // decidir, não pode esconder parte dele com "...". Quebra linha em vez de cortar.
+          className={`tnum break-words font-display font-extrabold leading-[1.1] tracking-[-0.032em] text-ink ${
             compact ? 'mt-1 text-[20px]' : 'mt-1.5 text-[36px]'
           }`}
         >
           {value}
         </div>
       )}
-      {note && !loading && <div className="tnum mt-1 truncate text-[12.5px] text-ink-3">{note}</div>}
+      {note && !loading && <div className="tnum mt-1 text-[12.5px] text-ink-3">{note}</div>}
     </div>
   )
 }
