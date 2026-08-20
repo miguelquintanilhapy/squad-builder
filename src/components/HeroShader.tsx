@@ -11,7 +11,9 @@ void main() {
 `
 
 // Value noise + fbm clássico, sem cor — smoothstep afinado pra ficar bem esparso (wisps soltos,
-// não um blob preenchendo tudo). Saída em --ink (#18212a), alpha máximo de 0.05.
+// não um blob preenchendo tudo). Saída em --ink (#18212a), alpha máximo de 0.32 — valores mais
+// baixos (0.05, 0.14) leram como "liso" na prática (feedback do usuário); esse é o que ele
+// confirmou ver e gostar.
 const FRAGMENT_SHADER = `
 precision highp float;
 uniform float uTime;
@@ -51,7 +53,7 @@ void main() {
   float t = uTime * 0.035;
   float n = fbm(p + vec2(t, -t * 0.6));
   n = fbm(p + n * 0.5 + t);
-  float alpha = smoothstep(0.45, 0.85, n) * 0.05;
+  float alpha = smoothstep(0.2, 0.6, n) * 0.32;
   gl_FragColor = vec4(0.094, 0.129, 0.164, alpha);
 }
 `
@@ -71,7 +73,7 @@ function compileShader(gl: WebGLRenderingContext, type: number, source: string):
 
 /**
  * Fundo animado monocromático (pedido do usuário: "shader") — ruído orgânico fluindo bem devagar
- * em tons de --ink, nunca acima de 5% de opacidade. WebGL puro (sem Three.js/lib — seria
+ * em tons de --ink, opacidade máxima de 32%. WebGL puro (sem Three.js/lib — seria
  * dependência nova pra um efeito que cabe em ~80 linhas). Fica dentro da restrição
  * anti-gradiente/glow do projeto: sem cor, sem brilho, só textura em movimento.
  * Renderizado uma única vez no root do app (fixed, atrás de tudo) — cobre a interface inteira,
