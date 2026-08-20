@@ -2,9 +2,10 @@
 
 import { useMemo, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { AlertCircle, ArrowRight, HelpCircle } from 'lucide-react'
+import { AlertCircle, ArrowRight, FileText, Handshake, HelpCircle, Home, LayoutDashboard } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
+import { CommandMenu, type CommandMenuItem } from '@/components/CommandMenu'
 import { ScopeField, ScopeSeeds, MAX_SCOPE_CHARS, MIN_SCOPE_CHARS } from '@/components/ScopeField'
 import { ConstraintFields } from '@/components/ConstraintFields'
 import { ReadingGrid } from '@/components/ReadingGrid'
@@ -373,6 +374,33 @@ export function SquadBuilderApp() {
     negotiationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  // Reusa os mesmos handlers do nav do header (CRITICA-UI §5.9) — o command menu é um segundo
+  // jeito de chegar nos mesmos destinos, não uma lista de ações paralela.
+  const commandItems: CommandMenuItem[] = [
+    { id: 'hero', label: 'Início', icon: <Home className="size-3.5 text-ink-3" />, onSelect: scrollToHero },
+    { id: 'form', label: 'Formulário', icon: <FileText className="size-3.5 text-ink-3" />, onSelect: scrollToScopeForm },
+    ...(analyzeLoading || scenario
+      ? [
+          {
+            id: 'results',
+            label: 'Resultado',
+            icon: <LayoutDashboard className="size-3.5 text-ink-3" />,
+            onSelect: scrollToResults,
+          },
+        ]
+      : []),
+    ...(scenario
+      ? [
+          {
+            id: 'negotiation',
+            label: 'Negociação',
+            icon: <Handshake className="size-3.5 text-ink-3" />,
+            onSelect: scrollToNegotiation,
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
       {/* Contexto ("SquadBuilder <projeto>") só quando já existe uma análise — orientação visual
@@ -664,6 +692,7 @@ export function SquadBuilderApp() {
           </section>
         )}
       </main>
+      <CommandMenu items={commandItems} />
     </div>
   )
 }
