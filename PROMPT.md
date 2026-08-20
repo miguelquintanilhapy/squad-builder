@@ -1,4 +1,4 @@
-# DIRETRIZ ANTI-AI-SLOP PARA DESIGN DE LANDING PAGES
+# DIRETRIZ ANTI-AI-SLOP PRO DESIGN
 
 Crie a página evitando padrões visuais genéricos, repetitivos e artificiais normalmente associados a layouts produzidos automaticamente por IA.
 
