@@ -44,18 +44,17 @@ function DashboardSkeleton() {
 }
 
 function useDashboardVariants() {
-  // prefers-reduced-motion (script §5/6): só opacity, sem translateY, quando reduzido — o CSS
-  // global já neutraliza transition/scroll-behavior, mas Motion anima via WAAPI/rAF própria, não
-  // pela propriedade CSS `transition`, então precisa do hook da própria lib.
+  // prefers-reduced-motion: só opacity, sem translateY, quando reduzido — o CSS global já
+  // neutraliza transition/scroll-behavior, mas Motion anima via WAAPI/rAF própria, não pela
+  // propriedade CSS `transition`, então precisa do hook da própria lib.
   const reduceMotion = useReducedMotion()
+  // Sem stagger de container aqui — cada seção dispara whileInView por conta própria (ver uso
+  // abaixo). Um stagger de container só faria sentido se todo o grupo entrasse na tela junto;
+  // numa coluna única longa, Curva/Composição/Risco entram em momentos de scroll bem diferentes.
   return {
-    containerVariants: {
-      hidden: {},
-      show: { transition: { staggerChildren: reduceMotion ? 0 : 0.09 } },
-    },
     groupVariants: {
       hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
-      show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] as const } },
+      show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as const } },
     },
   }
 }
@@ -79,7 +78,7 @@ export function DashboardPanel({
   rateOverrides?: Partial<Record<RoleType, number>>
   onRateOverrideChange?: (role: RoleType, monthlyRate: number) => void
 }) {
-  const { containerVariants, groupVariants } = useDashboardVariants()
+  const { groupVariants } = useDashboardVariants()
 
   if (loading) {
     return <DashboardSkeleton />
@@ -108,36 +107,30 @@ export function DashboardPanel({
           )}
         </div>
       )}
-      {/* Scroll-reveal, não mount (script §1-3): o auto-scroll pro resultado já traz esse bloco
-          pra dentro do viewport logo que monta, então whileInView dispara junto — mas a troca em
-          si é o que corrige o problema real: coluna única longa, sem isso tudo já tinha terminado
-          de animar antes do usuário rolar até aqui. `once` — nunca replay ao rolar pra cima e
-          descer de novo. Atualizações de negociação seguintes reusam esta mesma árvore (já
-          revelada), não retrigger. */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: '-80px' }}
-        className={`flex flex-col gap-12 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}
-      >
+      {/* Cada seção revela quando ELA MESMA entra na tela, não quando o topo do dashboard entra
+          (bug reportado pelo usuário: com whileInView só no container pai, o stagger inteiro
+          disparava de uma vez assim que "Squad recomendado" aparecia, e Composição/Índice de
+          risco já estavam animados — e portanto estáticos — muito antes do usuário rolar até
+          eles). `once` em cada uma — nunca replay ao rolar pra cima e descer de novo.
+          Atualizações de negociação seguintes reusam a mesma árvore (já revelada), não retrigger. */}
+      <div className={`flex flex-col gap-12 transition-opacity duration-200 ${recomputing ? 'pointer-events-none opacity-50' : ''}`}>
         {/* Números primeiro, nota depois: o alerta de teto era o primeiro elemento da seção — a
             primeira coisa que a pessoa via ao chegar no resultado era um banner ambar, lido como
             erro do sistema, não como aviso (feedback do usuário). Ícone Info, não AlertTriangle —
             triângulo de alerta é vocabulário visual de erro/perigo, e isso é uma nota, não uma
             falha. */}
-        <motion.div variants={groupVariants}>
+        <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
           <KpiStrip scenario={scenario} />
         </motion.div>
         {scenario.budgetAlert && (
-          <motion.div variants={groupVariants}>
+          <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
             <div className="flex items-start gap-3 rounded-[7px] border border-ochre/30 bg-ochre/5 px-4 py-3 text-sm text-ink">
               <Info className="mt-0.5 size-4 shrink-0 text-ochre" strokeWidth={2} />
               <p>{scenario.budgetAlert.suggestion}</p>
             </div>
           </motion.div>
         )}
-        <motion.div variants={groupVariants}>
+        <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
           <PanelTitle
             title="Curva de alocação"
             note={`${scenario.squad.length} papéis · ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
@@ -146,7 +139,7 @@ export function DashboardPanel({
             <AllocationChart scenario={scenario} />
           </Panel>
         </motion.div>
-        <motion.div variants={groupVariants}>
+        <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
           <PanelTitle title="Composição do Squad" />
           <Panel>
             <CompositionTable scenario={scenario} />
@@ -155,13 +148,13 @@ export function DashboardPanel({
         {/* Explica o squad como consequência do escopo, não só o resultado — o sistema dava a
             resposta mas explicava pouco o raciocínio por trás dela (feedback do usuário).
             Determinístico (squadRationale.ts), não a IA: mesma regra de todo o resto do cálculo. */}
-        <motion.div variants={groupVariants}>
+        <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
           <PanelTitle title="Por que este squad?" />
           <Panel>
             <p className="p-4 text-[14px] leading-relaxed text-ink-2">{describeSquadRationale(scenario.squad)}</p>
           </Panel>
         </motion.div>
-        <motion.div variants={groupVariants}>
+        <motion.div variants={groupVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
           <PanelTitle title="Índice de risco" emphasis />
           <Panel>
             <RiskPanel
@@ -172,7 +165,7 @@ export function DashboardPanel({
             />
           </Panel>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   )
 }
