@@ -12,6 +12,7 @@ import { ReadingGrid } from '@/components/ReadingGrid'
 import { DashboardPanel } from '@/components/DashboardPanel'
 import { NegotiationChat } from '@/components/NegotiationChat'
 import { HeroPreview } from '@/components/HeroPreview'
+import { HeroShader } from '@/components/HeroShader'
 import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
@@ -400,10 +401,18 @@ export function SquadBuilderApp() {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink-2">
-      {/* Contexto ("SquadBuilder <projeto>") só quando já existe uma análise — orientação visual
-          (onde estou, em qual projeto), não funcionalidade nova: é a mesma descrição que o
-          usuário já escreveu, só truncada. Sem borda embaixo (briefing §4/§8). */}
-      <header className="app-header">
+      {/* Grade/ruído SVG/pontinhos, nenhum convenceu (feedback do usuário) — shader WebGL
+          monocromático no lugar. Fixed, atrás de toda a interface (não só do hero), acompanha o
+          scroll sem repintar, nunca captura clique (pointer-events-none). z-index negativo tem
+          casos extremos entre navegadores/compositor — em vez disso o canvas fica em z-0 e todo o
+          conteúdo abaixo ganha "relative z-10", que é uma garantia CSS bem mais simples e direta
+          de que ele sempre pinta por cima. */}
+      <HeroShader />
+      <div className="relative z-10 flex min-h-screen flex-1 flex-col">
+        {/* Contexto ("SquadBuilder <projeto>") só quando já existe uma análise — orientação visual
+            (onde estou, em qual projeto), não funcionalidade nova: é a mesma descrição que o
+            usuário já escreveu, só truncada. Sem borda embaixo (briefing §4/§8). */}
+        <header className="app-header">
         <div className="wrap flex items-center justify-between gap-3.5 py-5">
           <div className="flex items-baseline gap-[11px]">
             {/* Clicar no wordmark volta pro hero (CRITICA-UI §5.9) — mesmo padrão de qualquer
@@ -461,14 +470,11 @@ export function SquadBuilderApp() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="show"
-          // Sem textura/padrão de fundo — grade de linhas, ruído SVG e pontinhos, nenhum
-          // convenceu (feedback do usuário). O resto do hero (demo animada, exemplos
-          // alternáveis, prova concreta) já carrega o trabalho de não parecer genérico.
-          className="wrap flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24"
+          className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24"
         >
           {/* Duas colunas: texto à esquerda, preview à direita — o card embaixo do texto
               empurrava o hero inteiro pra cima (feedback do usuário). Empilha em telas estreitas. */}
-          <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_540px] lg:gap-14">
+          <div className="wrap grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_540px] lg:gap-14">
             <div className="text-left">
               <motion.h1
                 variants={heroItemVariants}
@@ -686,6 +692,7 @@ export function SquadBuilderApp() {
           </section>
         )}
       </main>
+      </div>
       <CommandMenu items={commandItems} />
     </div>
   )
