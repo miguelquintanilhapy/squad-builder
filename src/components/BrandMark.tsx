@@ -10,7 +10,7 @@ export function BrandMark({ className }: { className?: string }) {
       className={className}
       width="32"
       height="34"
-      viewBox="0 0 21.5 24"
+      viewBox="0 0 21.6 24"
       fill="none"
       stroke="var(--ink)"
       strokeWidth={2.4}
