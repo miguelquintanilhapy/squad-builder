@@ -74,7 +74,7 @@ function compileShader(gl: WebGLRenderingContext, type: number, source: string):
  * máxima de 32%. WebGL puro (sem Three.js/lib). Renderizado uma única vez no root do app (fixed,
  * atrás de tudo), cobrindo a interface inteira.
  */
-export function HeroShader() {
+export function HeroShader({ className = '' }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const reduceMotion = useReducedMotion()
 
@@ -166,7 +166,7 @@ export function HeroShader() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="fixed inset-0 z-0 h-full w-full pointer-events-none"
+      className={`fixed inset-0 z-0 h-full w-full pointer-events-none ${className}`}
     />
   )
 }

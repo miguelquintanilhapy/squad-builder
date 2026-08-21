@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { AlertCircle, ArrowRight, FileText, Handshake, HelpCircle, Home, LayoutDashboard } from 'lucide-react'
+import { AlertCircle, ArrowRight, Download, FileText, Handshake, HelpCircle, Home, LayoutDashboard } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { CommandMenu, type CommandMenuItem } from '@/components/CommandMenu'
@@ -424,12 +424,12 @@ export function SquadBuilderApp() {
           acompanha o scroll sem repintar e nunca captura clique (pointer-events-none). Fica em
           z-0; todo o conteúdo abaixo usa "relative z-10" por cima dele, mais confiável entre
           navegadores do que dar z-index negativo ao próprio canvas. */}
-      <HeroShader />
+      <HeroShader className="print:hidden" />
       <div className="relative z-10 flex min-h-screen flex-1 flex-col">
         {/* Contexto ("SquadBuilder <projeto>") só aparece quando já existe uma análise — mostra a
             descrição já digitada, truncada, como orientação de em qual projeto/etapa a pessoa
             está. Sem borda embaixo. */}
-        <header className="app-header">
+        <header className="app-header print:hidden">
         <div className="wrap flex items-center justify-between gap-3.5 py-5">
           <div className="flex items-baseline gap-[11px]">
             {/* Clicar no wordmark volta pro hero — mesmo padrão de qualquer site: logo é sempre
@@ -489,7 +489,7 @@ export function SquadBuilderApp() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="show"
-          className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24"
+          className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24 print:hidden"
         >
           {/* Duas colunas: texto à esquerda, preview à direita — evita empurrar o hero pra baixo
               com um card abaixo do texto. Empilha em telas estreitas. */}
@@ -524,7 +524,7 @@ export function SquadBuilderApp() {
         {/* scroll-mt: compensa o header sticky — sem isso, scrollIntoView encosta o topo da seção
             embaixo dele. pb reduzido: espaço grande demais entre o formulário e "Entendimento do
             projeto" lia como se faltasse uma seção entre as duas. */}
-        <section ref={scopeFormRef} className="wrap scroll-mt-20 pt-12 pb-8 sm:pt-16 sm:pb-10">
+        <section ref={scopeFormRef} className="wrap scroll-mt-20 pt-12 pb-8 sm:pt-16 sm:pb-10 print:hidden">
           {/* Duas colunas: texto livre + botão à esquerda, "Ou parta de" e os campos numéricos à
               direita do textarea, cada grupo numa linha só. Sem teto de largura própria: usa o
               wrap inteiro, como as seções abaixo, já que a coluna direita (largura automática)
@@ -643,6 +643,12 @@ export function SquadBuilderApp() {
 
         {scopeAnalysis && (
           <section className="wrap pt-8 pb-12 sm:pt-10 sm:pb-16">
+            <div className="mb-6 hidden items-baseline gap-[11px] print:flex">
+              <BrandMark />
+              <span className="font-display text-[19px] font-extrabold tracking-[-0.03em] text-ink">
+                SquadBuilder
+              </span>
+            </div>
             <h2 className="font-display text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               Entendimento do projeto
             </h2>
@@ -680,34 +686,46 @@ export function SquadBuilderApp() {
               {scenario &&
                 'Com base no escopo identificado, esta é a composição de equipe estimada para entregar o projeto dentro do prazo informado.'}
             </p>
-            {scenario && minimalScenario && (
-              <div role="radiogroup" aria-label="Visão do squad" className="mb-6 flex justify-center gap-1.5">
+            {scenario && (
+              <div className="mb-6 flex flex-col items-center gap-3 print:hidden">
+                {minimalScenario && (
+                  <div role="radiogroup" aria-label="Visão do squad" className="flex justify-center gap-1.5">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={dashboardView === 'recommended'}
+                      onClick={() => setDashboardView('recommended')}
+                      className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                        dashboardView === 'recommended'
+                          ? 'border-petrol bg-petrol text-paper-2'
+                          : 'border-ink-3 text-ink-2 hover:border-ink'
+                      }`}
+                    >
+                      Recomendado
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={dashboardView === 'minimal'}
+                      onClick={() => setDashboardView('minimal')}
+                      className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                        dashboardView === 'minimal'
+                          ? 'border-petrol bg-petrol text-paper-2'
+                          : 'border-ink-3 text-ink-2 hover:border-ink'
+                      }`}
+                    >
+                      Mínimo viável ·{' '}
+                      {minimalScenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas
+                    </button>
+                  </div>
+                )}
                 <button
                   type="button"
-                  role="radio"
-                  aria-checked={dashboardView === 'recommended'}
-                  onClick={() => setDashboardView('recommended')}
-                  className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
-                    dashboardView === 'recommended'
-                      ? 'border-petrol bg-petrol text-paper-2'
-                      : 'border-ink-3 text-ink-2 hover:border-ink'
-                  }`}
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-3 hover:text-ink"
                 >
-                  Recomendado
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={dashboardView === 'minimal'}
-                  onClick={() => setDashboardView('minimal')}
-                  className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
-                    dashboardView === 'minimal'
-                      ? 'border-petrol bg-petrol text-paper-2'
-                      : 'border-ink-3 text-ink-2 hover:border-ink'
-                  }`}
-                >
-                  Mínimo viável ·{' '}
-                  {minimalScenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas
+                  <Download className="size-3.5" strokeWidth={2} />
+                  Exportar PDF
                 </button>
               </div>
             )}
@@ -721,7 +739,7 @@ export function SquadBuilderApp() {
               onRateOverrideChange={dashboardView === 'recommended' ? handleRateOverrideChange : undefined}
             />
             {scenario && (
-              <div ref={negotiationRef} className="scroll-mt-20 mt-12">
+              <div ref={negotiationRef} className="scroll-mt-20 mt-12 print:hidden">
                 <NegotiationChat
                   history={history}
                   onSend={handleNegotiate}
@@ -737,8 +755,10 @@ export function SquadBuilderApp() {
         )}
       </main>
       </div>
-      <CommandMenu items={commandItems} />
-      <ToastStack toasts={toasts} />
+      <div className="print:hidden">
+        <CommandMenu items={commandItems} />
+        <ToastStack toasts={toasts} />
+      </div>
     </div>
   )
 }

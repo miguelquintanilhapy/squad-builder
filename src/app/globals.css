@@ -53,6 +53,14 @@ html {
   color-scheme: light;
 }
 
+@media print {
+  html,
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 /* Todo clicável do site é <button> — navegadores não aplicam cursor de mão em <button> por
    padrão (diferente de <a>), então sem isso os chips/toggles/botões pareciam não-clicáveis. */
 button:not(:disabled) {
