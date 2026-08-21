@@ -3,9 +3,11 @@ import { ProjectInput } from '@/types'
 import { extractProposedSquad, narrateScenario } from '@/lib/gemini'
 import { computeScenario } from '@/lib/calculator'
 import { InvalidRequestError, NegotiateRequestSchema, parseJsonBody, validateBody } from '@/lib/apiValidation'
+import { enforceRateLimit, RateLimitError } from '@/lib/rateLimiter'
 
 export async function POST(request: Request) {
   try {
+    enforceRateLimit(request)
     const body = await parseJsonBody(request)
     const { scopeAnalysis, input, currentSquad, userMessage } = validateBody(NegotiateRequestSchema, body, 'negotiate')
 
@@ -30,6 +32,9 @@ export async function POST(request: Request) {
       scenario: { ...scenario, summary, midGroundSuggestion },
     })
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429, headers: { 'Retry-After': String(error.retryAfterSeconds) } })
+    }
     if (error instanceof InvalidRequestError) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }

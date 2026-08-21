@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { analyzeScope } from '@/lib/gemini'
 import { AnalyzeRequestSchema, InvalidRequestError, parseJsonBody, validateBody } from '@/lib/apiValidation'
+import { enforceRateLimit, RateLimitError } from '@/lib/rateLimiter'
 
 /**
  * Só a leitura de escopo (1ª das 3 chamadas do fluxo). O squad/custo/prazo/risco + narração
@@ -9,6 +10,7 @@ import { AnalyzeRequestSchema, InvalidRequestError, parseJsonBody, validateBody 
  */
 export async function POST(request: Request) {
   try {
+    enforceRateLimit(request)
     const body = await parseJsonBody(request)
     const input = validateBody(AnalyzeRequestSchema, body, 'analyze')
 
@@ -24,6 +26,9 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ scopeAnalysis: result.scopeAnalysis })
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429, headers: { 'Retry-After': String(error.retryAfterSeconds) } })
+    }
     if (error instanceof InvalidRequestError) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }

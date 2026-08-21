@@ -3,6 +3,7 @@ import { narrateScenario } from '@/lib/gemini'
 import { suggestInitialSquad } from '@/lib/squadPlanner'
 import { computeScenario } from '@/lib/calculator'
 import { InvalidRequestError, parseJsonBody, RecomputeRequestSchema, validateBody } from '@/lib/apiValidation'
+import { enforceRateLimit, RateLimitError } from '@/lib/rateLimiter'
 
 /**
  * Recalcula custo/prazo/risco a partir de uma leitura de escopo já editada pelo usuário (chips
@@ -12,6 +13,7 @@ import { InvalidRequestError, parseJsonBody, RecomputeRequestSchema, validateBod
  */
 export async function POST(request: Request) {
   try {
+    enforceRateLimit(request)
     const body = await parseJsonBody(request)
     // currentSquad presente reusa o squad já negociado — sem isso, qualquer recálculo de
     // premissa (chip da ReadingGrid, PJ/CLT, custo editável) geraria um squad novo do zero e
@@ -26,6 +28,9 @@ export async function POST(request: Request) {
       scenario: { ...scenario, summary, midGroundSuggestion },
     })
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429, headers: { 'Retry-After': String(error.retryAfterSeconds) } })
+    }
     if (error instanceof InvalidRequestError) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
