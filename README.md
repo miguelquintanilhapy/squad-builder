@@ -40,7 +40,7 @@ Fora de produção (`NODE_ENV !== 'production'`), a home aceita `?mock=<nome>` n
 - **@google/genai** — SDK oficial do Gemini (modelo configurável via `GEMINI_MODEL`, default `gemini-3.6-flash`)
 - **Zod** — validação do JSON estruturado que volta da LLM
 - **lucide-react** — ícones
-- Nenhuma lib de componentes de UI (Radix, shadcn, etc.) — os poucos componentes que normalmente viriam de uma lib (menu de comando Cmd/Ctrl+K, toast) foram escritos à mão pra não trazer dependência nova só por conveniência
+- Nenhuma lib de componentes de UI (Radix, shadcn, etc.) — os poucos componentes escritos à mão pra não trazer dependência nova só por conveniência
 
 Sem banco de dados: todo o estado (escopo, cenário, histórico de negociação, versões) vive só no client, em memória (`useState` em `SquadBuilderApp.tsx`). Recarregar a página perde o progresso.
 
