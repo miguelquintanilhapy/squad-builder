@@ -19,6 +19,8 @@ import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
 import { formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
 import { describeNegotiationImpactCompact } from '@/lib/negotiationImpact'
+import { suggestMinimalSquad } from '@/lib/squadPlanner'
+import { computeScenario } from '@/lib/calculator'
 
 const SHOW_PREVIEW_BUTTON = process.env.NODE_ENV !== 'production'
 
@@ -96,6 +98,11 @@ export function SquadBuilderApp() {
   const [manualOverrides, setManualOverrides] = useState<ScopeOverrides>({})
   const scopeAnalysis = aiScope ? { ...aiScope, ...manualOverrides } : null
   const [scenario, setScenario] = useState<Scenario | null>(initialMock?.scenario ?? null)
+  // Cenário contrafactual: "e se eu não puder pagar o squad recomendado?" — 1 pessoa por cargo de
+  // engenharia exigido, sem nenhum papel de apoio. Puramente client-side (mesmo motor
+  // determinístico, sem chamar a API) — sempre disponível, sem custo de rede nem de LLM.
+  const [dashboardView, setDashboardView] = useState<'recommended' | 'minimal'>('recommended')
+  const minimalScenario = scopeAnalysis ? computeScenario(suggestMinimalSquad(scopeAnalysis), scopeAnalysis, input) : null
   const [versions, setVersions] = useState<ScenarioVersion[]>(() =>
     initialMock ? [{ id: crypto.randomUUID(), label: 'Diagnóstico inicial', ...initialMock, input: INITIAL_INPUT }] : []
   )
@@ -673,14 +680,45 @@ export function SquadBuilderApp() {
               {scenario &&
                 'Com base no escopo identificado, esta é a composição de equipe estimada para entregar o projeto dentro do prazo informado.'}
             </p>
+            {scenario && minimalScenario && (
+              <div role="radiogroup" aria-label="Visão do squad" className="mb-6 flex justify-center gap-1.5">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={dashboardView === 'recommended'}
+                  onClick={() => setDashboardView('recommended')}
+                  className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                    dashboardView === 'recommended'
+                      ? 'border-petrol bg-petrol text-paper-2'
+                      : 'border-ink-3 text-ink-2 hover:border-ink'
+                  }`}
+                >
+                  Recomendado
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={dashboardView === 'minimal'}
+                  onClick={() => setDashboardView('minimal')}
+                  className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                    dashboardView === 'minimal'
+                      ? 'border-petrol bg-petrol text-paper-2'
+                      : 'border-ink-3 text-ink-2 hover:border-ink'
+                  }`}
+                >
+                  Mínimo viável ·{' '}
+                  {minimalScenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas
+                </button>
+              </div>
+            )}
             <DashboardPanel
-              scenario={scenario}
+              scenario={dashboardView === 'recommended' ? scenario : minimalScenario}
               loading={analyzeLoading}
-              recomputing={recomputeLoading}
-              onCancelRecompute={() => recomputeAbortRef.current?.abort()}
-              onContractTypeChange={handleContractTypeChange}
+              recomputing={dashboardView === 'recommended' && recomputeLoading}
+              onCancelRecompute={dashboardView === 'recommended' ? () => recomputeAbortRef.current?.abort() : undefined}
+              onContractTypeChange={dashboardView === 'recommended' ? handleContractTypeChange : undefined}
               rateOverrides={input.rateOverrides}
-              onRateOverrideChange={handleRateOverrideChange}
+              onRateOverrideChange={dashboardView === 'recommended' ? handleRateOverrideChange : undefined}
             />
             {scenario && (
               <div ref={negotiationRef} className="scroll-mt-20 mt-12">
