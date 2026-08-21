@@ -4,7 +4,7 @@ Copiloto de IA para fundadores, CTOs e gestores de produto dimensionarem squads 
 
 ## Como rodar localmente
 
-Pré-requisitos: Node 20+ e uma chave gratuita da API do Gemini (não pede cartão de crédito).
+Pré-requisitos: Node 20+ e uma chave gratuita da API do Gemini.
 
 ```bash
 git clone https://github.com/miguelquintanilhapy/SquadBuilder.git
