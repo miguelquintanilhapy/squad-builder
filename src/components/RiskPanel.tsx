@@ -225,7 +225,10 @@ export function RiskPanel({
                   key={role}
                   role={role}
                   effectiveRate={rateOverrides?.[role] ?? MONTHLY_RATE_BRL[role][seniority]}
-                  editing={editingRates}
+                  // Nunca editável sem onChange pra confirmar — sem isso, um "editingRates" que
+                  // ficou true de uma visão anterior (ex: alternando pro cenário mínimo viável,
+                  // que é só-leitura) deixaria o input aberto sem nenhum jeito de salvar ou sair.
+                  editing={editingRates && Boolean(onRateOverrideChange)}
                   onChange={onRateOverrideChange}
                 />
               ))}

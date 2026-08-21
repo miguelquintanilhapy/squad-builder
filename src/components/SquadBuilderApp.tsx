@@ -135,6 +135,10 @@ export function SquadBuilderApp() {
     const nextInput = descriptionOverride !== undefined ? { ...input, description: descriptionOverride } : input
     if (descriptionOverride !== undefined) setInput(nextInput)
 
+    // Cancela uma análise anterior ainda em voo antes de iniciar outra — sem isso, duas chamadas
+    // concorrentes poderiam resolver fora de ordem e a resposta mais antiga sobrescreveria a mais
+    // recente (a mesma proteção que o botão "Cancelar" já usa, só que automática).
+    analyzeAbortRef.current?.abort()
     const controller = new AbortController()
     analyzeAbortRef.current = controller
     setAnalyzeLoading(true)
@@ -207,6 +211,9 @@ export function SquadBuilderApp() {
     nextInputForRecompute: ProjectInput = input,
     successMessage = 'Squad recalculado'
   ) {
+    // Mesma proteção contra corrida de handleAnalyze: cancela um recálculo anterior ainda em
+    // voo (ex: dois chips corrigidos em sequência rápida) antes de iniciar o novo.
+    recomputeAbortRef.current?.abort()
     const controller = new AbortController()
     recomputeAbortRef.current = controller
     setRecomputeLoading(true)
@@ -281,6 +288,9 @@ export function SquadBuilderApp() {
     const previousScenario = scenario
     const userTurnId = crypto.randomUUID()
     setHistory((prev) => [...prev, { id: userTurnId, role: 'user', message, timestamp: Date.now() }])
+    // Mesma proteção contra corrida das outras duas chamadas: cancela uma negociação anterior
+    // ainda em voo antes de iniciar a nova.
+    negotiateAbortRef.current?.abort()
     const controller = new AbortController()
     negotiateAbortRef.current = controller
     setNegotiateLoading(true)

@@ -77,10 +77,28 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
   return (
     <div ref={containerRef} className="relative overflow-x-auto px-[15px] py-[15px]">
+      {/* Mesmo conteúdo do tooltip de cada linha (só acessível via hover do mouse), pra quem
+          navega por teclado/leitor de tela não perder a curva de envolvimento por papel. */}
+      <ul className="sr-only">
+        {squad.map((member, index) => {
+          const monthlyCost = (member.monthlyCostPerPerson ?? 0) * member.quantity
+          const pcts = (member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)).slice(
+            0,
+            monthCount
+          )
+          return (
+            <li key={`${member.role}-${index}`}>
+              {roleLabel(member)} — {SENIORITY_LABELS[member.seniority]} · {formatCurrencyBRL(monthlyCost)}/mês ·
+              envolvimento: {describeAllocationCurve(pcts)}
+            </li>
+          )
+        })}
+      </ul>
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${height}`}
         role="img"
         aria-label={`Alocação por papel: ${squad.length} papéis ao longo de ${monthCount} meses`}
+        aria-hidden="true"
         className="block h-auto min-w-[660px] w-full"
       >
         {/* Grid temporal discreto: linha mais leve (opacidade baixa) em vez de hairline cheio. */}

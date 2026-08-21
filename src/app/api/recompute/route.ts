@@ -1,18 +1,8 @@
 import { NextResponse } from 'next/server'
-import { ProjectInput, ScopeAnalysis, SquadMember } from '@/types'
 import { narrateScenario } from '@/lib/gemini'
 import { suggestInitialSquad } from '@/lib/squadPlanner'
 import { computeScenario } from '@/lib/calculator'
-
-interface RecomputeRequestBody {
-  scopeAnalysis: ScopeAnalysis
-  input: ProjectInput
-  /** Squad atual (negociado ou não). Ausente só no primeiro diagnóstico, que ainda não tem
-   * squad — nesse caso gera um novo. Presente, reusa-o: sem isso, qualquer recálculo de premissa
-   * (chip da ReadingGrid, PJ/CLT, custo editável) chamaria suggestInitialSquad de novo e
-   * descartaria em silêncio um squad já negociado por chat. */
-  currentSquad?: SquadMember[]
-}
+import { InvalidRequestError, parseJsonBody, RecomputeRequestSchema, validateBody } from '@/lib/apiValidation'
 
 /**
  * Recalcula custo/prazo/risco a partir de uma leitura de escopo já editada pelo usuário (chips
@@ -21,14 +11,13 @@ interface RecomputeRequestBody {
  * /api/negotiate.
  */
 export async function POST(request: Request) {
-  const body = (await request.json()) as RecomputeRequestBody
-  const { scopeAnalysis, input, currentSquad } = body
-
-  if (!scopeAnalysis) {
-    return NextResponse.json({ error: 'Leitura de escopo é obrigatória.' }, { status: 400 })
-  }
-
   try {
+    const body = await parseJsonBody(request)
+    // currentSquad presente reusa o squad já negociado — sem isso, qualquer recálculo de
+    // premissa (chip da ReadingGrid, PJ/CLT, custo editável) geraria um squad novo do zero e
+    // descartaria em silêncio o que já foi negociado por chat.
+    const { scopeAnalysis, input, currentSquad } = validateBody(RecomputeRequestSchema, body, 'recompute')
+
     const squad = currentSquad?.length ? currentSquad : suggestInitialSquad(scopeAnalysis, input)
     const scenario = computeScenario(squad, scopeAnalysis, input)
     const { summary, midGroundSuggestion } = await narrateScenario({ scope: scopeAnalysis, input, scenario })
@@ -37,6 +26,9 @@ export async function POST(request: Request) {
       scenario: { ...scenario, summary, midGroundSuggestion },
     })
   } catch (error) {
+    if (error instanceof InvalidRequestError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error('Erro em /api/recompute', error)
     const message = error instanceof Error ? error.message : 'Erro desconhecido ao recalcular o squad.'
     return NextResponse.json({ error: message }, { status: 500 })

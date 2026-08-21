@@ -1,24 +1,14 @@
 import { NextResponse } from 'next/server'
-import { ProjectInput, ScopeAnalysis, SquadMember } from '@/types'
+import { ProjectInput } from '@/types'
 import { extractProposedSquad, narrateScenario } from '@/lib/gemini'
 import { computeScenario } from '@/lib/calculator'
-
-interface NegotiateRequestBody {
-  scopeAnalysis: ScopeAnalysis
-  input: ProjectInput
-  currentSquad: SquadMember[]
-  userMessage: string
-}
+import { InvalidRequestError, NegotiateRequestSchema, parseJsonBody, validateBody } from '@/lib/apiValidation'
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as NegotiateRequestBody
-  const { scopeAnalysis, input, currentSquad, userMessage } = body
-
-  if (!userMessage?.trim()) {
-    return NextResponse.json({ error: 'Mensagem vazia.' }, { status: 400 })
-  }
-
   try {
+    const body = await parseJsonBody(request)
+    const { scopeAnalysis, input, currentSquad, userMessage } = validateBody(NegotiateRequestSchema, body, 'negotiate')
+
     const proposal = await extractProposedSquad({ scope: scopeAnalysis, input, currentSquad, userMessage })
 
     const updatedInput: ProjectInput = {
@@ -40,6 +30,9 @@ export async function POST(request: Request) {
       scenario: { ...scenario, summary, midGroundSuggestion },
     })
   } catch (error) {
+    if (error instanceof InvalidRequestError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error('Erro em /api/negotiate', error)
     const message = error instanceof Error ? error.message : 'Erro desconhecido ao renegociar o squad.'
     return NextResponse.json({ error: message }, { status: 500 })

@@ -392,6 +392,13 @@ const NARRATION_SCHEMA = {
   required: ['summary'],
 }
 
+// responseSchema acima é só uma instrução de prompt pro modelo — não garante o shape do JSON em
+// runtime. Sem essa checagem, um "summary" ausente/não-string chegaria direto no Scenario exibido.
+const NARRATION_RESULT_SCHEMA = z.object({
+  summary: z.string(),
+  midGroundSuggestion: z.string().optional(),
+})
+
 export async function narrateScenario(params: {
   scope: ScopeAnalysis
   input: ProjectInput
@@ -431,9 +438,19 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
     },
   }
 
+  function parseNarrationResponse(text: string | undefined, context: string): { summary: string; midGroundSuggestion?: string } {
+    const raw = parseJsonResponse(text, context)
+    const parsed = NARRATION_RESULT_SCHEMA.safeParse(raw)
+    if (!parsed.success) {
+      console.error(`[narrateScenario] resposta fora do schema esperado ao ${context}:`, parsed.error.flatten())
+      throw new Error(`A IA devolveu uma resposta em formato inesperado ao ${context}. Tenta de novo.`)
+    }
+    return parsed.data
+  }
+
   async function generate(): Promise<{ summary: string; midGroundSuggestion?: string }> {
     const response = await callGemini(() => getClient().models.generateContent(requestConfig))
-    return parseJsonResponse(response.text, 'narrar o cenário') as { summary: string; midGroundSuggestion?: string }
+    return parseNarrationResponse(response.text, 'narrar o cenário')
   }
 
   /**
@@ -445,10 +462,7 @@ Responda em português do Brasil, respeitando estritamente o schema JSON forneci
   async function regenerateOnce(): Promise<{ summary: string; midGroundSuggestion?: string } | null> {
     try {
       const response = await withTimeout(getClient().models.generateContent(requestConfig))
-      return parseJsonResponse(response.text, 'narrar o cenário (regeneração)') as {
-        summary: string
-        midGroundSuggestion?: string
-      }
+      return parseNarrationResponse(response.text, 'narrar o cenário (regeneração)')
     } catch {
       return null
     }
