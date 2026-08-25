@@ -89,7 +89,9 @@ export function CommandMenu({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-ink/40 px-4 pt-[8vh]"
+          // pt menor no mobile: mais espaço sobrando embaixo pro teclado virtual não cobrir a
+          // lista de resultados quando o campo de busca ganha foco.
+          className="fixed inset-0 z-50 flex items-start justify-center bg-ink/40 px-4 pt-[4vh] sm:pt-[8vh]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

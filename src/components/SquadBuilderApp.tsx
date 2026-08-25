@@ -533,7 +533,7 @@ export function SquadBuilderApp() {
                 Conte o que você quer construir. O SquadBuilder estima equipe, custo e prazo.
               </motion.p>
               <motion.div variants={heroItemVariants} className="mt-6">
-                <PrimaryButton onClick={scrollToScopeForm} type="button">
+                <PrimaryButton onClick={scrollToScopeForm} type="button" className="w-full lg:w-auto">
                   Descrever meu projeto
                   <ArrowRight className="size-4" />
                 </PrimaryButton>

@@ -1,4 +1,4 @@
-import { MouseEvent, useRef, useState } from 'react'
+import { MouseEvent, useEffect, useRef, useState } from 'react'
 import { Scenario, SquadMember } from '@/types'
 import { MAX_ALLOCATION_MONTHS } from '@/lib/allocationCurve'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
@@ -67,6 +67,28 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
+  // Só num gráfico que rola horizontalmente (mobile) faz sentido sinalizar que tem mais coluna
+  // fora da tela — recalcula a cada scroll/resize, não é um valor fixo.
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    // Arrow function const, não function declaration — declaração seria hoisted e o TS perde o
+    // estreitamento de "container" não-nulo feito pelo return antecipado acima.
+    const updateScrollState = () => {
+      setCanScrollRight(container.scrollWidth - container.scrollLeft - container.clientWidth > 1)
+    }
+
+    updateScrollState()
+    container.addEventListener('scroll', updateScrollState)
+    window.addEventListener('resize', updateScrollState)
+    return () => {
+      container.removeEventListener('scroll', updateScrollState)
+      window.removeEventListener('resize', updateScrollState)
+    }
+  }, [monthCount, squad.length])
 
   function showTooltip(event: MouseEvent, text: string) {
     const container = containerRef.current
@@ -173,6 +195,15 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
           )
         })}
       </svg>
+      {/* Sinaliza que tem mais mês fora da tela pra rolar — sem isso, no mobile (onde o gráfico
+          quase sempre é mais largo que a tela) nada indica que dá pra arrastar pro lado. Fixo na
+          borda do container, não do conteúdo — não se move com o scroll. */}
+      {canScrollRight && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-paper-3 to-transparent"
+        />
+      )}
       {tooltip && (
         <div
           role="tooltip"
