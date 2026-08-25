@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { AlertCircle, ArrowRight, Download, FileText, Handshake, HelpCircle, Home, LayoutDashboard } from 'lucide-react'
+import { AlertCircle, ArrowRight, Download, FileText, Handshake, HelpCircle, Home, LayoutDashboard, Menu } from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { CommandMenu, type CommandMenuItem } from '@/components/CommandMenu'
@@ -65,6 +65,7 @@ export function SquadBuilderApp() {
   // seções revelam ao entrar na tela (scroll-reveal).
   const reduceMotion = useReducedMotion()
   const { toasts, showToast } = useToasts()
+  const [commandMenuOpen, setCommandMenuOpen] = useState(false)
   const heroContainerVariants = {
     hidden: {},
     show: { transition: { staggerChildren: reduceMotion ? 0 : 0.18, delayChildren: 0.1 } },
@@ -458,7 +459,9 @@ export function SquadBuilderApp() {
               </span>
             </button>
             {scenario && (
-              <span className="max-w-[320px] truncate text-[14px] text-ink-2">{input.description}</span>
+              <span className="hidden max-w-[200px] truncate text-[14px] text-ink-2 sm:inline md:max-w-[320px]">
+                {input.description}
+              </span>
             )}
           </div>
           {/* Nav de etapas: navegação real entre seções, não um stepper passivo — encurta a
@@ -478,20 +481,33 @@ export function SquadBuilderApp() {
               </button>
             )}
           </nav>
+          {/* Sem atalho de teclado no touch — esse botão é o único jeito de abrir o menu de
+              navegação por seções no mobile, onde o nav acima fica escondido. */}
+          <button
+            type="button"
+            onClick={() => setCommandMenuOpen(true)}
+            aria-label="Abrir menu de navegação"
+            className="flex size-9 shrink-0 items-center justify-center rounded-[7px] text-ink-2 hover:bg-paper-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 md:hidden"
+          >
+            <Menu className="size-5" strokeWidth={2} />
+          </button>
           {/* Resumo sticky: os números-chave continuam visíveis rolando a página, mesmo depois
-              que o KpiStrip já saiu da tela. */}
+              que o KpiStrip já saiu da tela. Escondido no menor breakpoint — não cabe ao lado da
+              logo e do botão de menu sem apertar. */}
           {scenario ? (
-            <span className="tnum text-[12.5px] font-medium text-ink">
+            <span className="tnum hidden text-[12.5px] font-medium text-ink sm:inline">
               Squad de {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
               {formatCurrencyBRL(scenario.totalMonthlyCost)}/mês · {formatMonthsLabel(scenario.estimatedTimelineMonths)}
             </span>
           ) : (
-            <span className="text-[12.5px] text-ink-3">Copiloto para dimensionamento de squads</span>
+            <span className="hidden text-[12.5px] text-ink-3 sm:inline">Copiloto para dimensionamento de squads</span>
           )}
         </div>
       </header>
 
-      <main className="flex-1">
+      {/* pb extra no mobile quando a barra sticky de resumo está presente — sem isso, o final da
+          seção de Negociação fica escondido atrás dela. */}
+      <main className={`flex-1 ${scenario ? 'pb-14 sm:pb-0' : ''}`}>
         {/* Primeira coisa que a pessoa vê: frase de impacto centralizada, não o formulário direto
             — abrir já em campo de texto/inputs lia como pouco profissional. min-h-screen (mais a
             altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
@@ -499,20 +515,21 @@ export function SquadBuilderApp() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="show"
-          className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-24 print:hidden"
+          className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-40 lg:pb-24 print:hidden"
         >
           {/* Duas colunas: texto à esquerda, preview à direita — evita empurrar o hero pra baixo
-              com um card abaixo do texto. Empilha em telas estreitas. */}
+              com um card abaixo do texto. No mobile empilha e centraliza (sem o preview, que não
+              cabe bem numa tela estreita); volta a alinhar à esquerda a partir de lg. */}
           <div className="wrap grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_540px] lg:gap-14">
-            <div className="text-left">
+            <div className="text-center lg:text-left">
               <motion.h1
                 variants={heroItemVariants}
-                className="max-w-[20ch] font-display text-[clamp(48px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
+                className="mx-auto max-w-[20ch] font-display text-[clamp(36px,8.5vw,88px)] font-bold leading-[1.02] tracking-[-0.035em] text-ink lg:mx-0"
               >
                 Descreva seu projeto.
                 <br />Monte o <span className="text-petrol">squad</span> ideal.
               </motion.h1>
-              <motion.p variants={heroItemVariants} className="mt-4 max-w-[56ch] text-lg text-ink-2">
+              <motion.p variants={heroItemVariants} className="mx-auto mt-4 max-w-[56ch] text-lg text-ink-2 lg:mx-0">
                 Conte o que você quer construir. O SquadBuilder estima equipe, custo e prazo.
               </motion.p>
               <motion.div variants={heroItemVariants} className="mt-6">
@@ -524,8 +541,8 @@ export function SquadBuilderApp() {
             </div>
             {/* Preview que mostra o mecanismo do produto (texto → chips → números), não um
                 resultado congelado — segue o padrão "o produto é a demo" em vez de um card
-                estático genérico. Entra da direita, convergindo com o texto. */}
-            <motion.div variants={heroPreviewVariants} className="w-full">
+                estático genérico. Entra da direita, convergindo com o texto. Escondido no mobile. */}
+            <motion.div variants={heroPreviewVariants} className="hidden w-full lg:block">
               <HeroPreview />
             </motion.div>
           </div>
@@ -699,7 +716,7 @@ export function SquadBuilderApp() {
             {scenario && (
               <div className="mb-6 flex flex-col items-center gap-3 print:hidden">
                 {minimalScenario && (
-                  <div role="radiogroup" aria-label="Visão do squad" className="flex justify-center gap-1.5">
+                  <div role="radiogroup" aria-label="Visão do squad" className="flex flex-wrap justify-center gap-1.5">
                     <button
                       type="button"
                       role="radio"
@@ -765,8 +782,20 @@ export function SquadBuilderApp() {
         )}
       </main>
       </div>
+      {/* O resumo sticky do header fica escondido abaixo de sm (não cabe ao lado da logo e do
+          botão de menu) — essa barra devolve o mesmo lembrete de custo/prazo, presa embaixo, só
+          no mobile. env(safe-area-inset-bottom): não fica colada na barra de gestos do iPhone. */}
+      {scenario && (
+        <div
+          className="tnum fixed inset-x-0 bottom-0 z-40 border-t border-rule-2 bg-paper-3 px-4 py-2.5 text-center text-[12.5px] font-medium text-ink shadow-[var(--shadow-raised)] sm:hidden print:hidden"
+          style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom))' }}
+        >
+          Squad de {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
+          {formatCurrencyBRL(scenario.totalMonthlyCost)}/mês · {formatMonthsLabel(scenario.estimatedTimelineMonths)}
+        </div>
+      )}
       <div className="print:hidden">
-        <CommandMenu items={commandItems} />
+        <CommandMenu items={commandItems} open={commandMenuOpen} onOpenChange={setCommandMenuOpen} />
         <ToastStack toasts={toasts} />
       </div>
     </div>

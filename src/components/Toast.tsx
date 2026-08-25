@@ -38,7 +38,10 @@ export function useToasts() {
 
 export function ToastStack({ toasts }: { toasts: ToastItem[] }) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex flex-col items-center gap-2">
+    // bottom maior no mobile: acima da barra sticky de resumo (SquadBuilderApp) quando ela existe,
+    // e longe da barra de gestos do iPhone via env(safe-area-inset-bottom). Do sm pra cima não tem
+    // barra sticky nenhuma, volta pro bottom-6 de sempre.
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 sm:bottom-6">
       <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div

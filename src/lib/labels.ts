@@ -99,7 +99,7 @@ export function formatMonthsLabel(months: number): string {
 /** Só os dígitos da faixa, sem "meses" — pra usar como valor grande de KPI com o sufixo separado. */
 export function formatMonthsCompact(months: number): string {
   const { lower, upper } = monthsRange(months)
-  return lower === upper ? `${lower}` : `${lower}–${upper}`
+  return lower === upper ? `${lower}` : `${lower} – ${upper}`
 }
 
 /** Mesmo valor multiplicado pelos dois extremos da faixa de prazo — nunca pelo ponto médio cru. */

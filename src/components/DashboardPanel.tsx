@@ -134,10 +134,7 @@ export function DashboardPanel({
             title="Curva de alocação"
             note={`${scenario.squad.length} papéis · ${formatMonthsLabel(scenario.estimatedTimelineMonths)}`}
           />
-          <p className="mb-3 max-w-[60ch] text-[13px] text-ink-2">
-            Cor mais forte = maior dedicação naquele mês (varia por papel — a maioria é constante
-            no período todo).
-          </p>
+          <p className="mb-3 max-w-[60ch] text-[13px] text-ink-2">Cor mais forte = maior dedicação naquele mês.</p>
           <Panel>
             <AllocationChart scenario={scenario} />
           </Panel>

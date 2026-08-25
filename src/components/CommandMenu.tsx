@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Search } from 'lucide-react'
 
@@ -15,9 +15,18 @@ export interface CommandMenuItem {
 /**
  * Command menu (Ctrl/Cmd+K), sem dependência nova — reusa o mesmo padrão de modal já usado no
  * detalhe de papel da Composição (Motion + clique-fora + Esc), nos tokens do projeto.
+ * Controlado por fora (open/onOpenChange) — no mobile não tem atalho de teclado, então o header
+ * precisa de um botão visível que abra o mesmo menu.
  */
-export function CommandMenu({ items }: { items: CommandMenuItem[] }) {
-  const [open, setOpen] = useState(false)
+export function CommandMenu({
+  items,
+  open,
+  onOpenChange,
+}: {
+  items: CommandMenuItem[]
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -28,24 +37,24 @@ export function CommandMenu({ items }: { items: CommandMenuItem[] }) {
     return items.filter((item) => item.label.toLowerCase().includes(q))
   }, [items, query])
 
-  function close() {
-    setOpen(false)
+  const close = useCallback(() => {
+    onOpenChange(false)
     setQuery('')
     setSelectedIndex(0)
-  }
+  }, [onOpenChange])
 
-  // Atalho global — abre de qualquer lugar do app, sem precisar de um botão visível ocupando
-  // espaço no header (é o ponto do padrão: escondido até ser chamado).
+  // Atalho global de teclado — abre de qualquer lugar do app, sem precisar de um botão visível
+  // ocupando espaço no header. No touch (sem teclado físico) quem abre é o botão do header.
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setOpen((prev) => !prev)
+        onOpenChange(!open)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [open, onOpenChange])
 
   useEffect(() => {
     if (open) inputRef.current?.focus()
@@ -74,7 +83,7 @@ export function CommandMenu({ items }: { items: CommandMenuItem[] }) {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, filtered, selectedIndex])
+  }, [open, filtered, selectedIndex, close])
 
   return (
     <AnimatePresence>

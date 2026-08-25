@@ -65,7 +65,7 @@ export function ScopeSeeds({ onUseSeed, disabled }: { onUseSeed: (text: string) 
   return (
     <div className="flex flex-col gap-2">
       <span className="text-[13px] text-ink-3">Experimente um exemplo</span>
-      <div className="flex flex-nowrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {SCOPE_SEEDS.map((seed) => (
           <button
             key={seed.id}

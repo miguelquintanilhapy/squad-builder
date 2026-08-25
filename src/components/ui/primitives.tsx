@@ -23,7 +23,7 @@ export function Panel({ children }: { children: React.ReactNode }) {
  */
 export function PanelTitle({ title, note, emphasis = false }: { title: string; note?: string; emphasis?: boolean }) {
   return (
-    <div className="mb-3 flex items-baseline justify-between gap-3.5">
+    <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3.5 gap-y-1">
       <h3
         className={`font-display font-bold leading-none tracking-[-0.025em] text-ink ${
           emphasis ? 'text-[30px]' : 'text-[26px]'
