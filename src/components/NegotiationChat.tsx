@@ -87,7 +87,7 @@ export function NegotiationChat({
                   placeholder='Ex.: "Tire o QA e reduza o custo mantendo o prazo."'
                   rows={3}
                   disabled={loading}
-                  className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50"
+                  className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-base sm:text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50"
                 />
                 <div className="flex items-center justify-between gap-3.5">
                   {/* Atalho como linha separada, não embutido no placeholder. ink-2 + 12.5px:

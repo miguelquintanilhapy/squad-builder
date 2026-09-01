@@ -65,14 +65,17 @@ export function ScopeSeeds({ onUseSeed, disabled }: { onUseSeed: (text: string) 
   return (
     <div className="flex flex-col gap-2">
       <span className="text-[13px] text-ink-3">Experimente um exemplo</span>
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Carrossel com scroll-snap no mobile — 4 chips não cabem numa linha só numa tela estreita
+          e quebrar em 2 linhas ocupava espaço vertical à toa. A partir de sm sobra espaço de sobra,
+          então vira uma linha comum sem scroll. */}
+      <div className="flex snap-x snap-mandatory items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
         {SCOPE_SEEDS.map((seed) => (
           <button
             key={seed.id}
             type="button"
             onClick={() => onUseSeed(seed.text)}
             disabled={disabled}
-            className="rounded-full border border-rule px-3 py-1 text-[13px] font-medium text-petrol transition-transform duration-150 hover:-translate-y-px hover:border-petrol hover:bg-paper active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            className="shrink-0 snap-start rounded-full border border-rule px-3 py-1 text-[13px] font-medium text-petrol transition-transform duration-150 hover:-translate-y-px hover:border-petrol hover:bg-paper active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50"
           >
             {seed.label}
           </button>

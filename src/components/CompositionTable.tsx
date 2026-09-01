@@ -80,11 +80,28 @@ function RoleCard({
   )
 }
 
+/** Abaixo de 640px, sem media query de largura de tela não dá pra saber se o modal deve deslizar
+ * de baixo (bottom sheet, mais natural pro polegar) ou entrar centralizado como no desktop. */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 639px)')
+    const update = () => setIsMobile(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+  return isMobile
+}
+
 /**
- * Modal suave, não painel expandido no mesmo lugar — backdrop + card entram com fade/scale via
- * Motion. Fecha por clique fora, Esc ou botão de fechar.
+ * Modal suave — backdrop + card entram via Motion. No mobile é um bottom sheet (desliza de baixo,
+ * ocupa a largura toda); a partir de sm volta a ser um card centralizado, como antes. Fecha por
+ * clique fora, Esc ou botão de fechar.
  */
 function RoleDetailModal({ member, onClose }: { member: Scenario['squad'][number] | null; onClose: () => void }) {
+  const isMobile = useIsMobile()
+
   useEffect(() => {
     if (!member) return
     function handleKeyDown(e: KeyboardEvent) {
@@ -98,7 +115,7 @@ function RoleDetailModal({ member, onClose }: { member: Scenario['squad'][number
     <AnimatePresence>
       {member && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-4"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center sm:px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -109,12 +126,13 @@ function RoleDetailModal({ member, onClose }: { member: Scenario['squad'][number
             role="dialog"
             aria-modal="true"
             aria-label={`${ROLE_LABELS[member.role]} — ${SENIORITY_LABELS[member.seniority]}`}
-            initial={{ opacity: 0, y: 10, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            initial={isMobile ? { opacity: 1, y: '100%' } : { opacity: 0, y: 10, scale: 0.97 }}
+            animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={isMobile ? { opacity: 1, y: '100%' } : { opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[420px] rounded-[7px] bg-paper-3 p-5 shadow-[var(--shadow-raised)]"
+            className="w-full rounded-t-[14px] bg-paper-3 p-5 shadow-[var(--shadow-raised)] sm:max-w-[420px] sm:rounded-[7px]"
+            style={{ paddingBottom: isMobile ? 'calc(1.25rem + env(safe-area-inset-bottom))' : undefined }}
           >
             <div className="flex items-start justify-between gap-3">
               <p className="font-semibold text-ink">

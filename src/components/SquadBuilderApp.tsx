@@ -2,7 +2,18 @@
 
 import { useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { AlertCircle, ArrowRight, Download, FileText, Handshake, HelpCircle, Home, LayoutDashboard, Menu } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowRight,
+  ChevronDown,
+  Download,
+  FileText,
+  Handshake,
+  HelpCircle,
+  Home,
+  LayoutDashboard,
+  Menu,
+} from 'lucide-react'
 import { ContractType, NegotiationTurn, ProjectInput, RoleType, Scenario, ScenarioVersion, ScopeAnalysis } from '@/types'
 import { BrandMark } from '@/components/BrandMark'
 import { CommandMenu, type CommandMenuItem } from '@/components/CommandMenu'
@@ -515,7 +526,7 @@ export function SquadBuilderApp() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="show"
-          className="flex min-h-[calc(100vh-72px)] items-center pt-10 pb-40 lg:pb-24 print:hidden"
+          className="relative flex min-h-[calc(100vh-72px)] items-center pt-10 pb-40 lg:pb-24 print:hidden"
         >
           {/* Duas colunas: texto à esquerda, preview à direita — evita empurrar o hero pra baixo
               com um card abaixo do texto. No mobile empilha e centraliza (sem o preview, que não
@@ -546,6 +557,17 @@ export function SquadBuilderApp() {
               <HeroPreview />
             </motion.div>
           </div>
+          {/* Sem o preview do hero, no mobile não sobra nenhuma pista visual de que a página
+              continua abaixo — esse ícone reforça isso. Some a partir de lg (onde o preview
+              volta a preencher a seção e o layout de duas colunas já sugere mais conteúdo). */}
+          <button
+            type="button"
+            onClick={scrollToScopeForm}
+            aria-label="Rolar até o formulário"
+            className="absolute inset-x-0 bottom-6 flex animate-bounce justify-center text-ink-3 lg:hidden"
+          >
+            <ChevronDown className="size-5" strokeWidth={2} />
+          </button>
         </motion.section>
 
         {/* scroll-mt: compensa o header sticky — sem isso, scrollIntoView encosta o topo da seção
@@ -784,15 +806,18 @@ export function SquadBuilderApp() {
       </div>
       {/* O resumo sticky do header fica escondido abaixo de sm (não cabe ao lado da logo e do
           botão de menu) — essa barra devolve o mesmo lembrete de custo/prazo, presa embaixo, só
-          no mobile. env(safe-area-inset-bottom): não fica colada na barra de gestos do iPhone. */}
+          no mobile. É também atalho: tocar rola até o resultado, igual o nav do header já faz.
+          env(safe-area-inset-bottom): não fica colada na barra de gestos do iPhone. */}
       {scenario && (
-        <div
-          className="tnum fixed inset-x-0 bottom-0 z-40 border-t border-rule-2 bg-paper-3 px-4 py-2.5 text-center text-[12.5px] font-medium text-ink shadow-[var(--shadow-raised)] sm:hidden print:hidden"
+        <button
+          type="button"
+          onClick={scrollToResults}
+          className="tnum fixed inset-x-0 bottom-0 z-40 border-t border-rule-2 bg-paper-3 px-4 py-2.5 text-center text-[12.5px] font-medium text-ink shadow-[var(--shadow-raised)] active:bg-paper-2 sm:hidden print:hidden"
           style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom))' }}
         >
           Squad de {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}
           {formatCurrencyBRL(scenario.totalMonthlyCost)}/mês · {formatMonthsLabel(scenario.estimatedTimelineMonths)}
-        </div>
+        </button>
       )}
       <div className="print:hidden">
         <CommandMenu items={commandItems} open={commandMenuOpen} onOpenChange={setCommandMenuOpen} />

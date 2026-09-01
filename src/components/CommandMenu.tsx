@@ -121,7 +121,7 @@ export function CommandMenu({
                   setSelectedIndex(0)
                 }}
                 placeholder="Buscar uma ação..."
-                className="w-full border-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink-3"
+                className="w-full border-0 bg-transparent text-base sm:text-sm text-ink outline-none placeholder:text-ink-3"
               />
               <kbd className="rounded border border-rule-2 px-1.5 py-0.5 text-[11px] text-ink-3">Esc</kbd>
             </div>

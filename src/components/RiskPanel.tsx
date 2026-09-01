@@ -59,7 +59,7 @@ function RateOverrideRow({
               e.currentTarget.blur()
             }
           }}
-          className="w-20 border-0 bg-transparent px-1.5 py-0.5 text-right text-[12.5px] text-ink outline-none"
+          className="w-20 border-0 bg-transparent px-1.5 py-0.5 text-right text-base sm:text-[12.5px] text-ink outline-none"
         />
         <span className="bg-paper px-1.5 py-0.5 text-[11.5px] text-ink-3">/mês</span>
       </span>
