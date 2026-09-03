@@ -10,6 +10,8 @@ import {
   formatMonthsLabel,
 } from '@/lib/labels'
 import { ALLOCATION_CAPACITY_MULTIPLIER } from '@/lib/rates'
+import { useIsMobile } from '@/lib/useViewport'
+import { TOUCH_TARGET_EXPAND } from '@/components/ui/primitives'
 
 const numCellClasses = 'min-[760px]:w-32 px-[15px] py-3 text-right tnum'
 const numHeadClasses = 'min-[760px]:w-32 px-[15px] py-[9px] text-right text-[12.5px] font-medium text-ink-3'
@@ -80,20 +82,6 @@ function RoleCard({
   )
 }
 
-/** Abaixo de 640px, sem media query de largura de tela não dá pra saber se o modal deve deslizar
- * de baixo (bottom sheet, mais natural pro polegar) ou entrar centralizado como no desktop. */
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 639px)')
-    const update = () => setIsMobile(query.matches)
-    update()
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
-  }, [])
-  return isMobile
-}
-
 /**
  * Modal suave — backdrop + card entram via Motion. No mobile é um bottom sheet (desliza de baixo,
  * ocupa a largura toda); a partir de sm volta a ser um card centralizado, como antes. Fecha por
@@ -142,7 +130,7 @@ function RoleDetailModal({ member, onClose }: { member: Scenario['squad'][number
                 type="button"
                 onClick={onClose}
                 aria-label="Fechar"
-                className="shrink-0 rounded-full p-1 text-ink-3 hover:bg-paper hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2"
+                className={`shrink-0 rounded-full p-1 text-ink-3 hover:bg-paper hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 ${TOUCH_TARGET_EXPAND}`}
               >
                 <X className="size-4" />
               </button>
