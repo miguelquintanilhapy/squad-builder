@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { RiskLevel, ScenarioVersion } from '@/types'
-import { formatCurrencyBRL, formatMonthsLabel, formatNumberPtBR } from '@/lib/labels'
+import { RISK_LEVEL_LABELS, formatCurrencyBRL, formatMonthsLabel, formatNumberPtBR } from '@/lib/labels'
 import { describeNegotiationImpact } from '@/lib/negotiationImpact'
 
 const RISK_COLOR: Record<RiskLevel, string> = {
@@ -122,7 +122,18 @@ export function ImpactSummary({ active, previous }: { active: ScenarioVersion; p
           label="Índice de risco"
           previousValue={`${previous.scenario.riskScore}/100`}
           activeValue={
-            <span style={{ color: RISK_COLOR[active.scenario.riskLevel] }}>{active.scenario.riskScore}/100</span>
+            // Cor sozinha não pode ser o único canal do nível de risco (mesma regra do
+            // RiskPanel, que sempre pareia a cor com texto) — o rótulo ao lado garante isso
+            // mesmo aqui, onde antes só o número mudava de cor.
+            <span className="inline-flex flex-wrap items-baseline gap-1.5">
+              <span style={{ color: RISK_COLOR[active.scenario.riskLevel] }}>{active.scenario.riskScore}/100</span>
+              <span
+                className="text-[13px] font-semibold"
+                style={{ color: RISK_COLOR[active.scenario.riskLevel] }}
+              >
+                {RISK_LEVEL_LABELS[active.scenario.riskLevel]}
+              </span>
+            </span>
           }
           delta={
             <DeltaPill direction={riskDirection} good={riskDelta <= 0}>

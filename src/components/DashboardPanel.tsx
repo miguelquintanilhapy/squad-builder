@@ -9,7 +9,7 @@ import { KpiStrip } from '@/components/KpiStrip'
 import { AllocationChart } from '@/components/AllocationChart'
 import { CompositionTable } from '@/components/CompositionTable'
 import { RiskPanel } from '@/components/RiskPanel'
-import { Panel, PanelTitle } from '@/components/ui/primitives'
+import { Panel, PanelTitle, TOUCH_TARGET_EXPAND } from '@/components/ui/primitives'
 
 function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded-[7px] bg-rule-2 ${className}`} />
@@ -91,7 +91,10 @@ export function DashboardPanel({
   return (
     <div className="relative">
       {recomputing && (
-        <div className="absolute right-0 top-0 z-10 flex items-center gap-2.5 rounded-full bg-ink pl-3 pr-1.5 py-1 text-[12.5px] font-medium text-paper-2 shadow-[var(--shadow-raised)]">
+        // Abaixo de sm o KpiStrip empilha em 1 coluna sem espaço reservado acima — como banner
+        // (fluxo normal, mb-3) em vez de badge absoluto, não sobrepõe o primeiro card. A partir de
+        // sm sobra espaço ao lado dos KPIs, volta a ser o badge no canto de sempre.
+        <div className="z-10 mb-3 flex w-fit items-center gap-2.5 rounded-full bg-ink pl-3 pr-1.5 py-1 text-[12.5px] font-medium text-paper-2 shadow-[var(--shadow-raised)] sm:absolute sm:right-0 sm:top-0 sm:mb-0">
           <span className="flex items-center gap-1.5">
             <Loader2 className="size-3 animate-spin" />
             Recalculando
@@ -100,7 +103,7 @@ export function DashboardPanel({
             <button
               type="button"
               onClick={onCancelRecompute}
-              className="rounded-full px-2 py-0.5 underline underline-offset-2 hover:bg-paper-3/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-paper-2 focus-visible:outline-offset-1"
+              className={`rounded-full px-2 py-0.5 underline underline-offset-2 hover:bg-paper-3/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-paper-2 focus-visible:outline-offset-1 ${TOUCH_TARGET_EXPAND}`}
             >
               Cancelar
             </button>

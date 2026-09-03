@@ -3,6 +3,7 @@
 import { Check } from 'lucide-react'
 import { ComplexityLevel, Platform, ProductType, ProjectStage, ScopeAnalysis } from '@/types'
 import { COMPLEXITY_LABELS, PLATFORM_LABELS, PRODUCT_TYPE_LABELS, STAGE_LABELS } from '@/lib/labels'
+import { TOUCH_TARGET_EXPAND_Y } from '@/components/ui/primitives'
 
 const PRODUCT_TYPES = Object.keys(PRODUCT_TYPE_LABELS) as ProductType[]
 const PLATFORMS = Object.keys(PLATFORM_LABELS) as Platform[]
@@ -29,7 +30,9 @@ const chipBase =
   // Chip/badge é o único lugar com raio total — cards/inputs/botões ficam em 7px, isso os
   // diferencia visualmente como uma categoria própria. Mesmo hover-lift + press dos chips "Ou
   // parta de" (ScopeField) — mesma família de controle, mesma animação.
-  'inline-flex items-center gap-1 rounded-full border px-3 py-[5px] text-[13px] font-medium transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60'
+  // TOUCH_TARGET_EXPAND_Y: essa é a tela de correção mais tocada do fluxo (leitura da IA) — o
+  // chip visual continua ~30px de altura, mas a área de toque real cresce pra ~44px.
+  `inline-flex items-center gap-1 rounded-full border px-3 py-[5px] text-[13px] font-medium transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 ${TOUCH_TARGET_EXPAND_Y}`
 const chipActive = 'border-petrol bg-petrol text-paper-2'
 // border-rule-2 batia só 1,25:1 contra o card branco — quase invisível como contorno de um
 // controle clicável (WCAG 1.4.11 pede 3:1). border-ink-3 resolve (5,26:1) sem escurecer o
@@ -111,7 +114,10 @@ function DimensionBlock({
       <div
         role={radioGroup ? 'radiogroup' : undefined}
         aria-label={radioGroup ? label : undefined}
-        className="flex flex-wrap gap-[5px]"
+        // gap-3.5 (14px), não gap-2/gap-[5px]: cada chip expande a área de toque real 6px pra
+        // cima e pra baixo (TOUCH_TARGET_EXPAND_Y) — com menos de 12px de espaço vertical entre
+        // linhas quebradas, essas áreas invisíveis de duas linhas vizinhas se sobrepunham.
+        className="flex flex-wrap gap-x-2 gap-y-3.5"
       >
         {children}
       </div>

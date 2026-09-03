@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { ContractType, RiskLevel, RoleType, Scenario } from '@/types'
 import { RISK_LEVEL_LABELS, ROLE_LABELS, formatCurrencyBRL, parseCurrencyPtBR } from '@/lib/labels'
 import { MONTHLY_RATE_BRL } from '@/lib/rates'
+import { TOUCH_TARGET_EXPAND_Y } from '@/components/ui/primitives'
 
 const CONTRACT_TYPE_LABELS: Record<ContractType, string> = { pj: 'PJ', clt: 'CLT' }
 
@@ -59,7 +60,7 @@ function RateOverrideRow({
               e.currentTarget.blur()
             }
           }}
-          className="w-20 border-0 bg-transparent px-1.5 py-0.5 text-right text-base sm:text-[12.5px] text-ink outline-none"
+          className="w-20 border-0 bg-transparent px-1.5 py-0.5 text-right text-base text-ink outline-none sm:text-[12.5px]"
         />
         <span className="bg-paper px-1.5 py-0.5 text-[11.5px] text-ink-3">/mês</span>
       </span>
@@ -176,7 +177,7 @@ export function RiskPanel({
                   setEditingRates((prev) => !prev)
                   if (!editingRates) setShowRates(true)
                 }}
-                className="relative text-[11px] font-medium text-petrol underline underline-offset-2 after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] hover:text-ink"
+                className={`text-[11px] font-medium text-petrol underline underline-offset-2 hover:text-ink ${TOUCH_TARGET_EXPAND_Y}`}
               >
                 {editingRates ? 'Salvar premissas' : 'Editar premissas'}
               </button>
@@ -194,9 +195,7 @@ export function RiskPanel({
                     aria-checked={scenario.contractType === ct}
                     disabled={!onContractTypeChange}
                     onClick={() => onContractTypeChange?.(ct)}
-                    // relative + after: expande a área de toque real bem além do chip visual
-                    // (~44px de altura), sem aumentar o tamanho que aparece na tela.
-                    className={`relative rounded-full border px-2 py-0.5 text-[11px] font-semibold after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.96] ${
+                    className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.96] ${TOUCH_TARGET_EXPAND_Y} ${
                       scenario.contractType === ct
                         ? 'border-petrol bg-petrol text-paper-2'
                         : 'border-ink-3 text-ink-2 hover:border-ink'
@@ -216,7 +215,7 @@ export function RiskPanel({
           <button
             type="button"
             onClick={() => setShowRates((prev) => !prev)}
-            className="relative mt-2 text-[11.5px] font-medium text-ink-3 after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] hover:text-ink"
+            className={`mt-2 text-[11.5px] font-medium text-ink-3 hover:text-ink ${TOUCH_TARGET_EXPAND_Y}`}
           >
             {showRates ? 'Ocultar custos de referência ▴' : 'Ver custos de referência ▾'}
           </button>

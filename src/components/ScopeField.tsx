@@ -1,6 +1,9 @@
 'use client'
 
+import { useRef } from 'react'
 import { SCOPE_SEEDS } from '@/lib/seeds'
+import { TOUCH_TARGET_EXPAND_Y } from '@/components/ui/primitives'
+import { useCanScrollRight } from '@/lib/useViewport'
 
 // Baixo o suficiente pra raramente disparar (frase curta e concreta já passa) — o gate em si é
 // intencional (evita estimar sobre nada), só não pode parecer botão quebrado o tempo todo.
@@ -62,24 +65,46 @@ export function ScopeField({
 /** Ao lado do campo de texto livre, não abaixo — junto com ConstraintFields, ocupa a coluna
  * direita da seção de Escopo (ver SquadBuilderApp). */
 export function ScopeSeeds({ onUseSeed, disabled }: { onUseSeed: (text: string) => void; disabled?: boolean }) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  // Mesmo hook do AllocationChart — sinaliza que tem mais chip fora da tela pra arrastar, em vez
+  // de deixar o corte abrupto na borda como única pista.
+  const canScrollRight = useCanScrollRight(trackRef, [])
+
   return (
     <div className="flex flex-col gap-2">
       <span className="text-[13px] text-ink-3">Experimente um exemplo</span>
       {/* Carrossel com scroll-snap no mobile — 4 chips não cabem numa linha só numa tela estreita
           e quebrar em 2 linhas ocupava espaço vertical à toa. A partir de sm sobra espaço de sobra,
           então vira uma linha comum sem scroll. */}
-      <div className="flex snap-x snap-mandatory items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
-        {SCOPE_SEEDS.map((seed) => (
-          <button
-            key={seed.id}
-            type="button"
-            onClick={() => onUseSeed(seed.text)}
-            disabled={disabled}
-            className="shrink-0 snap-start rounded-full border border-rule px-3 py-1 text-[13px] font-medium text-petrol transition-transform duration-150 hover:-translate-y-px hover:border-petrol hover:bg-paper active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50"
-          >
-            {seed.label}
-          </button>
-        ))}
+      <div className="relative">
+        <div
+          ref={trackRef}
+          // gap-y-3.5, não gap-2 uniforme: no carrossel mobile (linha única) não faz diferença,
+          // mas a partir de sm isso quebra em várias linhas (flex-wrap) — cada chip expande a
+          // área de toque real 6px pra cima/baixo (TOUCH_TARGET_EXPAND_Y), e menos de 12px de
+          // espaço vertical faria essas áreas invisíveis de linhas vizinhas se sobreporem.
+          className="flex snap-x snap-mandatory items-center gap-x-2 gap-y-3.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"
+        >
+          {SCOPE_SEEDS.map((seed) => (
+            <button
+              key={seed.id}
+              type="button"
+              onClick={() => onUseSeed(seed.text)}
+              disabled={disabled}
+              // TOUCH_TARGET_EXPAND_Y: mesmo alvo de toque pequeno de qualquer chip — aqui ainda
+              // mais crítico, empilhado num carrossel onde o vizinho está a poucos px de distância.
+              className={`shrink-0 snap-start rounded-full border border-rule px-3 py-1 text-[13px] font-medium text-petrol transition-transform duration-150 hover:-translate-y-px hover:border-petrol hover:bg-paper active:translate-y-0 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 ${TOUCH_TARGET_EXPAND_Y}`}
+            >
+              {seed.label}
+            </button>
+          ))}
+        </div>
+        {canScrollRight && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-paper to-transparent sm:hidden"
+          />
+        )}
       </div>
     </div>
   )
