@@ -1,5 +1,30 @@
 import { Loader2 } from 'lucide-react'
 
+/**
+ * iOS Safari abre zoom automático ao focar um input com font-size &lt; 16px — text-base (16px)
+ * evita isso; o tamanho visual real de desktop entra a partir de sm. Todo input/textarea novo
+ * deve seguir esse par de classes: `text-base sm:<tamanho-desktop>`.
+ *
+ * NÃO extraia isso pra uma função que monta a classe em runtime (`` `sm:${x}` ``) — o Tailwind
+ * gera CSS varrendo o código-fonte por strings literais e completas; uma classe montada por
+ * interpolação nunca aparece assim no source, então o scanner nunca a vê e a regra `sm:` correspondente
+ * simplesmente não é gerada. As 5 classes precisam ficar escritas por extenso em cada call site
+ * (CommandMenu.tsx, ConstraintFields.tsx x2, NegotiationChat.tsx, RiskPanel.tsx).
+ */
+
+/** Expande a área de toque real de um controle pequeno pra mais perto do guideline de ~44px sem
+ * mudar o tamanho visual — mesma técnica já usada nos toggles PJ/CLT do RiskPanel. Pra controles
+ * largos (chips, pills) que podem quebrar linha (flex-wrap): 6px por lado, não mais — com 10px
+ * (o valor original), a área invisível de duas linhas vizinhas passava a se sobrepor sempre que o
+ * espaço visual entre elas (gap) fosse menor que a soma dos dois lados (20px); os call sites que
+ * usam isso mantêm gap-3 (12px) ou mais por causa disso. O elemento precisa ser `relative` (já
+ * incluso). */
+export const TOUCH_TARGET_EXPAND_Y = "relative after:absolute after:-inset-y-1.5 after:inset-x-0 after:content-['']"
+
+/** Mesma técnica, mas expande nas duas direções — pra botões pequenos só-ícone (fechar, cancelar),
+ * onde tanto largura quanto altura ficam abaixo do guideline. */
+export const TOUCH_TARGET_EXPAND = "relative after:absolute after:-inset-2.5 after:content-['']"
+
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[12.5px] font-medium text-ink-3">{children}</h2>
 }
