@@ -26,6 +26,10 @@
   /* Anel de foco petrol, usado em scope-shell, prazo/orçamento e textarea de negociação — um
      token só evita divergir se a cor petrol mudar. */
   --shadow-focus: 0 0 0 3px rgba(20, 88, 74, 0.13);
+  /* Altura da barra fixa de resumo (SquadBuilderApp, só abaixo de sm) — token único referenciado
+     também pelo padding-bottom do <main> e pelo offset do ToastStack, pra não terem que
+     concordar em dois números mágicos separados. */
+  --mobile-bar-h: 3.5rem;
 }
 
 @theme inline {

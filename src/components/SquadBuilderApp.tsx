@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import {
   AlertCircle,
@@ -25,7 +25,7 @@ import { NegotiationChat } from '@/components/NegotiationChat'
 import { HeroPreview } from '@/components/HeroPreview'
 import { HeroShader } from '@/components/HeroShader'
 import { useToasts, ToastStack } from '@/components/Toast'
-import { Eyebrow, PrimaryButton } from '@/components/ui/primitives'
+import { Eyebrow, PrimaryButton, TOUCH_TARGET_EXPAND_Y } from '@/components/ui/primitives'
 import { buildPreviewScenario } from '@/lib/previewFixtures'
 import { MOCK_FIXTURES } from '@/lib/mockFixtures'
 import { formatCurrencyBRL, formatMonthsLabel } from '@/lib/labels'
@@ -71,6 +71,11 @@ export function SquadBuilderApp() {
   const resultsRef = useRef<HTMLDivElement>(null)
   /** Referência da seção de negociação — permite pular direto pra ela sem rolar a página inteira. */
   const negotiationRef = useRef<HTMLDivElement>(null)
+  /** O banner de erro (analisar/recalcular/negociar) sempre renderiza perto do formulário de
+   * escopo, no topo — sem rolar até ele, um erro de negociação (a ação mais distante do topo,
+   * depois de rolar bastante) fica invisível: a mensagem enviada fica pendurada no histórico sem
+   * resposta e parece que "nada aconteceu", quando na verdade um erro real apareceu fora da tela. */
+  const errorRef = useRef<HTMLDivElement>(null)
   // A entrada do hero anima no mount, não no scroll — é a primeira coisa visível na página, antes
   // de qualquer rolagem. É o único bloco que usa animate="show" em vez de whileInView; as demais
   // seções revelam ao entrar na tela (scroll-reveal).
@@ -138,6 +143,14 @@ export function SquadBuilderApp() {
   const analyzeAbortRef = useRef<AbortController | null>(null)
   const recomputeAbortRef = useRef<AbortController | null>(null)
   const negotiateAbortRef = useRef<AbortController | null>(null)
+
+  // Sem isso, um erro disparado durante a negociação (a ação mais longe do topo da página) só
+  // aparece fora da tela — a pessoa vê a mensagem enviada ficar sem resposta e acha que nada
+  // aconteceu. rAF: espera o React trocar o skeleton/estado de loading pelo banner de erro real
+  // antes de medir a posição de scroll (mesmo padrão do scroll pro resultado, em handleAnalyze).
+  useEffect(() => {
+    if (error) requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+  }, [error])
 
   function isAbortError(err: unknown): boolean {
     return err instanceof DOMException && err.name === 'AbortError'
@@ -498,7 +511,9 @@ export function SquadBuilderApp() {
             type="button"
             onClick={() => setCommandMenuOpen(true)}
             aria-label="Abrir menu de navegação"
-            className="flex size-9 shrink-0 items-center justify-center rounded-[7px] text-ink-2 hover:bg-paper-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 md:hidden"
+            // size-11 (44px), não size-9 (36px, abaixo do guideline de touch target) — único
+            // jeito de abrir a navegação por seção no mobile, não pode ficar apertado.
+            className="flex size-11 shrink-0 items-center justify-center rounded-[7px] text-ink-2 hover:bg-paper-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-petrol focus-visible:outline-offset-2 md:hidden"
           >
             <Menu className="size-5" strokeWidth={2} />
           </button>
@@ -517,8 +532,12 @@ export function SquadBuilderApp() {
       </header>
 
       {/* pb extra no mobile quando a barra sticky de resumo está presente — sem isso, o final da
-          seção de Negociação fica escondido atrás dela. */}
-      <main className={`flex-1 ${scenario ? 'pb-14 sm:pb-0' : ''}`}>
+          seção de Negociação fica escondido atrás dela. +env(safe-area-inset-bottom): a barra
+          cresce por esse tanto num iPhone com home indicator (mesmo padding que ela mesma usa),
+          então a reserva de espaço aqui precisa contar com o mesmo tanto pra não ficar curta. */}
+      <main
+        className={`flex-1 ${scenario ? 'pb-[calc(var(--mobile-bar-h)+env(safe-area-inset-bottom))] sm:pb-0' : ''}`}
+      >
         {/* Primeira coisa que a pessoa vê: frase de impacto centralizada, não o formulário direto
             — abrir já em campo de texto/inputs lia como pouco profissional. min-h-screen (mais a
             altura do header) garante que nada da seção de escopo apareça sem rolar ou clicar. */}
@@ -559,15 +578,27 @@ export function SquadBuilderApp() {
           </div>
           {/* Sem o preview do hero, no mobile não sobra nenhuma pista visual de que a página
               continua abaixo — esse ícone reforça isso. Some a partir de lg (onde o preview
-              volta a preencher a seção e o layout de duas colunas já sugere mais conteúdo). */}
-          <button
-            type="button"
-            onClick={scrollToScopeForm}
-            aria-label="Rolar até o formulário"
-            className="absolute inset-x-0 bottom-6 flex animate-bounce justify-center text-ink-3 lg:hidden"
-          >
-            <ChevronDown className="size-5" strokeWidth={2} />
-          </button>
+              volta a preencher a seção e o layout de duas colunas já sugere mais conteúdo) e
+              também some quando já existe um cenário — a barra fixa de resumo (mais abaixo)
+              já cumpre esse papel nesse ponto, e as duas competiam pela mesma faixa da tela.
+              Anima via Motion, não a classe utilitária de "quique" do Tailwind: respeita
+              reduceMotion (o resto do app já respeita) e usa o mesmo easing exponencial de toda
+              a interface, sem o efeito de bounce/elástico. */}
+          {!scenario && (
+            <motion.button
+              type="button"
+              onClick={scrollToScopeForm}
+              aria-label="Rolar até o formulário"
+              animate={reduceMotion ? undefined : { y: [0, 6, 0] }}
+              transition={reduceMotion ? undefined : { duration: 1.6, repeat: Infinity, ease: [0.23, 1, 0.32, 1] }}
+              // Sem TOUCH_TARGET_EXPAND_Y aqui: o botão já é `absolute` (posicionado dentro do
+              // hero) — combinar com o `relative` daquele helper conflitaria na propriedade
+              // `position`. p-3 já garante ~44px de altura de toque por conta própria.
+              className="absolute inset-x-0 bottom-3 flex justify-center p-3 text-ink-3 lg:hidden"
+            >
+              <ChevronDown className="size-5" strokeWidth={2} />
+            </motion.button>
+          )}
         </motion.section>
 
         {/* scroll-mt: compensa o header sticky — sem isso, scrollIntoView encosta o topo da seção
@@ -582,7 +613,10 @@ export function SquadBuilderApp() {
             <Eyebrow>Descreva seu projeto</Eyebrow>
 
             {error && (
-              <div className="mt-5 flex items-center justify-between gap-3.5 rounded-[7px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust">
+              <div
+                ref={errorRef}
+                className="mt-5 flex items-center justify-between gap-3.5 rounded-[7px] border border-rust/30 bg-rust/5 px-4 py-3 text-sm text-rust"
+              >
                 <span className="flex items-center gap-2.5">
                   <AlertCircle className="size-4 shrink-0" strokeWidth={2} />
                   {error}
@@ -738,13 +772,17 @@ export function SquadBuilderApp() {
             {scenario && (
               <div className="mb-6 flex flex-col items-center gap-3 print:hidden">
                 {minimalScenario && (
-                  <div role="radiogroup" aria-label="Visão do squad" className="flex flex-wrap justify-center gap-1.5">
+                  // gap-x-2/gap-y-3.5, não gap-1.5 uniforme: cada pill expande a área de toque
+                  // real 6px pra cima/baixo (TOUCH_TARGET_EXPAND_Y) — se os dois pills quebrarem
+                  // linha num celular estreito, menos de 12px de espaço vertical faria essas
+                  // áreas invisíveis se sobreporem.
+                  <div role="radiogroup" aria-label="Visão do squad" className="flex flex-wrap justify-center gap-x-2 gap-y-3.5">
                     <button
                       type="button"
                       role="radio"
                       aria-checked={dashboardView === 'recommended'}
                       onClick={() => setDashboardView('recommended')}
-                      className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                      className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${TOUCH_TARGET_EXPAND_Y} ${
                         dashboardView === 'recommended'
                           ? 'border-petrol bg-petrol text-paper-2'
                           : 'border-ink-3 text-ink-2 hover:border-ink'
@@ -757,7 +795,7 @@ export function SquadBuilderApp() {
                       role="radio"
                       aria-checked={dashboardView === 'minimal'}
                       onClick={() => setDashboardView('minimal')}
-                      className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                      className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${TOUCH_TARGET_EXPAND_Y} ${
                         dashboardView === 'minimal'
                           ? 'border-petrol bg-petrol text-paper-2'
                           : 'border-ink-3 text-ink-2 hover:border-ink'
@@ -768,10 +806,13 @@ export function SquadBuilderApp() {
                     </button>
                   </div>
                 )}
+                {/* Escondido no mobile: "imprimir" é uma ação rara e de fluxo incerto num
+                    celular (varia por SO), ocupando espaço de toque de baixo valor ao lado dos
+                    pills de visão. */}
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-3 hover:text-ink"
+                  className="hidden items-center gap-1.5 text-[12.5px] font-medium text-ink-3 hover:text-ink sm:flex"
                 >
                   <Download className="size-3.5" strokeWidth={2} />
                   Exportar PDF
@@ -807,12 +848,15 @@ export function SquadBuilderApp() {
       {/* O resumo sticky do header fica escondido abaixo de sm (não cabe ao lado da logo e do
           botão de menu) — essa barra devolve o mesmo lembrete de custo/prazo, presa embaixo, só
           no mobile. É também atalho: tocar rola até o resultado, igual o nav do header já faz.
-          env(safe-area-inset-bottom): não fica colada na barra de gestos do iPhone. */}
+          env(safe-area-inset-bottom): não fica colada na barra de gestos do iPhone. truncate:
+          garante 1 linha só — um squad grande ("Squad de 12 pessoas · R$ 145.230/mês · 8 meses")
+          quebrando em 2 linhas deixaria a barra mais alta do que o <main>/Toast assumem (ver
+          --mobile-bar-h). */}
       {scenario && (
         <button
           type="button"
           onClick={scrollToResults}
-          className="tnum fixed inset-x-0 bottom-0 z-40 border-t border-rule-2 bg-paper-3 px-4 py-2.5 text-center text-[12.5px] font-medium text-ink shadow-[var(--shadow-raised)] active:bg-paper-2 sm:hidden print:hidden"
+          className="tnum fixed inset-x-0 bottom-0 z-40 truncate border-t border-rule-2 bg-paper-3 px-4 py-2.5 text-center text-[12.5px] font-medium text-ink shadow-[var(--shadow-raised)] active:bg-paper-2 sm:hidden print:hidden"
           style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom))' }}
         >
           Squad de {scenario.squad.reduce((sum, m) => sum + m.quantity, 0)} pessoas ·{' '}

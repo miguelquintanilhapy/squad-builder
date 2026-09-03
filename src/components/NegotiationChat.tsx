@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import { NegotiationTurn, ScenarioVersion } from '@/types'
@@ -24,6 +24,22 @@ export function NegotiationChat({
   onSelectVersion: (id: string) => void
 }) {
   const [message, setMessage] = useState('')
+  const impactRef = useRef<HTMLDivElement>(null)
+  const previousActiveVersionId = useRef(activeVersionId)
+
+  // Abaixo de lg (grid empilha em coluna única — ver className logo abaixo), o impacto renderiza
+  // depois do campo de mensagem: sem isso, o número mais importante do app (o risco recalculado)
+  // podia mudar totalmente fora da tela, com só um toast genérico como sinal. Não dispara no
+  // mount (a ref começa igual ao valor atual) nem em desktop, onde as duas colunas já ficam
+  // lado a lado na tela.
+  useEffect(() => {
+    if (activeVersionId && activeVersionId !== previousActiveVersionId.current) {
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        requestAnimationFrame(() => impactRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+      }
+    }
+    previousActiveVersionId.current = activeVersionId
+  }, [activeVersionId])
 
   function handleSend() {
     if (!message.trim() || loading) return
@@ -87,7 +103,7 @@ export function NegotiationChat({
                   placeholder='Ex.: "Tire o QA e reduza o custo mantendo o prazo."'
                   rows={3}
                   disabled={loading}
-                  className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-base sm:text-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50"
+                  className="w-full resize-y rounded-[7px] border border-rule-2 bg-paper-3 px-3 py-2 text-base text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-3 hover:border-ink-3 focus:border-petrol focus:shadow-[var(--shadow-focus)] disabled:opacity-50 sm:text-sm"
                 />
                 <div className="flex items-center justify-between gap-3.5">
                   {/* Atalho como linha separada, não embutido no placeholder. ink-2 + 12.5px:
@@ -117,7 +133,7 @@ export function NegotiationChat({
             </div>
 
             {hasVersions && (
-              <div className="flex flex-col gap-4 lg:border-l lg:border-rule-2 lg:pl-5">
+              <div ref={impactRef} className="flex flex-col gap-4 scroll-mt-20 lg:border-l lg:border-rule-2 lg:pl-5">
                 <div className="flex flex-col gap-2">
                   <SectionLabel>Trilha de decisões</SectionLabel>
                   <VersionList versions={versions} activeVersionId={activeVersionId} onSelect={onSelectVersion} />
