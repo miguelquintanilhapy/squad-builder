@@ -1,8 +1,9 @@
-import { MouseEvent, useEffect, useRef, useState } from 'react'
+import { MouseEvent, useRef, useState } from 'react'
 import { Scenario, SquadMember } from '@/types'
 import { MAX_ALLOCATION_MONTHS } from '@/lib/allocationCurve'
 import { ROLE_LABELS, SENIORITY_LABELS, formatCurrencyBRL } from '@/lib/labels'
 import { ENGINEERING_ROLES } from '@/lib/rates'
+import { useCanScrollRight } from '@/lib/useViewport'
 
 // Largura suficiente pra nomes por extenso ("Desenvolvedor Mobile — Sênior") sem cortar contra as
 // barras.
@@ -56,6 +57,62 @@ interface TooltipState {
   text: string
 }
 
+interface AllocationDetail {
+  monthlyCost: number
+  pcts: number[]
+  baseColor: string
+  curveText: string
+}
+
+/** Derivado por papel, usado nos três lugares que descrevem o mesmo membro do squad (lista
+ * mobile, lista sr-only, linha do SVG desktop) — um ponto só pra fallback/corte/formatação não
+ * divergir silenciosamente entre eles se a lógica mudar no futuro. */
+function getAllocationDetail(member: SquadMember, monthCount: number): AllocationDetail {
+  const pcts = (member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)).slice(0, monthCount)
+  return {
+    monthlyCost: (member.monthlyCostPerPerson ?? 0) * member.quantity,
+    pcts,
+    baseColor: barBaseColor(member),
+    curveText: describeAllocationCurve(pcts),
+  }
+}
+
+/**
+ * Abaixo de 640px, o gráfico desenhado pro desktop (SVG largo, detalhe só via hover) fica
+ * ilegível e intocável: ~55% dele fica fora da tela e não existe equivalente de toque pro
+ * tooltip. Em vez de só permitir arrastar o mesmo SVG, reautora os dados como uma lista de cards
+ * por papel — mesmo padrão dual-render que o CompositionTable já usa (cards no mobile, tabela/SVG
+ * no desktop) — com a curva de envolvimento sempre visível como texto, não escondida atrás de um
+ * gesto que não existe em touch.
+ */
+function MobileAllocationRow({ member, monthCount }: { member: SquadMember; monthCount: number }) {
+  const { monthlyCost, pcts, baseColor, curveText } = getAllocationDetail(member, monthCount)
+
+  return (
+    <div className="rounded-[7px] border border-rule-2 bg-paper-3 p-3.5">
+      <p className="text-[13.5px] text-ink">
+        <span className="font-semibold">{roleLabel(member)}</span>
+        {' — '}
+        <span className="text-[12px] text-ink-3">{SENIORITY_LABELS[member.seniority]}</span>
+      </p>
+      {/* Mini barra decorativa (mesma lógica de opacidade do gráfico desktop) — o texto abaixo,
+          não a barra, é o canal que carrega a informação de verdade. */}
+      <div aria-hidden="true" className="mt-2.5 flex gap-[2px]">
+        {pcts.map((pct, m) => (
+          <div
+            key={m}
+            className="h-3.5 flex-1 rounded-[2px]"
+            style={{ background: `rgba(${baseColor}, ${Math.max(pct / 100, 0.14).toFixed(2)})` }}
+          />
+        ))}
+      </div>
+      <p className="mt-2 text-[12.5px] text-ink-3">
+        {formatCurrencyBRL(monthlyCost)}/mês · envolvimento: {curveText}
+      </p>
+    </div>
+  )
+}
+
 export function AllocationChart({ scenario }: { scenario: Scenario }) {
   const { squad, estimatedTimelineMonths } = scenario
   // Mesmo teto do motor de cálculo (calculator.ts) — sem isso, um prazo degenerado (squad sem
@@ -67,28 +124,9 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
-  // Só num gráfico que rola horizontalmente (mobile) faz sentido sinalizar que tem mais coluna
-  // fora da tela — recalcula a cada scroll/resize, não é um valor fixo.
-  const [canScrollRight, setCanScrollRight] = useState(false)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    // Arrow function const, não function declaration — declaração seria hoisted e o TS perde o
-    // estreitamento de "container" não-nulo feito pelo return antecipado acima.
-    const updateScrollState = () => {
-      setCanScrollRight(container.scrollWidth - container.scrollLeft - container.clientWidth > 1)
-    }
-
-    updateScrollState()
-    container.addEventListener('scroll', updateScrollState)
-    window.addEventListener('resize', updateScrollState)
-    return () => {
-      container.removeEventListener('scroll', updateScrollState)
-      window.removeEventListener('resize', updateScrollState)
-    }
-  }, [monthCount, squad.length])
+  // Só num gráfico que rola horizontalmente (desktop com squad grande) faz sentido sinalizar que
+  // tem mais coluna fora da tela.
+  const canScrollRight = useCanScrollRight(containerRef, [monthCount, squad.length])
 
   function showTooltip(event: MouseEvent, text: string) {
     const container = containerRef.current
@@ -98,24 +136,28 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
   }
 
   return (
-    <div ref={containerRef} className="relative overflow-x-auto px-[15px] py-[15px]">
-      {/* Mesmo conteúdo do tooltip de cada linha (só acessível via hover do mouse), pra quem
-          navega por teclado/leitor de tela não perder a curva de envolvimento por papel. */}
-      <ul className="sr-only">
+    <>
+      {/* Abaixo de 640px, a lista de cards abaixo já mostra esse mesmo texto visível — este
+          sr-only só serve o SVG desktop pra quem navega por teclado/leitor de tela. */}
+      <ul className="sr-only hidden sm:block">
         {squad.map((member, index) => {
-          const monthlyCost = (member.monthlyCostPerPerson ?? 0) * member.quantity
-          const pcts = (member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)).slice(
-            0,
-            monthCount
-          )
+          const { monthlyCost, curveText } = getAllocationDetail(member, monthCount)
           return (
             <li key={`${member.role}-${index}`}>
               {roleLabel(member)} — {SENIORITY_LABELS[member.seniority]} · {formatCurrencyBRL(monthlyCost)}/mês ·
-              envolvimento: {describeAllocationCurve(pcts)}
+              envolvimento: {curveText}
             </li>
           )
         })}
       </ul>
+
+      <div className="flex flex-col gap-2.5 p-[15px] sm:hidden">
+        {squad.map((member, index) => (
+          <MobileAllocationRow key={`${member.role}-${index}`} member={member} monthCount={monthCount} />
+        ))}
+      </div>
+
+      <div ref={containerRef} className="relative hidden overflow-x-auto px-[15px] py-[15px] sm:block">
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${height}`}
         role="img"
@@ -151,13 +193,8 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
 
         {squad.map((member, index) => {
           const y = TOP_MARGIN + index * ROW_HEIGHT
-          const monthlyCost = (member.monthlyCostPerPerson ?? 0) * member.quantity
-          const pcts = (member.monthlyAllocationPct ?? Array.from({ length: monthCount }, () => 100)).slice(
-            0,
-            monthCount
-          )
-          const baseColor = barBaseColor(member)
-          const rowTooltip = `${roleLabel(member)} — ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${describeAllocationCurve(pcts)}`
+          const { monthlyCost, pcts, baseColor, curveText } = getAllocationDetail(member, monthCount)
+          const rowTooltip = `${roleLabel(member)} — ${SENIORITY_LABELS[member.seniority]} · ${formatCurrencyBRL(monthlyCost)}/mês · envolvimento: ${curveText}`
           return (
             <g key={`${member.role}-${index}`} className="group">
               <rect
@@ -213,6 +250,7 @@ export function AllocationChart({ scenario }: { scenario: Scenario }) {
           {tooltip.text}
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
