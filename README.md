@@ -4,7 +4,11 @@ Copiloto de IA para fundadores, CTOs e gestores de produto dimensionarem squads 
 
 ## Como rodar localmente
 
+<<<<<<< HEAD
 Pré-requisitos: Node 20+ e uma chave gratuita da API do Gemini (não pede cartão de crédito).
+=======
+Pré-requisitos: Node 20+ e uma chave gratuita da API do Gemini.
+>>>>>>> a87ba24ca66c6ce8d27053c22439ff8182fa13bc
 
 ```bash
 git clone https://github.com/miguelquintanilhapy/SquadBuilder.git
@@ -40,7 +44,11 @@ Fora de produção (`NODE_ENV !== 'production'`), a home aceita `?mock=<nome>` n
 - **@google/genai** — SDK oficial do Gemini (modelo configurável via `GEMINI_MODEL`, default `gemini-3.6-flash`)
 - **Zod** — validação do JSON estruturado que volta da LLM
 - **lucide-react** — ícones
+<<<<<<< HEAD
 - Nenhuma lib de componentes de UI (Radix, shadcn, etc.) — os poucos componentes que normalmente viriam de uma lib (menu de comando Cmd/Ctrl+K, toast) foram escritos à mão pra não trazer dependência nova só por conveniência
+=======
+- Nenhuma lib de componentes de UI (Radix, shadcn, etc.) — os poucos componentes escritos à mão pra não trazer dependência nova só por conveniência
+>>>>>>> a87ba24ca66c6ce8d27053c22439ff8182fa13bc
 
 Sem banco de dados: todo o estado (escopo, cenário, histórico de negociação, versões) vive só no client, em memória (`useState` em `SquadBuilderApp.tsx`). Recarregar a página perde o progresso.
 
