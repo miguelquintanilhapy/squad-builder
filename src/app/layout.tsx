@@ -24,10 +24,17 @@ const description =
   "Descreva o escopo do projeto e veja o squad, custo mensal, prazo e risco de engenharia recomendados.";
 
 export const metadata: Metadata = {
-  // VERCEL_URL: a Vercel preenche automaticamente em toda build (produção e preview), sem
-  // precisar cadastrar a URL à mão — sem protocolo, por isso o https:// na frente. Sem isso, as
-  // imagens de OG (opengraph-image.tsx) não teriam como virar URL absoluta pro link preview.
-  metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+  // VERCEL_PROJECT_PRODUCTION_URL, não VERCEL_URL: essa segunda é a URL de CADA deploy
+  // (muda a cada build, tipo squad-builder-8l0h6hukv-....vercel.app) — e deploys não-produção
+  // ficam atrás do SSO/login da Vercel, então o WhatsApp nunca conseguiria buscar a imagem. A
+  // primeira é o domínio estável do projeto (o que você realmente compartilha), preenchida
+  // automaticamente pela Vercel em toda build, sem precisar cadastrar a URL à mão. Sem protocolo
+  // em nenhuma das duas, por isso o https:// na frente.
+  metadataBase: new URL(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000"
+  ),
   title: "SquadBuilder",
   description,
   // Card exibido ao colar o link (WhatsApp, Slack, X, iMessage etc.) — a imagem em si vem de
